@@ -4,41 +4,63 @@ Context for Claude Code when working in this repository.
 
 ## Project
 
-An AI receptionist for small businesses. It answers customer questions from an owner-maintained knowledge base, asks the owner when it doesn't know, and learns from approved owner answers. First deployment: The Plug Business Center, a print shop in Nicosia serving mostly students.
+An AI receptionist for small businesses. It answers customer questions from an owner-maintained knowledge base, asks the owner when it doesn't know, and learns from approved owner answers. First deployment: The Plug Business Center, a print shop in Nicosia, Cyprus, serving mostly university students.
 
-Read `README.md` for the overview and `DECISIONS.md` for every architectural choice and the reasoning behind it. Check `DECISIONS.md` before proposing anything that changes the architecture.
+- `README.md`: overview
+- `DECISIONS.md`: every architectural choice and the reasoning behind it. Read it before proposing anything that changes the architecture, and don't contradict an `Accepted` decision without flagging it.
 
 ## Current phase
 
-Phase 1–2: building the evaluation set and the "brain" (knowledge base + prompt + structured output), tested against `eval/`. There is no backend, database or UI yet. Don't scaffold them unless asked.
+**Phase 1 (done):** knowledge base (`kb/the-plug.md`), labelled eval set (`eval/questions.jsonl`, 88 cases), decisions log.
+
+**Phase 2 (now): the brain.** In order:
+1. Output schema (`brain/schema.py`): a Pydantic `BrainDecision` (see D-019)
+2. Prompt (`prompts/brain.md`)
+3. Brain (`brain/brain.py`): loads the KB, calls the model, parses the decision, enforces KB-dependent rules in code
+4. Eval runner (`eval/run_eval.py`): runs every case, scores action accuracy and citation overlap, saves timestamped results for comparing runs
+
+No backend, database or UI yet. Don't scaffold them unless asked.
 
 ## Core rules (don't break these)
 
-- Every message gets exactly one action: `answer`, `ask_owner`, `handoff`, `no_reply`.
-- An `answer` must cite knowledge-base entries; if it can't, the code forces `ask_owner`. Never rely on the model's self-reported confidence.
-- Attachments: the brain sees metadata only (type, filename, page count), never file contents.
-- Nothing print-specific in code; it belongs in `kb/` or config.
-- Every future database table carries a `business_id`.
+- Every message gets exactly one action: `answer`, `ask_owner`, `handoff`, `no_reply` (D-002, D-015).
+- An `answer` must cite at least one existing KB entry; otherwise code forces `ask_owner`. Never rely on the model's self-reported confidence (D-003).
+- KB entries are `public` or `internal`. Internal content guides behaviour but must never appear in a customer reply (D-013).
+- Attachments: the brain sees metadata only (type, filename, page count), never file contents (D-010).
+- Pasted text meant for printing must not be answered, even if it contains questions (D-002).
+- Reply in the customer's language; the KB stays in English (D-018).
+- Nothing business-specific in code; it belongs in `kb/` or config (D-001).
+- Every future database table carries a `business_id` (D-006).
 
 ## Data rules
 
 - Never read, modify, copy or commit anything in `eval/real/`. It contains real customer messages and is gitignored.
-- Never commit `.env` or put API keys in code.
+- Never commit `.env` or put API keys in code. `.env.example` lists required variables with empty values and is committed.
 
-## Layout
+## Project files: propose first, then change
 
-- `kb/`: business knowledge bases (markdown)
-- `prompts/`: LLM prompts, kept as files so changes show up in git diffs
-- `eval/`: evaluation cases (`questions.jsonl`, synthetic only) and scoring scripts
+You may suggest changes to `kb/`, `eval/questions.jsonl`, `DECISIONS.md` and `README.md` whenever you see a reason (a vague KB entry, a mislabelled or missing eval case, a new decision). **Always ask me before editing them.** Show the exact proposed change and why.
+
+- For `DECISIONS.md`, write the full entry ready to paste, using the template at the bottom of the file and the next free number.
+- KB and eval labels are linked: when a KB change would flip an eval case's expected action (e.g. `ask_owner` → `answer`), propose both changes together.
 
 ## How to work with me
 
-I'm building this to learn, not just to ship. So:
-- Explain what you're about to do and why before making non-trivial changes.
-- Prefer small, reviewable changes over large generated files.
-- When there are real design trade-offs, tell me the options and your recommendation instead of silently picking one.
-- If a change amounts to a new architectural decision, draft a `DECISIONS.md` entry for it.
+I don't write the code myself; you do. But I want to understand every concept and every line, so:
+- Before a step: explain the plan, the concepts involved, and why this approach over the alternatives.
+- After writing code: walk me through the important parts. Point out anything worth learning properly (patterns, library features, pitfalls).
+- Work one step at a time, in small reviewable changes. Wait for my OK before moving to the next step.
+- When there's a real trade-off, give me your recommendation and the reasoning; don't silently pick one.
 
 ## Stack
 
-Python, managed with `uv`. Planned later: FastAPI, Postgres, Telegram Bot API.
+- Python, managed with `uv`. Dependencies: `anthropic`, `pydantic`.
+- Development model: Claude Sonnet 5 (`claude-sonnet-5`). Later, compare against Haiku 4.5 using the eval.
+- The API key isn't set up yet. Until it is, make code runnable without it (e.g. a mock/dry-run mode for the brain) so the eval runner can be built and tested for free.
+
+## Layout
+
+- `kb/`: business knowledge bases (markdown, entries with IDs, visibility and status)
+- `prompts/`: LLM prompts, kept as files so changes show up in git diffs
+- `brain/`: schema and decision logic
+- `eval/`: `questions.jsonl` (synthetic, committed), scoring scripts, results

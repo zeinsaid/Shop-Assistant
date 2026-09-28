@@ -189,13 +189,24 @@ A running record of the significant choices made on this project: what was decid
 ---
 
 ## D-018 — Reply in the customer's language
-**Date:** 2026-09-28 · **Status:** Proposed
+**Date:** 2026-09-28 · **Status:** Accepted
 
 **Decision:** The bot replies in the language the customer used (English, Greek, or Greeklish → Greek or English, matching the customer's tone). The KB stays in English.
 
 **Why:** Many customers are Greek-speaking students; modern models translate reliably, so there's no reason to force English. Keeping one KB language avoids maintaining two copies.
 
 **Consequences:** Eval checks the reply language on the Greek and Greeklish cases. Supersedes "Greek support in a later phase" in D-012.
+
+---
+
+## D-019 — Decision schema: reasoning first, shape vs facts
+**Date:** 2026-09-28 · **Status:** Accepted
+
+**Decision:** The brain returns a `BrainDecision` with fields in this order: `reasoning`, `action`, `reply`, `cited_entries`, `question_for_owner`. The schema validates internal consistency (e.g. `ask_owner` requires `question_for_owner`, `no_reply` has no reply). Checks that need the KB (cited IDs exist, answers cite at least one entry) live in `brain.py`.
+
+**Why:** Reasoning first makes the model think before choosing an action and makes failed eval cases debuggable. Keeping KB-dependent checks out of the schema keeps it business-agnostic.
+
+**Consequences:** `reasoning` is logged but never shown to customers. Field descriptions are written as instructions to the model, since they become part of the prompt.
 
 ---
 
