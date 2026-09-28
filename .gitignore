@@ -1,0 +1,19 @@
+# Environment
+.env
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+.python-version
+
+# uv
+uv.lock
+
+# Real customer data — never committed
+eval/real/
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
