@@ -1,0 +1,154 @@
+import pytest
+from pydantic import ValidationError
+
+from brain.schema import Action, Attachment, BrainDecision, IncomingMessage
+
+
+def decision(**overrides) -> dict:
+    """A valid 'answer' decision, with fields overridden per test."""
+    base = {
+        "reasoning": "The KB covers this.",
+        "action": "answer",
+        "reply": "We're open 24/7.",
+        "cited_entries": ["shop-hours"],
+    }
+    return {**base, **overrides}
+
+
+# --- valid decisions, one per action -------------------------------------------------------
+
+
+def test_valid_answer():
+    d = BrainDecision(**decision())
+    assert d.action is Action.ANSWER
+    assert d.cited_entries == ["shop-hours"]
+    assert d.question_for_owner is None
+
+
+def test_valid_ask_owner_has_holding_reply_and_question():
+    d = BrainDecision(
+        reasoning="Not in the KB.",
+        action="ask_owner",
+        reply="Let me check with the team and get back to you.",
+        question_for_owner="Customer asks about X. Details so far: Y.",
+    )
+    assert d.action is Action.ASK_OWNER
+
+
+def test_valid_handoff_has_reply_but_no_question():
+    d = BrainDecision(reasoning="Complaint.", action="handoff", reply="A team member will take over.")
+    assert d.question_for_owner is None
+
+
+def test_valid_no_reply_has_nothing_to_send():
+    d = BrainDecision(reasoning="A file drop.", action="no_reply")
+    assert d.reply is None and d.question_for_owner is None and d.cited_entries == []
+
+
+# --- rules between fields ------------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    "fields",
+    [
+        {"action": "answer", "reply": None},  # answer needs a reply
+        {"action": "ask_owner", "reply": "Checking.", "question_for_owner": None},  # needs question
+        {"action": "ask_owner", "reply": None, "question_for_owner": "Q?"},  # needs holding reply
+        {"action": "handoff", "reply": None},  # handoff needs a hand-over message
+        {"action": "handoff", "reply": "Passing you on.", "question_for_owner": "Q?"},  # no question
+        {"action": "no_reply", "reply": "Hello", "cited_entries": []},  # no_reply has no reply
+        {"action": "no_reply", "reply": None, "question_for_owner": "Q?"},  # ...or question
+        {"action": "answer", "question_for_owner": "Q?"},  # question only with ask_owner
+    ],
+)
+def test_inconsistent_combinations_are_rejected(fields):
+    with pytest.raises(ValidationError):
+        BrainDecision(**decision(**fields))
+
+
+def test_blank_strings_count_as_missing():
+    d = BrainDecision(reasoning="A file drop.", action="no_reply", reply="  ", question_for_owner="")
+    assert d.reply is None and d.question_for_owner is None
+    with pytest.raises(ValidationError):  # a blank reply is no reply, so 'answer' fails
+        BrainDecision(**decision(reply="   "))
+
+
+# --- per-field checks ----------------------------------------------------------------------
+
+
+@pytest.mark.parametrize("reasoning", ["", "   "])
+def test_reasoning_must_not_be_blank(reasoning):
+    with pytest.raises(ValidationError):
+        BrainDecision(**decision(reasoning=reasoning))
+
+
+def test_unknown_action_is_rejected():
+    with pytest.raises(ValidationError):
+        BrainDecision(**decision(action="escalate"))
+
+
+def test_unknown_field_is_rejected():
+    with pytest.raises(ValidationError):
+        BrainDecision(**decision(confidence=0.9))
+
+
+def test_cited_entries_are_stripped_and_not_restricted_by_action():
+    d = BrainDecision(
+        reasoning="Internal rule applies.",
+        action="ask_owner",
+        reply="Checking.",
+        question_for_owner="Q?",
+        cited_entries=[" policy-discounts "],
+    )
+    assert d.cited_entries == ["policy-discounts"]
+
+
+def test_answer_without_citations_passes_the_schema():
+    # D-019: "must cite at least one existing entry" is enforced in brain.py, not here.
+    assert BrainDecision(**decision(cited_entries=[])).cited_entries == []
+
+
+# --- JSON in and out -----------------------------------------------------------------------
+
+
+def test_json_round_trip():
+    original = BrainDecision(**decision())
+    assert BrainDecision.model_validate_json(original.model_dump_json()) == original
+
+
+def test_action_serialises_as_plain_string():
+    assert '"action":"answer"' in BrainDecision(**decision()).model_dump_json()
+
+
+def test_json_schema_keeps_field_order_and_describes_every_field():
+    # The order is what makes "reasoning first" work (D-019); descriptions are prompt content.
+    properties = BrainDecision.model_json_schema()["properties"]
+    assert list(properties) == ["reasoning", "action", "reply", "cited_entries", "question_for_owner"]
+    assert all(p.get("description") for p in properties.values())
+
+
+# --- input models --------------------------------------------------------------------------
+
+
+def test_incoming_message_defaults():
+    m = IncomingMessage(text="hi")
+    assert m.attachments == []
+    assert IncomingMessage().text == ""
+
+
+def test_attachment_from_eval_style_dicts():
+    m = IncomingMessage(
+        text="2 copies colour pls",
+        attachments=[{"type": "pdf", "filename": "lab_report.pdf", "pages": 8}, {"type": "image", "filename": "a.jpg"}],
+    )
+    assert m.attachments[0].pages == 8 and m.attachments[1].pages is None
+
+
+def test_attachment_has_no_way_to_carry_file_contents():
+    with pytest.raises(ValidationError):  # D-010: metadata only
+        Attachment(type="pdf", filename="thesis.pdf", content="the whole thesis")
+
+
+def test_attachment_rejects_zero_pages():
+    with pytest.raises(ValidationError):
+        Attachment(type="pdf", filename="a.pdf", pages=0)
