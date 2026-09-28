@@ -1,17 +1,26 @@
 # Environment
 .env
+.env.*
+!.env.example
 
 # Python
 __pycache__/
 *.pyc
 .venv/
-.python-version
-
-# uv
-uv.lock
+*.egg-info/
+dist/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
 
 # Real customer data — never committed
 eval/real/
+
+# Eval run outputs (they echo message text)
+eval/results/
+
+# Claude Code local settings
+.claude/settings.local.json
 
 # Editors / OS
 .vscode/
