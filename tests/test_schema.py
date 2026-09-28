@@ -11,6 +11,7 @@ def decision(**overrides) -> dict:
         "action": "answer",
         "reply": "We're open 24/7.",
         "cited_entries": ["shop-hours"],
+        "question_for_owner": None,
     }
     return {**base, **overrides}
 
@@ -27,22 +28,35 @@ def test_valid_answer():
 
 def test_valid_ask_owner_has_holding_reply_and_question():
     d = BrainDecision(
-        reasoning="Not in the KB.",
-        action="ask_owner",
-        reply="Let me check with the team and get back to you.",
-        question_for_owner="Customer asks about X. Details so far: Y.",
+        **decision(
+            action="ask_owner",
+            reply="Let me check with the team and get back to you.",
+            cited_entries=[],
+            question_for_owner="Customer asks about X. Details so far: Y.",
+        )
     )
     assert d.action is Action.ASK_OWNER
 
 
 def test_valid_handoff_has_reply_but_no_question():
-    d = BrainDecision(reasoning="Complaint.", action="handoff", reply="A team member will take over.")
+    d = BrainDecision(
+        **decision(action="handoff", reply="A team member will take over.", cited_entries=[])
+    )
     assert d.question_for_owner is None
 
 
 def test_valid_no_reply_has_nothing_to_send():
-    d = BrainDecision(reasoning="A file drop.", action="no_reply")
+    d = BrainDecision(**decision(action="no_reply", reply=None, cited_entries=[]))
     assert d.reply is None and d.question_for_owner is None and d.cited_entries == []
+
+
+@pytest.mark.parametrize("missing", ["reply", "cited_entries", "question_for_owner"])
+def test_every_field_must_be_present_even_when_empty(missing):
+    # D-020: the model always writes all five keys, using null or [] when a field doesn't apply.
+    fields = decision(action="no_reply", reply=None, cited_entries=[])
+    del fields[missing]
+    with pytest.raises(ValidationError):
+        BrainDecision(**fields)
 
 
 # --- rules between fields ------------------------------------------------------------------
@@ -67,7 +81,9 @@ def test_inconsistent_combinations_are_rejected(fields):
 
 
 def test_blank_strings_count_as_missing():
-    d = BrainDecision(reasoning="A file drop.", action="no_reply", reply="  ", question_for_owner="")
+    d = BrainDecision(
+        **decision(action="no_reply", reply="  ", cited_entries=[], question_for_owner="")
+    )
     assert d.reply is None and d.question_for_owner is None
     with pytest.raises(ValidationError):  # a blank reply is no reply, so 'answer' fails
         BrainDecision(**decision(reply="   "))
@@ -122,9 +138,11 @@ def test_action_serialises_as_plain_string():
 
 def test_json_schema_keeps_field_order_and_describes_every_field():
     # The order is what makes "reasoning first" work (D-019); descriptions are prompt content.
-    properties = BrainDecision.model_json_schema()["properties"]
+    schema = BrainDecision.model_json_schema()
+    properties = schema["properties"]
     assert list(properties) == ["reasoning", "action", "reply", "cited_entries", "question_for_owner"]
     assert all(p.get("description") for p in properties.values())
+    assert schema["required"] == list(properties)  # every field required (D-020)
 
 
 # --- input models --------------------------------------------------------------------------

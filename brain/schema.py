@@ -42,6 +42,8 @@ class BrainDecision(BaseModel):
     """The brain's decision for one incoming customer message.
 
     Field order matters: the model writes them top to bottom, so `reasoning` comes first (D-019).
+    Every field is required: the model always writes all five keys, using null or [] when a field
+    doesn't apply (D-020).
     """
 
     model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
@@ -68,7 +70,6 @@ class BrainDecision(BaseModel):
         ),
     )
     reply: str | None = Field(
-        default=None,
         description=(
             "The message to send to the customer, in the customer's language. "
             "Required for 'answer'. "
@@ -80,18 +81,17 @@ class BrainDecision(BaseModel):
         ),
     )
     cited_entries: list[str] = Field(
-        default_factory=list,
         description=(
             "IDs of the knowledge-base entries your reply relies on, exactly as written in the "
             "knowledge base. An 'answer' must cite at least one. Use [] if nothing supports a reply."
         ),
     )
     question_for_owner: str | None = Field(
-        default=None,
         description=(
-            "Required for 'ask_owner', null otherwise. A self-contained question for the owner: "
-            "what the customer asked, plus any details already gathered from the customer, so the "
-            "owner can settle it in one reply."
+            "Required for 'ask_owner', null otherwise. A self-contained question for the owner, "
+            "always written in English whatever language the customer used: what the customer "
+            "asked, plus any details already gathered from the customer, so the owner can settle "
+            "it in one reply."
         ),
     )
 
