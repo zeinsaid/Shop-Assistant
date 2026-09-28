@@ -133,6 +133,72 @@ A running record of the significant choices made on this project: what was decid
 
 ---
 
+## D-013 — Knowledge entries are public or internal
+**Date:** 2026-09-28 · **Status:** Accepted
+
+**Decision:** Every KB entry is marked `public` (may be told to customers) or `internal` (guides behaviour, never revealed).
+
+**Why:** Staff deliberately keep some things unsaid: free binding on larger orders is presented as a gift, and outsourcing and supplier details are private.
+
+**Consequences:** Internal content never appears in replies. Eval needs cases that try to extract internal info ("do you get binding free if I spend enough?").
+
+---
+
+## D-014 — Pricing: totals for simple jobs, calculator later
+**Date:** 2026-09-28 · **Status:** Accepted
+
+**Decision:** The bot gives estimated totals for simple jobs (one service, known quantity, size and colour), asks for missing details when a job is underspecified, and gives ranges for custom work. Once the real price book is in, a deterministic price calculator will be built and exposed to the bot as a tool.
+
+**Why:** Staff routinely quote simple totals, so rates-only replies would be less helpful than a human. But LLM arithmetic is unreliable across tiers and surcharges.
+
+**Consequences:** Eval includes arithmetic cases (tiers, per-page double-sided, paper surcharges, double-sided business cards). Failures there are the evidence for when the calculator becomes a priority.
+
+---
+
+## D-015 — ask_owner vs handoff
+**Date:** 2026-09-28 · **Status:** Accepted
+
+**Decision:**
+- `ask_owner`: the owner can resolve it with a reply (information or a decision). The bot stays in the conversation and relays the answer. The owner chooses Save / Edit / Just this once (D-004).
+- `handoff`: a person needs to take over or physically do something (complaints, refunds, negotiation, checking an order or a lost item). The bot goes silent in that conversation.
+
+**Why:** A clear test for labelling eval cases and for the brain's decision. Keeps the owner from being pulled into full conversations when one reply would do.
+
+---
+
+## D-016 — Collect details before escalating
+**Date:** 2026-09-28 · **Status:** Accepted
+
+**Decision:** For custom or bulk quotes, the bot first asks the customer for the details staff would need anyway (quantity, size, design, colours, sides, paper, deadline), then escalates with those details included.
+
+**Why:** Staff would ask these questions before quoting anyway. Collecting them first means the owner can answer in one reply instead of a back-and-forth.
+
+**Consequences:** Some behaviour spans several turns. The eval set needs multi-turn cases before phase 3.
+
+---
+
+## D-017 — Stationery stock is a separate data source
+**Date:** 2026-09-28 · **Status:** Proposed
+
+**Decision:** Stationery availability comes from a stock list exported from the shop's system, kept separate from the knowledge base. Until then, the KB lists stationery categories and the bot says "we usually stock…". Specific brands/models or exact quantities use `ask_owner`.
+
+**Why:** Prices change occasionally; stock changes daily. Mixing them would make the KB go stale quickly.
+
+**Consequences:** Needs a refresh process for the stock list (manual export in v1). Matching must handle loose names ("empty book" → notebook).
+
+---
+
+## D-018 — Reply in the customer's language
+**Date:** 2026-09-28 · **Status:** Proposed
+
+**Decision:** The bot replies in the language the customer used (English, Greek, or Greeklish → Greek or English, matching the customer's tone). The KB stays in English.
+
+**Why:** Many customers are Greek-speaking students; modern models translate reliably, so there's no reason to force English. Keeping one KB language avoids maintaining two copies.
+
+**Consequences:** Eval checks the reply language on the Greek and Greeklish cases. Supersedes "Greek support in a later phase" in D-012.
+
+---
+
 ## Template
 
 ```
