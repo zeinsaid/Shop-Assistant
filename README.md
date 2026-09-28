@@ -4,7 +4,7 @@ An AI receptionist for small businesses. It answers customer questions from a kn
 
 The first deployment is The Plug Business Center, a print shop next to the University of Nicosia, Cyprus. Most of its customers are students asking about small print jobs over chat. The core is business-agnostic: everything print-specific lives in the knowledge base and config, not in code.
 
-> **Status:** Early development. Architecture and evaluation set in progress; no runnable code yet.
+> **Status:** Phase 2 in progress. Knowledge base, evaluation set and decisions log are done; the brain is being built (output schema first). No backend, database or UI yet.
 
 ---
 
@@ -27,8 +27,8 @@ Three rules keep this reliable:
 
 ## Roadmap
 
-1. **Evaluation set:** ~50 labelled customer messages (real, anonymized, plus hard synthetic cases) to measure the bot against.
-2. **The brain:** knowledge base + prompt + structured output, tested against the evaluation set. No UI.
+1. **Evaluation set (done):** 100 labelled synthetic customer messages, including hard cases (typos, Greek and Greeklish, pasted text, discount manipulation). Real anonymized messages stay on the owner's machine.
+2. **The brain (in progress):** knowledge base + prompt + structured output, tested against the evaluation set. No UI.
 3. **The loop:** backend, database, conversation states, and the owner channel (Telegram), including approve-and-save learning.
 4. **Ship it:** web chat widget live on The Plug's website.
 5. **Grow it:** knowledge-base admin page, WhatsApp / Viber / email, English + Greek, support for other businesses.
@@ -37,14 +37,27 @@ Three rules keep this reliable:
 
 Python · FastAPI · Postgres · Telegram Bot API (owner channel) · web chat widget (customer channel) · Railway or Render for hosting
 
-## Repository layout (planned)
+## Repository layout
 
 ```
 ├── DECISIONS.md      # Log of architecture decisions and the reasoning behind them
 ├── kb/               # Business knowledge bases (markdown)
-├── eval/             # Evaluation cases and scoring scripts
-└── app/              # Backend (coming in phase 3)
+├── prompts/          # LLM prompts, kept as files so changes show up in diffs
+├── brain/            # Output schema and decision logic
+├── eval/             # Evaluation cases and scoring scripts (see eval/README.md)
+├── tests/            # pytest tests
+├── pyproject.toml    # Dependencies, managed with uv
+└── app/              # Backend (planned, phase 3)
 ```
+
+## Development
+
+```
+uv sync          # install dependencies
+uv run pytest    # run the tests (no API key needed)
+```
+
+Copy `.env.example` to `.env` and fill in `ANTHROPIC_API_KEY` once you have one.
 
 ## Design decisions
 

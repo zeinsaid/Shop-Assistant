@@ -32,13 +32,14 @@ A running record of the significant choices made on this project: what was decid
 - The brain must first decide whether the customer is talking *to us* or sending *content to print*. Pasted text that contains questions must not be answered.
 - Mixed messages (file + question) → answer the question, ignore the file.
 - `no_reply` messages are still logged for staff. An optional auto-acknowledgement ("Got it, the team will confirm shortly") will be an owner setting, not hardcoded.
+- Pleasantries ("thanks!", "bye") are not print submissions. They are answered from the KB entry `shop-greeting`, which covers greetings, thanks and goodbyes. `no_reply` is reserved for material submitted for staff.
 
 ---
 
 ## D-003 — Answers must cite the knowledge base
 **Date:** 2026-09-28 · **Status:** Accepted
 
-**Decision:** The LLM returns structured output (`action`, `reply`, `cited_entries`, `question_for_owner`). An `answer` is only allowed if it cites at least one knowledge-base entry; otherwise the code forces `ask_owner`.
+**Decision:** The LLM returns structured output (`action`, `reply`, `cited_entries`, `question_for_owner`; extended with `reasoning` by D-019). An `answer` is only allowed if it cites at least one knowledge-base entry; otherwise the code forces `ask_owner`.
 
 **Why:** LLM self-reported confidence is unreliable. Requiring citations makes "does the bot know this?" checkable by code, and makes invented answers visible in evaluation.
 
@@ -51,7 +52,7 @@ A running record of the significant choices made on this project: what was decid
 
 **Why:** Owner answers mix general facts ("spiral binding is €2") with one-off quotes ("€18 for this thesis"). Saving everything blindly would fill the knowledge base with junk.
 
-**Consequences:** Prices are stored as rules and ranges, since The Plug's pricing is flexible by job complexity. Knowledge entries carry a date so stale ones can be reviewed.
+**Consequences:** Prices are stored as rules and ranges, since The Plug's pricing is flexible by job complexity. Knowledge entries carry a date so stale ones can be reviewed. Until learned entries exist (phase 3), the KB only has a file-level `last_reviewed` date; per-entry dates are added when the first learned entry is created.
 
 ---
 
@@ -116,16 +117,16 @@ A running record of the significant choices made on this project: what was decid
 ## D-011 — Evaluation set before code
 **Date:** 2026-09-28 · **Status:** Accepted
 
-**Decision:** Build `eval/questions.jsonl` (~50 cases, each labelled with `expected_action`) before writing the bot. Sources: real messages from The Plug's WhatsApp (anonymized: names, phone numbers and emails removed) plus deliberately difficult synthetic cases (typos, Greek/English mix, pasted text containing questions, discount manipulation), tagged `"source": "synthetic"`.
+**Decision:** Build `eval/questions.jsonl` (started at ~50 cases, now 100, each labelled with `expected_action`) before writing the bot. Sources: real messages from The Plug's WhatsApp (anonymized: names, phone numbers and emails removed) plus deliberately difficult synthetic cases (typos, Greek/English mix, pasted text containing questions, discount manipulation), tagged `"source": "synthetic"`.
 
 **Why:** The eval set is the project's test suite; every prompt change is re-run against it. Key metric: invented answers (should be zero), followed by correct action choice.
 
-**Consequences:** The knowledge base (`kb/the-plug.md`) deliberately leaves some gaps so `ask_owner` behaviour can be tested.
+**Consequences:** The knowledge base (`kb/the-plug.md`) deliberately leaves some gaps so `ask_owner` behaviour can be tested. Cases can also carry machine-checkable rules: `must_not_contain` (phrases that must never appear in the reply) and `expected_language` (see `eval/README.md`), so "invented answers should be zero" can be scored by code.
 
 ---
 
 ## D-012 — Deferred scope
-**Date:** 2026-09-28 · **Status:** Accepted
+**Date:** 2026-09-28 · **Status:** Accepted (Greek-language support superseded by D-018)
 
 **Decision:** Not in v1: inventory and reordering, supplier price comparison, voice/phone receptionist, admin dashboard for knowledge editing, Greek-language support (English + Greek planned for a later phase).
 
@@ -138,7 +139,7 @@ A running record of the significant choices made on this project: what was decid
 
 **Decision:** Every KB entry is marked `public` (may be told to customers) or `internal` (guides behaviour, never revealed).
 
-**Why:** Staff deliberately keep some things unsaid: free binding on larger orders is presented as a gift, and outsourcing and supplier details are private.
+**Why:** Staff deliberately keep some things unsaid: free binding on larger orders is presented as a gift, and supplier details are private. (Outsourcing is not fully secret; see D-021.)
 
 **Consequences:** Internal content never appears in replies. Eval needs cases that try to extract internal info ("do you get binding free if I spend enough?").
 
@@ -163,6 +164,8 @@ A running record of the significant choices made on this project: what was decid
 - `handoff`: a person needs to take over or physically do something (complaints, refunds, negotiation, checking an order or a lost item). The bot goes silent in that conversation.
 
 **Why:** A clear test for labelling eval cases and for the brain's decision. Keeps the owner from being pulled into full conversations when one reply would do.
+
+**Clarification (D-020):** on the `handoff` turn the bot still sends one short hand-over message. Silence applies from the next message on.
 
 ---
 
@@ -207,6 +210,32 @@ A running record of the significant choices made on this project: what was decid
 **Why:** Reasoning first makes the model think before choosing an action and makes failed eval cases debuggable. Keeping KB-dependent checks out of the schema keeps it business-agnostic.
 
 **Consequences:** `reasoning` is logged but never shown to customers. Field descriptions are written as instructions to the model, since they become part of the prompt.
+
+---
+
+## D-020 — Schema details: replies on escalation, strictness, input model
+**Date:** 2026-09-28 · **Status:** Accepted
+
+**Decision:**
+- `ask_owner` and `handoff` both carry a customer-facing `reply`: a short holding message ("let me check and get back to you") and a short hand-over message. `no_reply` has none. `question_for_owner` is required for `ask_owner` and forbidden otherwise.
+- `cited_entries` is not restricted by action. An extra citation on a non-answer (for example the internal rule that triggered escalation) is not an error; the eval compares citations on `answer` cases only.
+- `Action` is a `StrEnum`; blank strings for `reply` and `question_for_owner` count as null; unknown fields are rejected.
+- The brain's input model (`IncomingMessage`: text plus attachment metadata) lives in `brain/schema.py`. `Attachment` has no content field, so D-010 holds by construction.
+
+**Why:** The model writes replies in the customer's language (D-018), so code can't template holding or hand-over messages. Leaving a customer without any response on the handoff turn is worse than a short acknowledgement. Rejecting harmless extras would cost retries for no gain. Models often write `""` instead of null.
+
+**Consequences:** Refines D-015 (see its clarification). When `brain.py` forces an uncited `answer` to `ask_owner` (D-003), it must also produce the holding reply and the question for the owner, either by re-calling the model or building them in code. To be decided in step 3.
+
+---
+
+## D-021 — Outsourcing may be disclosed, but isn't volunteered
+**Date:** 2026-09-28 · **Status:** Accepted
+
+**Decision:** Some items (hardcovers, DTF shirt prints) are made with an external partner. The bot never brings this up itself. If a customer asks who makes an item, or why it takes longer or can't be done the same day, it may say so. Partner names, links and prices are never shared, and the bot never claims an outsourced item is made in-house.
+
+**Why:** Staff already explain this when a rush job needs justifying, and dodging or denying a direct question would mean misleading the customer. Volunteering it adds nothing. Alternatives rejected: keeping it fully secret (forces evasive or false answers) and disclosing it freely (noise, and it invites questions about suppliers).
+
+**Consequences:** The KB splits this into a `public` entry stating the fact (`outsourcing`) and `internal` entries telling the bot when it may be said (`hardcover-sourcing`, `merch-shirts-sourcing`). D-013 stays intact: internal entries are still never revealed. Eval covers both directions: `must_not_contain` on unasked cases (q015, q028, q045), and disclosure allowed when asked (q055, q096, q097).
 
 ---
 

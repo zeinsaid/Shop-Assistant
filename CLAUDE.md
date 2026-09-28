@@ -54,7 +54,7 @@ I don't write the code myself; you do. But I want to understand every concept an
 
 ## Stack
 
-- Python, managed with `uv`. Dependencies: `anthropic`, `pydantic`.
+- Python, managed with `uv`. Dependencies: `anthropic`, `pydantic`; dev: `pytest`. Run tests with `uv run pytest`.
 - Development model: Claude Sonnet 5 (`claude-sonnet-5`). Later, compare against Haiku 4.5 using the eval.
 - The API key isn't set up yet. Until it is, make code runnable without it (e.g. a mock/dry-run mode for the brain) so the eval runner can be built and tested for free.
 
@@ -63,4 +63,6 @@ I don't write the code myself; you do. But I want to understand every concept an
 - `kb/`: business knowledge bases (markdown, entries with IDs, visibility and status)
 - `prompts/`: LLM prompts, kept as files so changes show up in git diffs
 - `brain/`: schema and decision logic
-- `eval/`: `questions.jsonl` (synthetic, committed), scoring scripts, results
+- `tests/`: pytest tests (schema, and sanity checks on the eval file)
+- `eval/`: `questions.jsonl` (synthetic, committed), scoring scripts, and `eval/README.md` (case format)
+- `eval/results/`: run outputs, gitignored because they echo message text. Results of runs on real cases go inside `eval/real/`, never anywhere committed.

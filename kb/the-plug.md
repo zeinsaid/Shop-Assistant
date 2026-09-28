@@ -86,7 +86,7 @@ We can provide receipts and invoices, for example for students claiming expenses
 ### shop-greeting
 **Visibility:** public · **Status:** confirmed
 
-For greetings and small talk ("hi", "hello", "good evening"), greet the customer back briefly and ask how we can help.
+For greetings and small talk ("hi", "hello", "good evening"), greet the customer back briefly and ask how we can help. For thanks and goodbyes ("thanks!", "bye"), reply briefly and warmly without asking a new question.
 
 ### scope-general
 **Visibility:** public · **Status:** confirmed
@@ -126,10 +126,15 @@ Before escalating a quote for a custom or bulk job to the owner, first collect t
 
 We don't share supplier names, supplier prices or other internal business details.
 
+### outsourcing
+**Visibility:** public · **Status:** confirmed
+
+Some items, such as hardcover binding and DTF shirt prints, are made with an external partner, which is why they take longer than jobs we do in the shop. We don't share partner names, links or prices.
+
 ### policy-we-try
 **Visibility:** internal · **Status:** confirmed
 
-For requests not covered here (unusual paper, a customer's own paper, banners, items we don't make in-house), never say no. Tell the customer we'll check and get back to them, and use `ask_owner`. Never mention outsourcing.
+For requests not covered here (unusual paper, a customer's own paper, banners, items we don't make in-house), never say no. Tell the customer we'll check and get back to them, and use `ask_owner`. Don't bring up outsourcing yourself.
 
 ---
 
@@ -143,22 +148,22 @@ Printing is charged per printed page, not per sheet. A double-sided sheet counts
 ### print-a4-bw
 **Visibility:** public · **Status:** placeholder
 
-A4 black & white: €0.20 per page for up to 10 pages, €0.10 per page above 10 pages, and down to around €0.08–0.09 per page for very large jobs (200–300+ pages).
+A4 black & white: €0.20 per page for jobs of up to 10 pages, €0.10 per page for jobs of more than 10 pages, and down to around €0.08–0.09 per page for very large jobs (200–300+ pages). The rate depends on the total size of the job and applies to every page in it (for example, a 100-page job is 100 × €0.10 = €10).
 
 ### print-a4-colour
 **Visibility:** public · **Status:** placeholder
 
-A4 colour: €0.50 per page for up to 10 pages, €0.40 per page above 10 pages, €0.30 per page above 50 pages.
+A4 colour: €0.50 per page for jobs of up to 10 pages, €0.40 per page for jobs of more than 10 pages, €0.30 per page for jobs of more than 50 pages. The rate depends on the total size of the job and applies to every page in it (for example, a 120-page job is 120 × €0.30 = €36).
 
 ### print-a3-bw
 **Visibility:** public · **Status:** placeholder
 
-A3 black & white: from €0.50 per page for small quantities, down to around €0.30–0.40 per page for large quantities.
+A3 black & white: from €0.50 per page for small quantities, down to around €0.30–0.40 per page for large quantities. The rate depends on the total quantity and applies to every page in the job.
 
 ### print-a3-colour
 **Visibility:** public · **Status:** placeholder
 
-A3 colour: from €1.00 per page for small quantities, down to around €0.60 per page for large quantities.
+A3 colour: from €1.00 per page for small quantities, down to around €0.60 per page for large quantities. The rate depends on the total quantity and applies to every page in the job.
 
 ---
 
@@ -169,7 +174,7 @@ A3 colour: from €1.00 per page for small quantities, down to around €0.60 pe
 
 Besides plain paper, we print A4 and A3 on thicker paper up to 300gsm (glossy or matte), plus specialty papers such as tracing paper and coloured paper.
 
-Special paper adds €0.30–0.50 per sheet on top of the normal per-page printing price. Example: 10 single-sided black & white pages at €0.10 each, plus a €0.40 paper surcharge per sheet, comes to €0.50 per sheet, so €5.00 in total.
+Special paper adds €0.30–0.50 per sheet on top of the normal per-page printing price. Example: 20 single-sided black & white pages at €0.10 each, plus a €0.40 paper surcharge per sheet, comes to €0.50 per sheet, so €10.00 in total.
 
 ---
 
@@ -245,7 +250,7 @@ We make hardcover bound books. The hardcover costs around €30 on top of the no
 ### hardcover-sourcing
 **Visibility:** internal · **Status:** confirmed
 
-Hardcovers are outsourced. Don't mention this to customers.
+Hardcovers are outsourced. Don't bring this up yourself. If the customer asks who makes them, or why they take longer or can't be done the same day, you may say they're made with an external partner (see `outsourcing`). Never give partner names, links or prices, and never claim we make them in-house.
 
 ---
 
@@ -321,7 +326,7 @@ For bulk shirt orders, we'll need a few details before giving a quote: how many 
 ### merch-shirts-sourcing
 **Visibility:** internal · **Status:** confirmed
 
-DTF prints are outsourced and then heat-pressed in the shop. Don't mention outsourcing to customers. The exact bulk discount for 10+ shirts is decided by staff.
+DTF prints are outsourced and then heat-pressed in the shop. Don't bring outsourcing up yourself. If the customer asks who makes them, or why they take longer or can't be done the same day, you may say the print is made with an external partner and finished in the shop (see `outsourcing`). Never give partner names, links or prices, and never claim they're made in-house. The exact bulk discount for 10+ shirts is decided by staff.
 
 ---
 
