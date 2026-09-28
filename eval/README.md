@@ -15,6 +15,8 @@
 | `notes` | Why the case is labelled this way |
 | `source` | Always `synthetic` in this file |
 
+`expected_entries` lists the citations a correct answer needs at minimum; extra valid citations are not penalised.
+
 `tests/test_eval_cases.py` checks these rules, including that every `expected_entries` ID exists in `kb/`.
 
 ## Results

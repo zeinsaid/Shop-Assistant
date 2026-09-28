@@ -27,7 +27,7 @@ Three rules keep this reliable:
 
 ## Roadmap
 
-1. **Evaluation set (done):** 100 labelled synthetic customer messages, including hard cases (typos, Greek and Greeklish, pasted text, discount manipulation). Real anonymized messages stay on the owner's machine.
+1. **Evaluation set (done):** about 100 labelled synthetic customer messages, including hard cases (typos, Greek and Greeklish, pasted text, discount manipulation). No real messages are used: most of the shop's real chat traffic is files to print, and the rest is covered by the synthetic cases.
 2. **The brain (in progress):** knowledge base + prompt + structured output, tested against the evaluation set. No UI.
 3. **The loop:** backend, database, conversation states, and the owner channel (Telegram), including approve-and-save learning.
 4. **Ship it:** web chat widget live on The Plug's website.
@@ -65,4 +65,4 @@ Every significant choice, and why it was made, is recorded in [DECISIONS.md](DEC
 
 ## Data and privacy
 
-Real customer messages are anonymized (names, phone numbers and emails removed) and are not committed to this repository. Committed evaluation cases are synthetic or fully rewritten.
+The committed evaluation set is fully synthetic. If real customer messages are ever used, they stay local in the gitignored `eval/real/` folder, anonymized (names, phone numbers and emails removed), and are never committed.

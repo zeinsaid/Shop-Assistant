@@ -103,6 +103,8 @@ A running record of the significant choices made on this project: what was decid
 
 **Why:** Telegram's bot API is free and quick to set up; WhatsApp Business API needs Meta verification and has messaging-window rules. A single internal format means the brain never cares where a message came from.
 
+**Update:** the brain doesn't care about the channel, but its behaviour can differ per channel; see D-024.
+
 ---
 
 ## D-010 — File contents never go to the LLM
@@ -122,6 +124,8 @@ A running record of the significant choices made on this project: what was decid
 **Why:** The eval set is the project's test suite; every prompt change is re-run against it. Key metric: invented answers (should be zero), followed by correct action choice.
 
 **Consequences:** The knowledge base (`kb/the-plug.md`) deliberately leaves some gaps so `ask_owner` behaviour can be tested. Cases can also carry machine-checkable rules: `must_not_contain` (phrases that must never appear in the reply) and `expected_language` (see `eval/README.md`), so "invented answers should be zero" can be scored by code.
+
+**Update:** no real cases will be added. About 99% of the shop's WhatsApp traffic is files to print, and the remaining 1% (greetings, opening hours, simple prices) is already covered by synthetic cases, so the eval set is synthetic-only. Note that real WhatsApp traffic is mostly file drops, so `no_reply` accuracy matters more in production than its share of the eval suggests; consider adding more `no_reply` variety later.
 
 ---
 
@@ -176,7 +180,9 @@ A running record of the significant choices made on this project: what was decid
 
 **Why:** Staff would ask these questions before quoting anyway. Collecting them first means the owner can answer in one reply instead of a back-and-forth.
 
-**Consequences:** Some behaviour spans several turns. The eval set needs multi-turn cases before phase 3.
+**Consequences:** Some behaviour spans several turns. The eval set needs multi-turn cases before phase 3 (see D-023).
+
+**Update:** the KB now has `details-*` entries (and `merch-shirts-bulk`) listing what to ask for each kind of job. Asking the customer for missing details is an `answer` that cites them, so D-003 (every answer cites the KB) still holds. Once the details are in, the bot uses `ask_owner`.
 
 ---
 
@@ -219,12 +225,14 @@ A running record of the significant choices made on this project: what was decid
 **Decision:**
 - `ask_owner` and `handoff` both carry a customer-facing `reply`: a short holding message ("let me check and get back to you") and a short hand-over message. `no_reply` has none. `question_for_owner` is required for `ask_owner` and forbidden otherwise.
 - `cited_entries` is not restricted by action. An extra citation on a non-answer (for example the internal rule that triggered escalation) is not an error; the eval compares citations on `answer` cases only.
+- All five fields are required: the model always writes every key, using `null` or `[]` when a field doesn't apply.
+- `question_for_owner` is always written in English, whatever language the customer used (the KB and the owner side are English).
 - `Action` is a `StrEnum`; blank strings for `reply` and `question_for_owner` count as null; unknown fields are rejected.
 - The brain's input model (`IncomingMessage`: text plus attachment metadata) lives in `brain/schema.py`. `Attachment` has no content field, so D-010 holds by construction.
 
 **Why:** The model writes replies in the customer's language (D-018), so code can't template holding or hand-over messages. Leaving a customer without any response on the handoff turn is worse than a short acknowledgement. Rejecting harmless extras would cost retries for no gain. Models often write `""` instead of null.
 
-**Consequences:** Refines D-015 (see its clarification). When `brain.py` forces an uncited `answer` to `ask_owner` (D-003), it must also produce the holding reply and the question for the owner, either by re-calling the model or building them in code. To be decided in step 3.
+**Consequences:** Refines D-015 (see its clarification). When the model returns an `answer` with no valid citation, `brain.py` enforces D-003 like this: one corrective retry (tell the model its answer cited nothing valid and it must cite or choose another action). If that still fails, code forces `ask_owner` with `question_for_owner` set to the customer's original message, and a fixed bilingual holding reply ("Let me check with the team and get back to you. / Θα ελέγξω με την ομάδα και θα σας απαντήσω."). The fallback should be rare, and eval runs should count how often it fires.
 
 ---
 
@@ -236,6 +244,45 @@ A running record of the significant choices made on this project: what was decid
 **Why:** Staff already explain this when a rush job needs justifying, and dodging or denying a direct question would mean misleading the customer. Volunteering it adds nothing. Alternatives rejected: keeping it fully secret (forces evasive or false answers) and disclosing it freely (noise, and it invites questions about suppliers).
 
 **Consequences:** The KB splits this into a `public` entry stating the fact (`outsourcing`) and `internal` entries telling the bot when it may be said (`hardcover-sourcing`, `merch-shirts-sourcing`). D-013 stays intact: internal entries are still never revealed. Eval covers both directions: `must_not_contain` on unasked cases (q015, q028, q045), and disclosure allowed when asked (q055, q096, q097).
+
+---
+
+## D-022 — Model choice is decided by the eval, behind a provider seam
+**Date:** 2026-09-28 · **Status:** Accepted
+
+**Decision:** The brain calls the LLM through a thin interface so providers can be swapped without touching decision logic. Development starts on Claude Sonnet 5 as the reference model. Once the eval runner exists (step 4), it compares a shortlist on the same cases: Claude Sonnet 5, GPT-6 Sol, GPT-6 Luna and Gemini 3.5 Flash-Lite. The cheapest model that matches the best on the safety metrics (zero invented answers, zero internal leaks, correct action) wins. Claude Haiku 4.5 is dropped from the plan.
+
+**Why:** Research on Sept 2026 list prices and Artificial Analysis general indices (secondary sources; figures may lag) found no provider clearly better for this job:
+- Sonnet 5 and GPT-6 Sol cost the same per token ($2 / $10 per million), and Sol and Gemini 3.8 Flash score higher on the general index.
+- The small models from OpenAI and Google (GPT-6 Luna, Gemini 3.5 Flash-Lite) are 3-20x cheaper per token than Haiku 4.5 and score at least as high, so Haiku has no role.
+- No independent benchmark covers what this bot depends on: staying grounded in a provided KB, never leaking internal entries, Greek, following policy rules. General indices don't predict those, and our own eval measures exactly them.
+- At the expected volume (hundreds to a few thousand messages a month, about 6k input tokens each), even the priciest candidate costs roughly $7-35 a month, so quality outweighs cost.
+
+The research was done by a Claude model, so the plan is built so the eval, not the recommendation, decides.
+
+**Consequences:** `openai` and `google-genai` are added only when the bake-off happens, along with a key per provider in `.env.example`. `BrainDecision` is provider-neutral: each adapter uses its provider's structured-output feature and we validate with Pydantic; provider limits on JSON-schema features may constrain the schema. Before going live: check data-protection terms (GDPR, EU data residency, DPA) for the chosen provider, and re-check prices (Gemini 3.8 Flash doubles on 2027-01-01).
+
+---
+
+## D-023 — Multi-turn conversations: history goes to the brain
+**Date:** 2026-09-28 · **Status:** Proposed
+
+**Decision:** The brain is still called once per incoming customer message, but with the conversation so far. `IncomingMessage` gains `history`: an ordered list of earlier turns, each with a `role` (`customer`, `bot` or `owner`) and `text`. Eval cases gain an optional `history` field; `message` stays the customer's latest message.
+
+**Why:** Follow-ups like "yes, colour please" can't be understood alone, and D-016 (collect details first, then escalate) only works across turns.
+
+**Consequences:** Deferred to the start of phase 3, together with writing the multi-turn eval cases; single-message cases keep working because `history` is optional. Open questions: how owner replies appear in history, a cap on how many turns to include, how `waiting_on_owner` (D-005) interacts, and how detail collection is scored across turns.
+
+---
+
+## D-024 — Behaviour can differ per channel: `no_reply` is optional
+**Date:** 2026-09-28 · **Status:** Proposed
+
+**Decision:** `no_reply` can be switched off per deployment. On WhatsApp, where most traffic is files to print, it stays essential. On the website chat, everything a customer types is addressed to the bot, so it must always reply, and a pasted text or attached file gets a helpful answer (for example how to send files, `shop-sending-files`).
+
+**Why:** The owner plans a web version where a silent bot would look broken. The four actions and the schema stay the same, so this is a setting, not a fork.
+
+**Consequences:** The brain takes a per-channel setting (for instance `allow_no_reply`). When false, the prompt omits `no_reply` and `brain.py` rejects or retries it. Eval cases will need a channel tag, since the `no_reply` cases only apply to the WhatsApp setting and the web version needs its own expectation for those messages.
 
 ---
 

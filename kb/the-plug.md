@@ -119,7 +119,7 @@ Staff sometimes lower prices for large or labour-heavy jobs (for example large m
 ### policy-collect-details
 **Visibility:** internal · **Status:** confirmed
 
-Before escalating a quote for a custom or bulk job to the owner, first collect the details staff would need anyway (quantity, size, design, colours, sides, paper, deadline). Then use `ask_owner` with those details included, so the owner can answer in one reply.
+Before escalating a quote for a custom or bulk job to the owner, first collect the details staff would need anyway (quantity, size, design, colours, sides, paper, deadline). The `details-*` entries and `merch-shirts-bulk` list what to ask for each kind of job; asking the customer for them is an `answer` that cites those entries. Once you have the details, use `ask_owner` with those details included, so the owner can answer in one reply.
 
 ### policy-internal-info
 **Visibility:** public · **Status:** confirmed
@@ -129,12 +129,48 @@ We don't share supplier names, supplier prices or other internal business detail
 ### outsourcing
 **Visibility:** public · **Status:** confirmed
 
-Some items, such as hardcover binding and DTF shirt prints, are made with an external partner, which is why they take longer than jobs we do in the shop. We don't share partner names, links or prices.
+Some items, such as hardcover binding, DTF shirt prints and banners, are made with an external partner, which is why they take longer than jobs we do in the shop. We don't share partner names, links or prices.
+
+### policy-business-customers
+**Visibility:** internal · **Status:** confirmed
+
+Staff prefer to work with businesses and organisations directly rather than through the bot. If a business wants ongoing or recurring work, a contract, an account, or to negotiate a deal, don't quote or negotiate: use `handoff`. If a business wants a one-off job that is custom or bulk, collect the details (see `policy-collect-details`), then use `ask_owner`. A business that only wants a simple one-off order (one service, known quantity, size and colour) is treated like any other customer.
 
 ### policy-we-try
 **Visibility:** internal · **Status:** confirmed
 
 For requests not covered here (unusual paper, a customer's own paper, banners, items we don't make in-house), never say no. Tell the customer we'll check and get back to them, and use `ask_owner`. Don't bring up outsourcing yourself.
+
+---
+
+## Details we need for a quote
+
+Each kind of job needs different details before staff can price it. When a customer asks for a price and hasn't given them, ask for what's missing (see `policy-pricing-approach`). For shirts, see `merch-shirts-bulk`.
+
+### details-printing
+**Visibility:** public · **Status:** placeholder
+
+For a printing job we need: black & white or colour, paper size (A4, A3 or larger), number of pages and copies, single- or double-sided, the paper type if it's not plain, any finishing (binding, lamination), and when you need it.
+
+### details-large-format
+**Visibility:** public · **Status:** placeholder
+
+For posters and other large prints we need: the size (A2, A1 or A0), black & white or colour, paper weight, quantity, whether the file is ready to print or needs editing or design work, and when you need it.
+
+### details-booklets-binding
+**Visibility:** public · **Status:** placeholder
+
+For booklets, bound documents and hardcovers we need: number of pages, black & white or colour, paper, the type of cover (regular, thicker or hardcover), quantity, and when you need it.
+
+### details-stickers-cards
+**Visibility:** public · **Status:** placeholder
+
+For stickers we need: pre-cut or custom shape, number of sheets, and whether the design is ready. For business cards we need: quantity, single- or double-sided, and whether the design is ready.
+
+### details-editing
+**Visibility:** public · **Status:** placeholder
+
+For editing and design work we need: what should be done, the files or photos to work on, any examples you like, and when you need it. Staff quote the price once they've seen the job.
 
 ---
 
@@ -293,7 +329,7 @@ Photo prints on photo paper: €0.50 per print for 15×10 cm, €1.00 per print 
 ### photo-prints-bulk
 **Visibility:** internal · **Status:** placeholder
 
-For large photo orders, prices can go down to around €0.25 (15×10) and €0.80 (15×20). The exact bulk price is decided by staff; the bot says discounts are available and escalates.
+Orders of around 100 prints or fewer simply follow the normal per-print price in `photo-prints`. For much larger orders (hundreds of prints), prices can go down to around €0.25 (15×10) and €0.80 (15×20). The exact bulk price is decided by staff; for bulk orders the bot says discounts are available and escalates.
 
 ---
 
@@ -326,7 +362,7 @@ For bulk shirt orders, we'll need a few details before giving a quote: how many 
 ### merch-shirts-sourcing
 **Visibility:** internal · **Status:** confirmed
 
-DTF prints are outsourced and then heat-pressed in the shop. Don't bring outsourcing up yourself. If the customer asks who makes them, or why they take longer or can't be done the same day, you may say the print is made with an external partner and finished in the shop (see `outsourcing`). Never give partner names, links or prices, and never claim they're made in-house. The exact bulk discount for 10+ shirts is decided by staff.
+DTF prints are outsourced and then heat-pressed in the shop. Don't bring outsourcing up yourself. If the customer asks who makes them, or why they take longer or can't be done the same day, you may say the print is made with an external partner and finished in the shop (see `outsourcing`). Our partner needs at least 3 working days, so DTF prints can't be done sooner; explain that rather than escalating. Never give partner names, links or prices, and never claim they're made in-house. The exact bulk discount for 10+ shirts is decided by staff.
 
 ---
 

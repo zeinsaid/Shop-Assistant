@@ -14,7 +14,7 @@ An AI receptionist for small businesses. It answers customer questions from an o
 **Phase 1 (done):** knowledge base (`kb/the-plug.md`), labelled eval set (`eval/questions.jsonl`, 88 cases), decisions log.
 
 **Phase 2 (now): the brain.** In order:
-1. Output schema (`brain/schema.py`): a Pydantic `BrainDecision` (see D-019)
+1. Output schema (`brain/schema.py`): a Pydantic `BrainDecision` (see D-019, D-020). **Done.**
 2. Prompt (`prompts/brain.md`)
 3. Brain (`brain/brain.py`): loads the KB, calls the model, parses the decision, enforces KB-dependent rules in code
 4. Eval runner (`eval/run_eval.py`): runs every case, scores action accuracy and citation overlap, saves timestamped results for comparing runs
@@ -55,7 +55,7 @@ I don't write the code myself; you do. But I want to understand every concept an
 ## Stack
 
 - Python, managed with `uv`. Dependencies: `anthropic`, `pydantic`; dev: `pytest`. Run tests with `uv run pytest`.
-- Development model: Claude Sonnet 5 (`claude-sonnet-5`). Later, compare against Haiku 4.5 using the eval.
+- Development model: Claude Sonnet 5 (`claude-sonnet-5`) as the reference. The final model is chosen by the eval among a shortlist from several providers (D-022), so keep the LLM call behind a thin interface.
 - The API key isn't set up yet. Until it is, make code runnable without it (e.g. a mock/dry-run mode for the brain) so the eval runner can be built and tested for free.
 
 ## Layout
@@ -66,3 +66,16 @@ I don't write the code myself; you do. But I want to understand every concept an
 - `tests/`: pytest tests (schema, and sanity checks on the eval file)
 - `eval/`: `questions.jsonl` (synthetic, committed), scoring scripts, and `eval/README.md` (case format)
 - `eval/results/`: run outputs, gitignored because they echo message text. Results of runs on real cases go inside `eval/real/`, never anywhere committed.
+
+## Parked for later
+
+Things agreed but deliberately not done yet. Check this list before starting a new phase.
+
+- **Fill the KB placeholders** (17+ entries with `Status: placeholder`, including all `details-*` entries): real prices, lamination and passport-photo prices, contact details in `shop-sending-files`, and a banners entry. Then re-check the expected values of the eval cases that depend on them. The owner will do this much later.
+- **Multi-turn conversations** (D-023, Proposed): add `history` to `IncomingMessage` and write multi-turn eval cases at the start of phase 3.
+- **Per-channel `no_reply`** (D-024, Proposed): needed before the website chat goes live.
+- **Model bake-off** (D-022): needs API keys for each shortlisted provider; add `openai` and `google-genai` at step 4.
+- **Data protection check** (GDPR, EU data residency, DPA) for the chosen provider, before going live on the website.
+- **More `no_reply` variety in the eval**, since most real WhatsApp traffic is file drops (see D-011 update).
+- **API key:** the owner adds it to `.env` when it's needed; nothing before step 3 requires it.
+- **Rename** the local folder and GitHub repo from `Project` to `shop-assistant` (owner does it after ending a session).
