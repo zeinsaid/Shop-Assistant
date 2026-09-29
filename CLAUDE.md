@@ -21,6 +21,8 @@ An AI receptionist for small businesses. It answers customer questions from an o
 
 No backend, database or UI yet. Don't scaffold them unless asked.
 
+**Next session (2026-09-30):** the owner adds API keys to `.env`, then live testing starts: a 3-case smoke test per model (`--limit 3`) to confirm each API accepts the schema and caching works, then full runs of the D-022 shortlist, `eval.compare`, and going through failures (prompt fix, KB/label proposal, or model weakness). Re-check `eval/prices.json` first. After testing: multi-turn (D-023).
+
 ## Core rules (don't break these)
 
 - Every message gets exactly one action: `answer`, `ask_owner`, `handoff`, `no_reply` (D-002, D-015).
