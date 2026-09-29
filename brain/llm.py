@@ -125,3 +125,15 @@ class ScriptedClient:
             raise AssertionError("ScriptedClient ran out of responses")
         response = self._responses.pop(0)
         return response if isinstance(response, Completion) else Completion(response, "end_turn")
+
+
+# --- Choosing a client -------------------------------------------------------------------------
+
+
+def make_client(model: str, effort: str | None = "low") -> LLMClient:
+    """Pick the client for a model name. New providers are added here (D-022)."""
+    if model == "dry-run":
+        return DryRunClient()
+    if model.startswith("claude-"):
+        return AnthropicClient(model=model, effort=effort)
+    raise ValueError(f"no client for model '{model}' (supported: dry-run, claude-*)")

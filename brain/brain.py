@@ -56,6 +56,14 @@ class BrainResult:
     def output_tokens(self) -> int:
         return sum(a.completion.output_tokens for a in self.attempts)
 
+    @property
+    def cache_read_tokens(self) -> int:
+        return sum(a.completion.cache_read_tokens for a in self.attempts)
+
+    @property
+    def cache_write_tokens(self) -> int:
+        return sum(a.completion.cache_write_tokens for a in self.attempts)
+
 
 class Brain:
     def __init__(self, kb: KnowledgeBase, client: LLMClient, prompt: str | None = None):

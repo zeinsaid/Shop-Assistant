@@ -17,7 +17,7 @@ An AI receptionist for small businesses. It answers customer questions from an o
 1. Output schema (`brain/schema.py`): a Pydantic `BrainDecision` (see D-019, D-020). **Done.**
 2. Prompt (`prompts/brain.md`). **Done.**
 3. Brain (`brain/brain.py`, `kb.py`, `llm.py`): loads the KB, calls the model, parses the decision, enforces KB-dependent rules in code (D-025). **Done.** Try it with `uv run python -m brain --kb kb/the-plug.md "..."` (dry run by default).
-4. Eval runner (`eval/run_eval.py`): runs every case, scores action accuracy and citation overlap, saves timestamped results for comparing runs
+4. Eval runner (`eval/run_eval.py`, `scoring.py`, `compare.py`, `prices.json`): runs every case, scores it (D-027), saves timestamped results; `eval.compare` puts runs side by side. See `eval/README.md`.
 
 No backend, database or UI yet. Don't scaffold them unless asked.
 
@@ -65,7 +65,7 @@ I don't write the code myself; you do. But I want to understand every concept an
 - `prompts/`: LLM prompts, kept as files so changes show up in git diffs
 - `brain/`: `schema.py` (input and output models), `kb.py` (KB parser), `llm.py` (provider seam and clients), `brain.py` (decision flow), `__main__.py` (CLI)
 - `tests/`: pytest tests (schema, KB parser, brain flow, prompt, and sanity checks on the eval file)
-- `eval/`: `questions.jsonl` (synthetic, committed), scoring scripts, and `eval/README.md` (case format)
+- `eval/`: `questions.jsonl` (synthetic, committed), `run_eval.py` (runner), `scoring.py` (checks and summary), `compare.py` (runs side by side), `prices.json` (model prices), and `eval/README.md` (case format, commands, metrics)
 - `eval/results/`: run outputs, gitignored because they echo message text. Results of runs on real cases go inside `eval/real/`, never anywhere committed.
 
 ## Parked for later
@@ -75,10 +75,9 @@ Things agreed but deliberately not done yet. Check this list before starting a n
 - **Fill the KB placeholders** (17+ entries with `Status: placeholder`, including all `details-*` entries): real prices, lamination and passport-photo prices, contact details in `shop-sending-files`, and a banners entry. Then re-check the expected values of the eval cases that depend on them. The owner will do this much later.
 - **Multi-turn conversations** (D-023, Proposed): add `history` to `IncomingMessage` and write multi-turn eval cases at the start of phase 3.
 - **Per-channel `no_reply`** (D-024, Proposed): needed before the website chat goes live.
-- **Model bake-off** (D-022): needs API keys for each shortlisted provider; add `openai` and `google-genai` at step 4.
+- **Model bake-off** (D-022): the runner is ready. Still to do: `OpenAI` and `Gemini` clients in `brain/llm.py` (tested with fake SDKs like `AnthropicClient`), then API keys for each provider and one run per model.
 - **Data protection check** (GDPR, EU data residency, DPA) for the chosen provider, before going live on the website.
 - **More `no_reply` variety in the eval**, since most real WhatsApp traffic is file drops (see D-011 update).
 - **API key:** the owner adds it to `.env` when it's needed; nothing before step 3 requires it.
 - **Business-agnostic review, part 2** (D-026): once there's a working prototype, or a second business in view, revisit whether the actions, the `no_reply` idea, the owner/staff model and the KB format fit other kinds of business.
-- **Pending proposal:** add `fallback_reply:` (English + Greek) to the KB front matter. Until then the fallback reply is English only (D-026).
 - **Rename** the local folder and GitHub repo from `Project` to `shop-assistant` (owner does it after ending a session).

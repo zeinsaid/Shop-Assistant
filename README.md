@@ -4,7 +4,7 @@ An AI receptionist for small businesses. It answers customer questions from a kn
 
 The first deployment is The Plug Business Center, a print shop next to the University of Nicosia, Cyprus. Most of its customers are students asking about small print jobs over chat. The core is business-agnostic: everything print-specific lives in the knowledge base and config, not in code.
 
-> **Status:** Phase 2 in progress. Knowledge base, evaluation set, output schema, prompt and brain are built and tested without a model; the eval runner is next. No backend, database or UI yet.
+> **Status:** Phase 2 in progress. Knowledge base, evaluation set, output schema, prompt, brain and eval runner are built and tested without a model. Next: clients for other providers, then the first live runs. No backend, database or UI yet.
 
 ---
 
@@ -44,7 +44,7 @@ Python · FastAPI · Postgres · Telegram Bot API (owner channel) · web chat wi
 ├── kb/               # Business knowledge bases (markdown)
 ├── prompts/          # LLM prompts, kept as files so changes show up in diffs
 ├── brain/            # Schema, KB loader, model clients and decision logic (python -m brain)
-├── eval/             # Evaluation cases and scoring scripts (see eval/README.md)
+├── eval/             # Eval cases, runner, scoring and run comparison (see eval/README.md)
 ├── tests/            # pytest tests
 ├── pyproject.toml    # Dependencies, managed with uv
 └── app/              # Backend (planned, phase 3)
@@ -60,6 +60,10 @@ uv run pytest    # run the tests (no API key needed)
 uv run python -m brain --kb kb/the-plug.md "how much for 100 b&w pages"
 uv run python -m brain --kb kb/the-plug.md --file thesis.pdf:42 ""
 uv run python -m brain --kb kb/the-plug.md --show-input "hi"      # print what the model is sent
+
+# Run the whole eval set (dry run by default) and compare runs
+uv run python -m eval.run_eval --kb kb/the-plug.md
+uv run python -m eval.compare eval/results/A.json eval/results/B.json
 
 # With a real model (needs a key in .env)
 uv run --env-file .env python -m brain --kb kb/the-plug.md --live "are you open now?"

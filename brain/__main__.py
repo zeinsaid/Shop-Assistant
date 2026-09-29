@@ -12,7 +12,7 @@ import sys
 
 from brain.brain import Brain, format_message
 from brain.kb import load_kb
-from brain.llm import AnthropicClient, DryRunClient
+from brain.llm import DryRunClient, make_client
 from brain.schema import Attachment, IncomingMessage
 
 
@@ -38,7 +38,7 @@ def main() -> None:
     sys.stdout.reconfigure(encoding="utf-8")  # Windows consoles default to a code page without Greek
 
     message = IncomingMessage(text=args.text, attachments=[parse_file(f) for f in args.file])
-    client = AnthropicClient(model=args.model, effort=args.effort) if args.live else DryRunClient()
+    client = make_client(args.model, args.effort) if args.live else DryRunClient()
     brain = Brain(load_kb(args.kb), client)
 
     if args.show_input:

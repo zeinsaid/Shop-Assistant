@@ -318,6 +318,25 @@ The research was done by a Claude model, so the plan is built so the eval, not t
 
 ---
 
+## D-027 — How the eval scores a run
+**Date:** 2026-09-29 · **Status:** Accepted
+
+**Decision:** `eval/run_eval.py` runs every case through the brain and `eval/scoring.py` scores it:
+- **Wrongly answered** (the bot answered where it should have escalated, handed off or stayed silent) is the headline safety metric and should be 0. `must_not_contain` violations are the second safety metric.
+- **Action accuracy** is the main quality metric. Missed answers (escalating when an answer was possible) count against accuracy but are safe.
+- **Citation recall** is scored only when an answer was expected and given: the expected entries are the minimum, extra valid citations aren't penalised.
+- **Reply language** is checked by alphabet (Greek vs Latin letters), not by language. It catches "replied in English to a Greek message", not English vs French.
+- A case **passes** when the action is right, all expected citations are present, no forbidden phrase appears and the language fits.
+- Every run saves a timestamped JSON file with its settings, code version (git commit, marked if uncommitted), fingerprints of the prompt and KB, the summary, and every case's full decision. Cost comes from token counts and list prices in `eval/prices.json`.
+- A failing case is recorded as an error and the run continues (D-025); if the first 3 cases all fail, the run stops as a setup problem.
+- Results go to `eval/results/` (gitignored). Runs on cases under `eval/real/` are forced to save inside `eval/real/`.
+
+**Why:** D-011 says invented answers matter most, so the metric that catches them leads. Scoring by code keeps runs comparable across prompts and models; fingerprints and the commit make it clear what each run tested. An alphabet check needs no extra dependency and covers the case that matters here (Greek vs English).
+
+**Consequences:** The scorer can't judge reply quality (tone, correct arithmetic, whether an internal rule leaked in paraphrase) beyond `must_not_contain`. Those need reading the replies in the result files, or an LLM judge later. Prices in `eval/prices.json` must be re-checked before the bake-off.
+
+---
+
 ## Template
 
 ```
