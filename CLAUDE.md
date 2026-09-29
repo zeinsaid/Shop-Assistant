@@ -15,7 +15,7 @@ An AI receptionist for small businesses. It answers customer questions from an o
 
 **Phase 2 (now): the brain.** In order:
 1. Output schema (`brain/schema.py`): a Pydantic `BrainDecision` (see D-019, D-020). **Done.**
-2. Prompt (`prompts/brain.md`)
+2. Prompt (`prompts/brain.md`). **Done.**
 3. Brain (`brain/brain.py`): loads the KB, calls the model, parses the decision, enforces KB-dependent rules in code
 4. Eval runner (`eval/run_eval.py`): runs every case, scores action accuracy and citation overlap, saves timestamped results for comparing runs
 

@@ -227,6 +227,9 @@ A running record of the significant choices made on this project: what was decid
 - `cited_entries` is not restricted by action. An extra citation on a non-answer (for example the internal rule that triggered escalation) is not an error; the eval compares citations on `answer` cases only.
 - All five fields are required: the model always writes every key, using `null` or `[]` when a field doesn't apply.
 - `question_for_owner` is always written in English, whatever language the customer used (the KB and the owner side are English).
+- An `answer` must cite at least one **public** entry. Internal entries may be cited to explain the chosen action, but never count as support for an answer: everything told to a customer must come from public information (for example, a public student discount can be quoted; a discount staff give at their discretion cannot).
+- If any part of a multi-part message needs the owner, the whole message is `ask_owner`. The holding reply doesn't answer the covered parts; the bot comes back with one complete answer once the owner replies. `question_for_owner` includes every part.
+- Holding replies never promise when the answer will come. The owner's availability varies, and a promised time that slips causes problems with customers.
 - `Action` is a `StrEnum`; blank strings for `reply` and `question_for_owner` count as null; unknown fields are rejected.
 - The brain's input model (`IncomingMessage`: text plus attachment metadata) lives in `brain/schema.py`. `Attachment` has no content field, so D-010 holds by construction.
 
