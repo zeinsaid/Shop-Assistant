@@ -4,11 +4,11 @@ Only the committed synthetic file is read. eval/real/ is never touched.
 """
 
 import json
-import re
 from pathlib import Path
 
 import pytest
 
+from brain.kb import load_kb
 from brain.schema import Action, Attachment
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -19,13 +19,9 @@ def load_cases() -> list[dict]:
     return [json.loads(line) for line in lines if line.strip()]
 
 
-def load_kb_ids() -> set[str]:
-    kb = (ROOT / "kb" / "the-plug.md").read_text(encoding="utf-8")
-    return set(re.findall(r"^### (\S+)\s*$", kb, re.M))
-
-
 CASES = load_cases()
-KB_IDS = load_kb_ids()
+KB = load_kb(ROOT / "kb" / "the-plug.md")
+KB_IDS = set(KB.entries)
 
 
 def test_case_ids_are_unique():
@@ -44,6 +40,7 @@ def test_case_is_well_formed(case):
     assert set(entries) <= KB_IDS, f"unknown KB entries: {set(entries) - KB_IDS}"
     if case["expected_action"] == "answer":
         assert entries, "an answer case must expect at least one citation"
+        assert all(KB.is_public(e) for e in entries), "answers may only rely on public entries (D-020)"
     else:
         assert not entries, "only answer cases expect citations"
 
