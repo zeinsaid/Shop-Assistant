@@ -235,7 +235,7 @@ A running record of the significant choices made on this project: what was decid
 
 **Why:** The model writes replies in the customer's language (D-018), so code can't template holding or hand-over messages. Leaving a customer without any response on the handoff turn is worse than a short acknowledgement. Rejecting harmless extras would cost retries for no gain. Models often write `""` instead of null.
 
-**Consequences:** Refines D-015 (see its clarification). When the model returns an `answer` with no valid citation, `brain.py` enforces D-003 like this: one corrective retry (tell the model its answer cited nothing valid and it must cite or choose another action). If that still fails, code forces `ask_owner` with `question_for_owner` set to the customer's original message, and a fixed bilingual holding reply ("Let me check with the team and get back to you. / Θα ελέγξω με την ομάδα και θα σας απαντήσω."). The fallback should be rare, and eval runs should count how often it fires.
+**Consequences:** Refines D-015 (see its clarification). When the model returns an `answer` with no valid citation, `brain.py` enforces D-003 like this: one corrective retry (tell the model its answer cited nothing valid and it must cite or choose another action). If that still fails, code forces `ask_owner` with `question_for_owner` set to the customer's original message, and a fixed holding reply. (Originally a bilingual English/Greek string in code; moved to the KB front matter by D-026.) The fallback should be rare, and eval runs should count how often it fires.
 
 ---
 
@@ -286,6 +286,35 @@ The research was done by a Claude model, so the plan is built so the eval, not t
 **Why:** The owner plans a web version where a silent bot would look broken. The four actions and the schema stay the same, so this is a setting, not a fork.
 
 **Consequences:** The brain takes a per-channel setting (for instance `allow_no_reply`). When false, the prompt omits `no_reply` and `brain.py` rejects or retries it. Eval cases will need a channel tag, since the `no_reply` cases only apply to the WhatsApp setting and the web version needs its own expectation for those messages.
+
+---
+
+## D-025 — Brain structure: provider seam, one retry, errors propagate
+**Date:** 2026-09-29 · **Status:** Accepted
+
+**Decision:**
+- `brain/kb.py` parses the KB into an index (ID, visibility, status, text) for code checks; the model still gets the file unchanged. A malformed KB fails at load time.
+- `brain/llm.py` defines the provider seam: an `LLMClient` protocol with one method, `complete(system, messages, schema) -> Completion` (raw JSON text plus token counts). Implementations: `AnthropicClient` (structured outputs, system prompt cached, `effort="low"` by default), `DryRunClient` (free, always escalates) and `ScriptedClient` (tests). GPT and Gemini clients are added at the bake-off.
+- `brain/brain.py` checks every response twice over: shape (Pydantic, `schema.py`) and KB rules (cited IDs exist; an `answer` cites at least one public entry). A failed response gets one corrective retry that shows the model its response and the problems; a second failure uses the D-020 fallback. Non-answers citing unknown IDs aren't retried; the IDs are dropped and recorded.
+- Customer text and filenames are escaped so they can't open or close the prompt's input tags (`<customer_message>`, `<attachments>`, `<knowledge_base>`).
+- API errors (network, rate limits, bad requests) are not caught in the brain. The SDK retries transient ones; the caller decides what a failure means.
+
+**Why:** Validation in our own code, not in a provider's SDK, holds every provider to the same rules, so the eval compares like with like. One retry bounds the cost at two calls per message. Letting errors propagate keeps the brain honest: a network failure isn't a model decision, and hiding it inside a fallback would make eval results and logs misleading.
+
+**Consequences:** Every caller must catch errors. The eval runner (step 4) records a failed case as an error and carries on with the rest; the phase-3 server catches them and sends the fallback holding reply, so the customer always gets a response. The eval runner reports retries, fallbacks, dropped citations and tokens per model from `BrainResult`.
+
+---
+
+## D-026 — Business-agnostic: check the code now, the concepts later
+**Date:** 2026-09-29 · **Status:** Accepted
+
+**Decision:** Business-agnosticism is handled in two parts.
+1. **Now (mechanical):** no business names, products, languages or locale text in `brain/` or `prompts/`. Anything a business might want to set lives in its KB: entries, or front matter for settings (for example `fallback_reply`). `tests/test_prompt.py` checks the prompt doesn't contain the business's name. A first audit (2026-09-29) moved the English/Greek fallback reply out of code and made two print-shop- and Greek-specific prompt lines generic.
+2. **Later (conceptual):** whether the four actions, `no_reply`, the single owner, the KB format and the eval format suit other kinds of business is reviewed once there's a working prototype, ideally with a second real business in view.
+
+**Why:** Mechanical leaks are cheap to fix now and get more expensive as the code grows. Generalising concepts for imaginary businesses tends to produce the wrong abstractions; the right ones show up when a second real case exists. Until then, D-001's rule (nothing business-specific in code) keeps the door open without over-building.
+
+**Consequences:** KB front matter doubles as per-business settings for now. When settings grow (channels, `allow_no_reply` from D-024, owner contact), they move to a dedicated config file. The eval set and the tests that load `kb/the-plug.md` are business data by design, not a leak.
 
 ---
 

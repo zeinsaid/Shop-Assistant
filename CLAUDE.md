@@ -16,7 +16,7 @@ An AI receptionist for small businesses. It answers customer questions from an o
 **Phase 2 (now): the brain.** In order:
 1. Output schema (`brain/schema.py`): a Pydantic `BrainDecision` (see D-019, D-020). **Done.**
 2. Prompt (`prompts/brain.md`). **Done.**
-3. Brain (`brain/brain.py`): loads the KB, calls the model, parses the decision, enforces KB-dependent rules in code
+3. Brain (`brain/brain.py`, `kb.py`, `llm.py`): loads the KB, calls the model, parses the decision, enforces KB-dependent rules in code (D-025). **Done.** Try it with `uv run python -m brain --kb kb/the-plug.md "..."` (dry run by default).
 4. Eval runner (`eval/run_eval.py`): runs every case, scores action accuracy and citation overlap, saves timestamped results for comparing runs
 
 No backend, database or UI yet. Don't scaffold them unless asked.
@@ -29,7 +29,7 @@ No backend, database or UI yet. Don't scaffold them unless asked.
 - Attachments: the brain sees metadata only (type, filename, page count), never file contents (D-010).
 - Pasted text meant for printing must not be answered, even if it contains questions (D-002).
 - Reply in the customer's language; the KB stays in English (D-018).
-- Nothing business-specific in code; it belongs in `kb/` or config (D-001).
+- Nothing business-specific in code or `prompts/`; it belongs in `kb/` (entries, or front matter for settings) or config (D-001, D-026). `tests/test_prompt.py` checks the prompt.
 - Every future database table carries a `business_id` (D-006).
 
 ## Data rules
@@ -56,14 +56,15 @@ I don't write the code myself; you do. But I want to understand every concept an
 
 - Python, managed with `uv`. Dependencies: `anthropic`, `pydantic`; dev: `pytest`. Run tests with `uv run pytest`.
 - Development model: Claude Sonnet 5 (`claude-sonnet-5`) as the reference. The final model is chosen by the eval among a shortlist from several providers (D-022), so keep the LLM call behind a thin interface.
-- The API key isn't set up yet. Until it is, make code runnable without it (e.g. a mock/dry-run mode for the brain) so the eval runner can be built and tested for free.
+- Model calls default to `effort="low"`; model and effort are settings to compare in the eval (D-022, D-025).
+- The API key isn't set up yet, and won't be until everything can be tested at once. Keep everything runnable without it: `DryRunClient` (free, always escalates) and `ScriptedClient` (prepared responses, for tests) in `brain/llm.py`.
 
 ## Layout
 
 - `kb/`: business knowledge bases (markdown, entries with IDs, visibility and status)
 - `prompts/`: LLM prompts, kept as files so changes show up in git diffs
-- `brain/`: schema and decision logic
-- `tests/`: pytest tests (schema, and sanity checks on the eval file)
+- `brain/`: `schema.py` (input and output models), `kb.py` (KB parser), `llm.py` (provider seam and clients), `brain.py` (decision flow), `__main__.py` (CLI)
+- `tests/`: pytest tests (schema, KB parser, brain flow, prompt, and sanity checks on the eval file)
 - `eval/`: `questions.jsonl` (synthetic, committed), scoring scripts, and `eval/README.md` (case format)
 - `eval/results/`: run outputs, gitignored because they echo message text. Results of runs on real cases go inside `eval/real/`, never anywhere committed.
 
@@ -78,4 +79,6 @@ Things agreed but deliberately not done yet. Check this list before starting a n
 - **Data protection check** (GDPR, EU data residency, DPA) for the chosen provider, before going live on the website.
 - **More `no_reply` variety in the eval**, since most real WhatsApp traffic is file drops (see D-011 update).
 - **API key:** the owner adds it to `.env` when it's needed; nothing before step 3 requires it.
+- **Business-agnostic review, part 2** (D-026): once there's a working prototype, or a second business in view, revisit whether the actions, the `no_reply` idea, the owner/staff model and the KB format fit other kinds of business.
+- **Pending proposal:** add `fallback_reply:` (English + Greek) to the KB front matter. Until then the fallback reply is English only (D-026).
 - **Rename** the local folder and GitHub repo from `Project` to `shop-assistant` (owner does it after ending a session).
