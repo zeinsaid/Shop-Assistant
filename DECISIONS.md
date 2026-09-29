@@ -265,6 +265,8 @@ The research was done by a Claude model, so the plan is built so the eval, not t
 
 **Consequences:** `openai` and `google-genai` are added only when the bake-off happens, along with a key per provider in `.env.example`. `BrainDecision` is provider-neutral: each adapter uses its provider's structured-output feature and we validate with Pydantic; provider limits on JSON-schema features may constrain the schema. Before going live: check data-protection terms (GDPR, EU data residency, DPA) for the chosen provider, and re-check prices (Gemini 3.8 Flash doubles on 2027-01-01).
 
+**Update (2026-09-29):** the OpenAI (Responses API, strict JSON schema) and Gemini (Interactions API) clients are built alongside the Anthropic one, all behind `make_client()`, so the bake-off is one eval run per model. OpenAI and Gemini get a simplified copy of the schema (`portable_schema`: `$defs` inlined, `anyOf`-with-null turned into a type list) because their schema support is narrower. Both are called with `store=False` so customer messages aren't kept on the provider's side. Effort maps to each provider's own setting (Claude effort, OpenAI reasoning effort, Gemini thinking level).
+
 ---
 
 ## D-023 — Multi-turn conversations: history goes to the brain

@@ -106,11 +106,11 @@ def test_bad_first_response_gets_one_corrective_retry(bad, expected_problem):
     assert "not accepted" in retry_messages[2]["content"]
 
 
-@pytest.mark.parametrize("stop_reason", ["max_tokens", "refusal"])
-def test_cut_off_response_is_retried(stop_reason):
+@pytest.mark.parametrize("stop_reason", ["max_tokens", "refusal", "failed"])
+def test_unfinished_response_is_retried(stop_reason):
     brain, _ = make_brain(Completion(decision(), stop_reason), decision())
     result = ask(brain)
-    assert "cut off" in result.attempts[0].problems[0]
+    assert "didn't finish normally" in result.attempts[0].problems[0]
     assert not result.fallback_used
 
 

@@ -4,7 +4,7 @@ An AI receptionist for small businesses. It answers customer questions from a kn
 
 The first deployment is The Plug Business Center, a print shop next to the University of Nicosia, Cyprus. Most of its customers are students asking about small print jobs over chat. The core is business-agnostic: everything print-specific lives in the knowledge base and config, not in code.
 
-> **Status:** Phase 2 in progress. Knowledge base, evaluation set, output schema, prompt, brain and eval runner are built and tested without a model. Next: clients for other providers, then the first live runs. No backend, database or UI yet.
+> **Status:** Phase 2 code-complete. Knowledge base, evaluation set, output schema, prompt, brain, eval runner and clients for Claude, GPT and Gemini are built and tested without a model. Next: live eval runs to pick a model. No backend, database or UI yet.
 
 ---
 
@@ -69,7 +69,7 @@ uv run python -m eval.compare eval/results/A.json eval/results/B.json
 uv run --env-file .env python -m brain --kb kb/the-plug.md --live "are you open now?"
 ```
 
-Copy `.env.example` to `.env` and fill in `ANTHROPIC_API_KEY` once you have one.
+Copy `.env.example` to `.env` and fill in the key for each provider you want to run (`ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `GEMINI_API_KEY`). The model name picks the provider: `claude-*`, `gpt-*` or `gemini-*`.
 
 ## Design decisions
 

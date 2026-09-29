@@ -15,7 +15,9 @@ import anthropic
 @dataclass(frozen=True)
 class Completion:
     text: str  # the model's raw output, expected to be JSON
-    stop_reason: str | None = None  # "end_turn" when the model finished normally
+    # Normalised across providers: "end_turn" when the model finished normally, "max_tokens" when
+    # it was cut off, "refusal" when it declined. Anything else also counts as unfinished.
+    stop_reason: str | None = None
     input_tokens: int = 0  # uncached input
     output_tokens: int = 0
     cache_read_tokens: int = 0
@@ -91,6 +93,141 @@ class AnthropicClient:
         )
 
 
+# --- Schema for OpenAI and Gemini --------------------------------------------------------------
+
+
+def portable_schema(schema: dict) -> dict:
+    """Rewrite a Pydantic JSON schema into the plain subset every provider accepts.
+
+    - `$ref`/`$defs` are inlined (the `Action` enum becomes a plain enum on the field),
+    - `anyOf: [X, null]` becomes `type: [X, "null"]`,
+    - keywords the APIs reject (`minLength`, ...) are dropped; Pydantic still checks them.
+    """
+    defs = schema.get("$defs", {})
+
+    def convert(node):
+        if isinstance(node, list):
+            return [convert(item) for item in node]
+        if not isinstance(node, dict):
+            return node
+        node = dict(node)
+        if "$ref" in node:  # {"$ref": "#/$defs/Action", "description": ...}
+            target = defs[node.pop("$ref").rsplit("/", 1)[-1]]
+            node = {**target, **node}
+        options = node.get("anyOf")
+        if options and len(options) == 2 and {"type": "null"} in options:
+            other = next(o for o in options if o != {"type": "null"})
+            if set(other) == {"type"} and isinstance(other["type"], str):
+                del node["anyOf"]
+                node["type"] = [other["type"], "null"]
+        return {k: convert(v) for k, v in node.items() if k != "$defs" and k not in UNSUPPORTED_SCHEMA_KEYS}
+
+    return convert(schema)
+
+
+# --- OpenAI ------------------------------------------------------------------------------------
+
+
+class OpenAIClient:
+    """Calls a GPT model through the Responses API with a strict JSON schema.
+
+    OpenAI caches long repeated prefixes automatically; the instructions and KB come first.
+    """
+
+    def __init__(self, model: str = "gpt-6-sol", max_tokens: int = 16000, effort: str | None = "low", client=None):
+        import openai  # imported here so the brain doesn't load every provider's SDK
+
+        self.model = model
+        self.max_tokens = max_tokens
+        self.effort = effort
+        self._client = client or openai.OpenAI()  # reads OPENAI_API_KEY from the environment
+
+    def complete(self, system: str, messages: list[Message], schema: dict) -> Completion:
+        extra = {"reasoning": {"effort": self.effort}} if self.effort else {}
+        response = self._client.responses.create(
+            model=self.model,
+            instructions=system,
+            input=[{"role": m["role"], "content": m["content"]} for m in messages],
+            text={"format": {"type": "json_schema", "name": "brain_decision", "strict": True,
+                             "schema": portable_schema(schema)}},
+            max_output_tokens=self.max_tokens,
+            store=False,  # don't keep customer messages on OpenAI's side
+            **extra,
+        )
+
+        stop_reason = "end_turn"
+        if response.status == "incomplete":
+            reason = getattr(response.incomplete_details, "reason", None)
+            stop_reason = "max_tokens" if reason == "max_output_tokens" else "refusal"
+        elif response.status != "completed":
+            stop_reason = str(response.status)
+        if any(c.type == "refusal" for item in response.output if item.type == "message" for c in item.content):
+            stop_reason = "refusal"
+
+        usage = response.usage
+        cached = usage.input_tokens_details.cached_tokens or 0
+        written = getattr(usage.input_tokens_details, "cache_write_tokens", 0) or 0
+        return Completion(
+            text=response.output_text,
+            stop_reason=stop_reason,
+            input_tokens=usage.input_tokens - cached - written,  # OpenAI's input count includes cached tokens
+            output_tokens=usage.output_tokens,  # includes reasoning tokens, which are billed as output
+            cache_read_tokens=cached,
+            cache_write_tokens=written,
+        )
+
+
+# --- Google Gemini -----------------------------------------------------------------------------
+
+
+class GeminiClient:
+    """Calls a Gemini model through the Interactions API with a JSON schema.
+
+    Gemini caches repeated prefixes implicitly; the instructions and KB come first.
+    """
+
+    def __init__(self, model: str = "gemini-3.5-flash-lite", max_tokens: int = 16000, effort: str | None = "low",
+                 client=None):
+        from google import genai  # imported here so the brain doesn't load every provider's SDK
+
+        self.model = model
+        self.max_tokens = max_tokens
+        self.effort = effort  # sent as thinking_level: "minimal", "low", "medium" or "high"
+        self._client = client or genai.Client()  # reads GEMINI_API_KEY (or GOOGLE_API_KEY)
+
+    def complete(self, system: str, messages: list[Message], schema: dict) -> Completion:
+        config: dict = {"max_output_tokens": self.max_tokens}
+        if self.effort:
+            config["thinking_level"] = self.effort
+        interaction = self._client.interactions.create(
+            model=self.model,
+            system_instruction=system,
+            # Our turns become Gemini "steps": the customer side is user_input, ours model_output.
+            input=[
+                {"type": "user_input" if m["role"] == "user" else "model_output",
+                 "content": [{"type": "text", "text": m["content"]}]}
+                for m in messages
+            ],
+            response_format={"type": "text", "mime_type": "application/json", "schema": portable_schema(schema)},
+            generation_config=config,
+            store=False,  # don't keep customer messages on Google's side
+        )
+
+        status = str(interaction.status)
+        stop_reason = {"completed": "end_turn", "incomplete": "max_tokens"}.get(status, status)
+        usage = interaction.usage
+        cached = (usage.total_cached_tokens or 0) if usage else 0
+        return Completion(
+            text=interaction.output_text or "",
+            stop_reason=stop_reason,
+            input_tokens=((usage.total_input_tokens or 0) - cached) if usage else 0,  # input includes cached
+            # Thinking tokens are billed as output. This assumes total_output_tokens excludes them,
+            # as Gemini's older API did; check it against the first live run's bill.
+            output_tokens=((usage.total_output_tokens or 0) + (usage.total_thought_tokens or 0)) if usage else 0,
+            cache_read_tokens=cached,
+        )
+
+
 # --- No-cost clients ---------------------------------------------------------------------------
 
 
@@ -136,4 +273,8 @@ def make_client(model: str, effort: str | None = "low") -> LLMClient:
         return DryRunClient()
     if model.startswith("claude-"):
         return AnthropicClient(model=model, effort=effort)
-    raise ValueError(f"no client for model '{model}' (supported: dry-run, claude-*)")
+    if model.startswith("gpt-"):
+        return OpenAIClient(model=model, effort=effort)
+    if model.startswith("gemini-"):
+        return GeminiClient(model=model, effort=effort)
+    raise ValueError(f"no client for model '{model}' (supported: dry-run, claude-*, gpt-*, gemini-*)")

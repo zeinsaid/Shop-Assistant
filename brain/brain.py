@@ -95,8 +95,8 @@ class Brain:
 
     def _check(self, completion: Completion) -> tuple[BrainDecision | None, list[str]]:
         """Return the parsed decision (if it parsed) and every rule it breaks."""
-        if completion.stop_reason in ("max_tokens", "refusal"):
-            return None, [f"the response was cut off (stop reason: {completion.stop_reason})"]
+        if completion.stop_reason not in (None, "end_turn"):
+            return None, [f"the response didn't finish normally (stop reason: {completion.stop_reason})"]
         try:
             decision = BrainDecision.model_validate_json(completion.text)
         except ValidationError as e:
