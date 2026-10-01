@@ -11,7 +11,7 @@ An AI receptionist for small businesses. It answers customer questions from an o
 
 ## Current phase
 
-**Phase 1 (done):** knowledge base (`kb/the-plug.md`), labelled eval set (`eval/questions.jsonl`, 103 cases), decisions log.
+**Phase 1 (done):** knowledge base (`kb/the-plug.md`), labelled eval set (`eval/questions.jsonl`, 105 cases), decisions log.
 
 **Phase 2 (now): the brain.** In order:
 1. Output schema (`brain/schema.py`): a Pydantic `BrainDecision` (see D-019, D-020). **Done.**
@@ -79,6 +79,7 @@ Things agreed but deliberately not done yet. Check this list before starting a n
 - **Per-channel `no_reply`** (D-024, Proposed): needed before the website chat goes live.
 - **Model bake-off** (D-022): all code is ready. Needs API keys in `.env` (see `.env.example`), then one eval run per shortlisted model and `eval.compare`. The first live runs must also confirm what the fake-SDK tests can't: that each API accepts the schema, that caching works, and Gemini's output token count (see the comment in `GeminiClient`). Re-check `eval/prices.json` first.
 - **Data protection check** (GDPR, EU data residency, DPA) for the chosen provider, before going live on the website.
+- **Deals the owner always refuses** (D-028): let the owner list deal requests that are always a no (e.g. free binding), so the bot can decline them itself instead of escalating each time.
 - **More `no_reply` variety in the eval**, since most real WhatsApp traffic is file drops (see D-011 update).
 - **API key:** the owner adds it to `.env` when it's needed; nothing before step 3 requires it.
 - **Business-agnostic review, part 2** (D-026): once there's a working prototype, or a second business in view, revisit whether the actions, the `no_reply` idea, the owner/staff model and the KB format fit other kinds of business.

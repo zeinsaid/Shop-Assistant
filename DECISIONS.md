@@ -341,6 +341,17 @@ The research was done by a Claude model, so the plan is built so the eval, not t
 
 ---
 
+## D-028 — Large orders go straight to staff
+**Date:** 2026-10-01 · **Status:** Accepted
+
+**Decision:** Orders of 30 or more merchandise items (shirts, badges, keychains, ...), or with an estimated total over €100 at normal rates, get `handoff` straight away: no quote, no detail collection. This applies to any customer. Smaller bulk jobs, including discount requests on a few items, keep D-016 (collect details, then `ask_owner`). Business deals and ongoing work stay `handoff` (`policy-business-customers`). The limits live in the KB (`policy-large-orders`), not in code (D-001).
+
+**Why:** The owner wants big orders and B2B negotiation handled entirely by people, since they involve pricing judgement and relationships the bot shouldn't touch. A student asking for a discount on a few shirts is routine and benefits from the bot collecting details first. The first live Claude run (q058) showed the old KB left this ambiguous.
+
+**Consequences:** Extends D-015: `handoff` also covers large orders, not only cases where a person must act. q058, q088, q090 and q100 change to `handoff`; q104 and q105 are added. The €100 check relies on the bot estimating totals from KB rates, so jobs with no listed price can't be checked against it. Later: the owner may define deals that are always refused, so the bot can say no itself (parked).
+
+---
+
 ## Template
 
 ```

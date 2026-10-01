@@ -132,10 +132,19 @@ We don't share supplier names, supplier prices or other internal business detail
 
 Some items, such as hardcover binding, DTF shirt prints and banners, are made with an external partner, which is why they take longer than jobs we do in the shop. We don't share partner names, links or prices.
 
+### policy-large-orders
+**Visibility:** internal · **Status:** confirmed
+
+Staff handle large orders themselves, whoever the customer is. Use `handoff` straight away, without quoting or collecting details, when a customer asks for:
+- 30 or more shirts, badges, keychains or other merchandise items, or
+- any order whose estimated total at the normal rates would be over €100.
+
+This takes priority over entries that say to collect details or use `ask_owner`. Smaller bulk orders, including asking for a discount on a few shirts, follow `policy-collect-details`: collect the details first, then use `ask_owner`.
+
 ### policy-business-customers
 **Visibility:** internal · **Status:** confirmed
 
-Staff prefer to work with businesses and organisations directly rather than through the bot. If a business wants ongoing or recurring work, a contract, an account, or to negotiate a deal, don't quote or negotiate: use `handoff`. If a business wants a one-off job that is custom or bulk, collect the details (see `policy-collect-details`), then use `ask_owner`. A business that only wants a simple one-off order (one service, known quantity, size and colour) is treated like any other customer.
+Staff prefer to work with businesses and organisations directly rather than through the bot. If a business wants ongoing or recurring work, a contract, an account, or to negotiate a deal, don't quote or negotiate: use `handoff`. Large orders from anyone follow `policy-large-orders`. If a business wants a smaller one-off job that is custom or bulk, collect the details (see `policy-collect-details`), then use `ask_owner`. A business that only wants a simple one-off order (one service, known quantity, size and colour) is treated like any other customer.
 
 ### policy-we-try
 **Visibility:** internal · **Status:** confirmed
@@ -267,7 +276,7 @@ Binding: from €2.50 for a thin document, rising to €3, €4 and up to €5 f
 ### binding-waiver
 **Visibility:** internal · **Status:** confirmed
 
-For larger orders (printing over roughly €20), staff often give binding for free as a goodwill gesture, presented to the customer as a gift once the order is done. The bot must never promise or mention free binding; it quotes binding at the normal price and leaves any waiver to staff.
+For larger orders (printing over roughly €20), staff often give binding for free as a goodwill gesture, presented to the customer as a gift once the order is done. The bot must never promise or mention free binding; it quotes binding at the normal price and leaves any waiver to staff. If a customer asks whether binding is free, that's a request for a better price: use `ask_owner` (see `policy-discounts`).
 
 ### lamination
 **Visibility:** public · **Status:** placeholder
@@ -330,7 +339,7 @@ Photo prints on photo paper: €0.50 per print for 15×10 cm, €1.00 per print 
 ### photo-prints-bulk
 **Visibility:** internal · **Status:** placeholder
 
-Orders of around 100 prints or fewer simply follow the normal per-print price in `photo-prints`. For much larger orders (hundreds of prints), prices can go down to around €0.25 (15×10) and €0.80 (15×20). The exact bulk price is decided by staff; for bulk orders the bot says discounts are available and escalates.
+Orders of around 100 prints or fewer simply follow the normal per-print price in `photo-prints`. For much larger orders (hundreds of prints), prices can go down to around €0.25 (15×10) and €0.80 (15×20). The exact bulk price is decided by staff; for bulk orders the bot says discounts are available and escalates (`ask_owner`; over €100 at normal prices, `policy-large-orders` applies).
 
 ---
 
