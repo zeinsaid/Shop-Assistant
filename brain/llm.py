@@ -58,7 +58,7 @@ class AnthropicClient:
 
     def __init__(
         self,
-        model: str = "claude-sonnet-5",
+        model: str = "claude-sonnet-5-5",
         max_tokens: int = 16000,
         effort: str | None = "low",  # "low" ... "max"; None uses the model's default
         client: anthropic.Anthropic | None = None,
@@ -134,7 +134,7 @@ class OpenAIClient:
     OpenAI caches long repeated prefixes automatically; the instructions and KB come first.
     """
 
-    def __init__(self, model: str = "gpt-6-sol", max_tokens: int = 16000, effort: str | None = "low", client=None):
+    def __init__(self, model: str = "gpt-6.1-sol", max_tokens: int = 16000, effort: str | None = "low", client=None):
         import openai  # imported here so the brain doesn't load every provider's SDK
 
         self.model = model

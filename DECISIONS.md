@@ -267,6 +267,8 @@ The research was done by a Claude model, so the plan is built so the eval, not t
 
 **Update (2026-09-29):** the OpenAI (Responses API, strict JSON schema) and Gemini (Interactions API) clients are built alongside the Anthropic one, all behind `make_client()`, so the bake-off is one eval run per model. OpenAI and Gemini get a simplified copy of the schema (`portable_schema`: `$defs` inlined, `anyOf`-with-null turned into a type list) because their schema support is narrower. Both are called with `store=False` so customer messages aren't kept on the provider's side. Effort maps to each provider's own setting (Claude effort, OpenAI reasoning effort, Gemini thinking level).
 
+**Update (2026-10-01):** price re-check before the first live runs. Claude Sonnet 5.5 and GPT-6.1 Sol have replaced Sonnet 5 (now legacy) and GPT-6 Sol at the same list prices, so the shortlist becomes Claude Sonnet 5.5, GPT-6.1 Sol, GPT-6 Luna and Gemini 3.5 Flash-Lite, and Sonnet 5.5 becomes the reference model. OpenAI now charges cache writes at 1.25× input (GPT-5.6 and later); `eval/prices.json` is corrected.
+
 ---
 
 ## D-023 — Multi-turn conversations: history goes to the brain

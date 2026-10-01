@@ -2,7 +2,7 @@
 
     uv run python -m eval.run_eval --kb kb/the-plug.md                        # dry run, free
     uv run python -m eval.run_eval --kb kb/the-plug.md --ids q001,q067        # a few cases
-    uv run --env-file .env python -m eval.run_eval --kb kb/the-plug.md --model claude-sonnet-5
+    uv run --env-file .env python -m eval.run_eval --kb kb/the-plug.md --model claude-sonnet-5-5
 
 Results go to eval/results/ (gitignored). Runs on real cases (a file under eval/real/) always
 write their results inside eval/real/, so real messages never end up anywhere committed.
@@ -124,7 +124,7 @@ def main(argv: list[str] | None = None) -> Path:
     parser = argparse.ArgumentParser(prog="python -m eval.run_eval", description=__doc__.split("\n")[0])
     parser.add_argument("--kb", required=True, type=Path, help="knowledge base markdown file")
     parser.add_argument("--cases", type=Path, default=DEFAULT_CASES)
-    parser.add_argument("--model", default="dry-run", help="dry-run (free) or a model name, e.g. claude-sonnet-5")
+    parser.add_argument("--model", default="dry-run", help="dry-run (free) or a model name, e.g. claude-sonnet-5-5")
     parser.add_argument("--effort", default="low")
     parser.add_argument("--ids", help="comma-separated case IDs to run")
     parser.add_argument("--category", help="only run cases in this category")

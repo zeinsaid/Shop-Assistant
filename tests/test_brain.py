@@ -195,10 +195,10 @@ def test_anthropic_client_builds_the_request_and_reads_usage():
         )
 
     fake_sdk = SimpleNamespace(messages=SimpleNamespace(create=create))
-    client = AnthropicClient(model="claude-sonnet-5", effort="low", client=fake_sdk)
+    client = AnthropicClient(model="claude-sonnet-5-5", effort="low", client=fake_sdk)
     completion = client.complete("SYSTEM", [{"role": "user", "content": "hi"}], BrainDecision.model_json_schema())
 
-    assert captured["model"] == "claude-sonnet-5"
+    assert captured["model"] == "claude-sonnet-5-5"
     assert captured["system"] == [{"type": "text", "text": "SYSTEM", "cache_control": {"type": "ephemeral"}}]
     assert captured["output_config"]["format"]["type"] == "json_schema"
     assert "minLength" not in json.dumps(captured["output_config"]["format"]["schema"])

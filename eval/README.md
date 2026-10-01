@@ -25,7 +25,7 @@
 uv run python -m eval.run_eval --kb kb/the-plug.md                    # all cases, dry run (free)
 uv run python -m eval.run_eval --kb kb/the-plug.md --ids q001,q067    # selected cases
 uv run python -m eval.run_eval --kb kb/the-plug.md --category no_reply
-uv run --env-file .env python -m eval.run_eval --kb kb/the-plug.md --model claude-sonnet-5 --effort low
+uv run --env-file .env python -m eval.run_eval --kb kb/the-plug.md --model claude-sonnet-5-5 --effort low
 uv run python -m eval.compare eval/results/A.json eval/results/B.json # side by side; first file is the baseline
 ```
 

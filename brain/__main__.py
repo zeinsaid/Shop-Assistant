@@ -31,7 +31,7 @@ def main() -> None:
     parser.add_argument("--file", action="append", default=[], metavar="NAME[:PAGES]",
                         help="an attachment (metadata only); repeat for several")
     parser.add_argument("--live", action="store_true", help="call the real model (costs money, needs a key)")
-    parser.add_argument("--model", default="claude-sonnet-5")
+    parser.add_argument("--model", default="claude-sonnet-5-5")
     parser.add_argument("--effort", default="low", help="model effort: low, medium, high, xhigh or max")
     parser.add_argument("--show-input", action="store_true", help="print what the model is sent")
     args = parser.parse_args()

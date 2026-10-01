@@ -68,9 +68,9 @@ def openai_response(status="completed", reason=None, content_type="output_text")
 
 def test_openai_request_and_usage():
     sdk, sent = fake_sdk("responses.create", openai_response())
-    completion = OpenAIClient(model="gpt-6-sol", effort="low", client=sdk).complete("SYSTEM", MESSAGES, SCHEMA)
+    completion = OpenAIClient(model="gpt-6.1-sol", effort="low", client=sdk).complete("SYSTEM", MESSAGES, SCHEMA)
 
-    assert sent["model"] == "gpt-6-sol" and sent["instructions"] == "SYSTEM"
+    assert sent["model"] == "gpt-6.1-sol" and sent["instructions"] == "SYSTEM"
     assert sent["input"] == MESSAGES
     assert sent["text"]["format"]["type"] == "json_schema" and sent["text"]["format"]["strict"] is True
     assert sent["text"]["format"]["schema"] == portable_schema(SCHEMA)
@@ -149,7 +149,7 @@ def test_make_client_picks_by_model_name(monkeypatch):
         monkeypatch.setenv(key, "test-key")
     monkeypatch.delenv("GOOGLE_API_KEY", raising=False)
     assert isinstance(make_client("dry-run"), DryRunClient)
-    assert type(make_client("claude-sonnet-5")).__name__ == "AnthropicClient"
+    assert type(make_client("claude-sonnet-5-5")).__name__ == "AnthropicClient"
     assert isinstance(make_client("gpt-6-luna"), OpenAIClient)
     assert isinstance(make_client("gemini-3.5-flash-lite", effort="minimal"), GeminiClient)
     with pytest.raises(ValueError, match="no client"):

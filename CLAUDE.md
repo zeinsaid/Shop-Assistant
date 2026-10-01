@@ -57,7 +57,7 @@ I don't write the code myself; you do. But I want to understand every concept an
 ## Stack
 
 - Python, managed with `uv`. Dependencies: `pydantic`, `anthropic`, `openai`, `google-genai`; dev: `pytest`. Run tests with `uv run pytest`.
-- Development model: Claude Sonnet 5 (`claude-sonnet-5`) as the reference. The final model is chosen by the eval among a shortlist from several providers (D-022), so keep the LLM call behind a thin interface.
+- Development model: Claude Sonnet 5.5 (`claude-sonnet-5-5`) as the reference. The final model is chosen by the eval among a shortlist from several providers (D-022), so keep the LLM call behind a thin interface.
 - Model calls default to `effort="low"`; model and effort are settings to compare in the eval (D-022, D-025).
 - The API key isn't set up yet, and won't be until everything can be tested at once. Keep everything runnable without it: `DryRunClient` (free, always escalates) and `ScriptedClient` (prepared responses, for tests) in `brain/llm.py`.
 
