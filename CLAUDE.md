@@ -17,11 +17,11 @@ An AI receptionist for small businesses. It answers customer questions from an o
 1. Output schema (`brain/schema.py`): a Pydantic `BrainDecision` (see D-019, D-020). **Done.**
 2. Prompt (`prompts/brain.md`). **Done.**
 3. Brain (`brain/brain.py`, `kb.py`, `llm.py`): loads the KB, calls the model, parses the decision, enforces KB-dependent rules in code (D-025). **Done.** Try it with `uv run python -m brain --kb kb/the-plug.md "..."` (dry run by default).
-4. Eval runner (`eval/run_eval.py`, `scoring.py`, `compare.py`, `prices.json`): runs every case, scores it (D-027), saves timestamped results; `eval.compare` puts runs side by side. See `eval/README.md`. Clients for Claude, GPT and Gemini are in `brain/llm.py`. **Done** (code-complete; live runs wait for API keys).
+4. Eval runner (`eval/run_eval.py`, `scoring.py`, `compare.py`, `prices.json`): runs every case, scores it (D-027), saves timestamped results; `eval.compare` puts runs side by side. See `eval/README.md`. Clients for Claude, GPT and Gemini are in `brain/llm.py`. **Done.** First live runs on 2026-10-01 (results in D-022).
 
 No backend, database or UI yet. Don't scaffold them unless asked.
 
-**Next session (2026-09-30):** the owner adds API keys to `.env`, then live testing starts: a 3-case smoke test per model (`--limit 3`) to confirm each API accepts the schema and caching works, then full runs of the D-022 shortlist, `eval.compare`, and going through failures (prompt fix, KB/label proposal, or model weakness). Re-check `eval/prices.json` first. After testing: multi-turn (D-023).
+**Now:** multi-turn conversations (D-023), then per-channel `no_reply` (D-024). KB work is paused until staff send photos of the real price lists; the shop website may become the live demo, so the KB will use real prices, not invented ones.
 
 ## Core rules (don't break these)
 
@@ -59,7 +59,7 @@ I don't write the code myself; you do. But I want to understand every concept an
 - Python, managed with `uv`. Dependencies: `pydantic`, `anthropic`, `openai`, `google-genai`; dev: `pytest`. Run tests with `uv run pytest`.
 - Development model: Claude Sonnet 5.5 (`claude-sonnet-5-5`) as the reference. The final model is chosen by the eval among a shortlist from several providers (D-022), so keep the LLM call behind a thin interface.
 - Model calls default to `effort="low"`; model and effort are settings to compare in the eval (D-022, D-025).
-- The API key isn't set up yet, and won't be until everything can be tested at once. Keep everything runnable without it: `DryRunClient` (free, always escalates) and `ScriptedClient` (prepared responses, for tests) in `brain/llm.py`.
+- Keys for all three providers are in `.env` (about $5 of credit each). **Every live API run needs the owner's OK first**; keep spend low (prefer `--ids` or GPT-6 Luna for rechecks). Everything must still run without a key: `DryRunClient` (free, always escalates) and `ScriptedClient` (prepared responses, for tests) in `brain/llm.py`.
 
 ## Layout
 
@@ -74,13 +74,13 @@ I don't write the code myself; you do. But I want to understand every concept an
 
 Things agreed but deliberately not done yet. Check this list before starting a new phase.
 
-- **Fill the KB placeholders** (17+ entries with `Status: placeholder`, including all `details-*` entries): real prices, lamination and passport-photo prices, contact details in `shop-sending-files`, and a banners entry. Then re-check the expected values of the eval cases that depend on them. The owner will do this much later.
+- **Fill the KB placeholders** (17+ entries with `Status: placeholder`, including all `details-*` entries): real prices, lamination and passport-photo prices, contact details in `shop-sending-files`, and a banners entry. Then re-check the expected values of the eval cases that depend on them. Waiting on photos of the real price lists from staff. Also fix the KB/label issues from the 2026-10-01 runs (large-order €100 limit applies to non-merch only, `hardcover` wording, duplicated DTF timing, stationery stock questions, editing details vs `ask_owner`, banners, badges).
+- **KB onboarding interview:** an AI interviews a new owner and drafts their KB (owner reviews before use). Build it after the KB is finished, so the interview's output can be compared against it. Needs a D-entry first.
 - **Multi-turn conversations** (D-023, Proposed): add `history` to `IncomingMessage` and write multi-turn eval cases at the start of phase 3.
 - **Per-channel `no_reply`** (D-024, Proposed): needed before the website chat goes live.
-- **Model bake-off** (D-022): all code is ready. Needs API keys in `.env` (see `.env.example`), then one eval run per shortlisted model and `eval.compare`. The first live runs must also confirm what the fake-SDK tests can't: that each API accepts the schema, that caching works, and Gemini's output token count (see the comment in `GeminiClient`). Re-check `eval/prices.json` first.
+- **Final model pick** (D-022): rerun the front-runners (GPT-6 Luna, GPT-6.1 Sol) on the finished KB. Also check Gemini's output token count against a real bill if Gemini stays in the running.
 - **Data protection check** (GDPR, EU data residency, DPA) for the chosen provider, before going live on the website.
 - **Deals the owner always refuses** (D-028): let the owner list deal requests that are always a no (e.g. free binding), so the bot can decline them itself instead of escalating each time.
 - **More `no_reply` variety in the eval**, since most real WhatsApp traffic is file drops (see D-011 update).
-- **API key:** the owner adds it to `.env` when it's needed; nothing before step 3 requires it.
 - **Business-agnostic review, part 2** (D-026): once there's a working prototype, or a second business in view, revisit whether the actions, the `no_reply` idea, the owner/staff model and the KB format fit other kinds of business.
 - **Rename** the local folder and GitHub repo from `Project` to `shop-assistant` (owner does it after ending a session).

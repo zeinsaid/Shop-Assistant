@@ -269,6 +269,19 @@ The research was done by a Claude model, so the plan is built so the eval, not t
 
 **Update (2026-10-01):** price re-check before the first live runs. Claude Sonnet 5.5 and GPT-6.1 Sol have replaced Sonnet 5 (now legacy) and GPT-6 Sol at the same list prices, so the shortlist becomes Claude Sonnet 5.5, GPT-6.1 Sol, GPT-6 Luna and Gemini 3.5 Flash-Lite, and Sonnet 5.5 becomes the reference model. OpenAI now charges cache writes at 1.25× input (GPT-5.6 and later); `eval/prices.json` is corrected.
 
+**Update (2026-10-02): first live runs.** Smoke tests confirmed all three APIs accept the schema and that caching works (Claude and OpenAI cache almost the whole prompt; Gemini's implicit caching reused only about half). Full runs on the 105-case set, effort `low`:
+
+| Model | Passed | Wrongly answered | Cost / case |
+|---|---|---|---|
+| GPT-6 Luna | 99/105 | 0 | $0.00015 |
+| GPT-6.1 Sol | 99/105 | 0 | $0.0022 |
+| Claude Sonnet 5.5 | 99/103 on the earlier KB; 9/9 on the cases the KB fixes changed | 2, both caused by the KB and fixed (D-028) | $0.0045 |
+| Gemini 3.5 Flash-Lite | 97/105 | 3 | $0.0021 |
+
+No model invented a price or leaked internal content. GPT-6 Luna and GPT-6.1 Sol failed only on citation strictness in labels and one KB ambiguity. Gemini answered a file drop with a quote (q063), which matters because file drops are most WhatsApp traffic. GPT-6.1 Sol costs half of Sonnet in practice despite equal list prices (fewer tokens for the same prompt, cheaper cache reads, shorter replies).
+
+Tentative ranking: GPT-6 Luna first (as safe as the best, about 15× cheaper than Sol), then GPT-6.1 Sol. The final pick waits for a rerun on the finished KB, since these runs used a KB with known issues, and for a manual read of reply quality (tone, arithmetic, Greek), which the scorer can't judge.
+
 ---
 
 ## D-023 — Multi-turn conversations: history goes to the brain
