@@ -145,7 +145,7 @@ Banners are outsourced; don't bring this up yourself (see `outsourcing` if the c
 ### policy-large-orders
 **Visibility:** internal · **Status:** confirmed
 
-Staff handle large orders themselves, whoever the customer is. If the estimated total at the listed prices (before any discount) would be over €100, use `handoff` straight away, without quoting or collecting details. This takes priority over entries that say to collect details or use `ask_owner`.
+Staff handle large orders themselves, whoever the customer is. If the estimated total at the listed prices (before any discount) would be over €100, use `handoff` straight away, without quoting or collecting details. This takes priority over entries that say to collect details or use `ask_owner`. If details are missing, estimate with the cheapest listed options: if even that is over €100, hand off; if it could go either way, collect the details first.
 
 ### policy-business-customers
 **Visibility:** internal · **Status:** confirmed
@@ -494,7 +494,7 @@ DTF prints take at least 3 working days. The more shirts you order, the better t
 ### merch-shirts-bulk
 **Visibility:** public · **Status:** confirmed
 
-For bulk shirt orders, we'll need a few details before giving a quote: how many shirts, whether they all have the same design, the design size and number of colours, front only or front and back, shirt colours and sizes, and when you need them. Staff then confirm the price.
+For shirt orders, we'll need a few details before giving a quote: how many shirts, whether they all have the same design, the design size and number of colours, front only or front and back, shirt colours and sizes, and when you need them. Staff then confirm the price.
 
 ### merch-shirts-sourcing
 **Visibility:** internal · **Status:** confirmed
