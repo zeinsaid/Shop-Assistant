@@ -78,10 +78,11 @@ def score_case(case: dict, result: BrainResult | None, error: str | None = None,
     expected, got = case["expected_action"], str(d.action)
 
     # Citations: only meaningful when an answer was expected and given. Extra valid citations are
-    # fine; the expected ones are the minimum (see eval/README.md).
+    # fine; the expected ones are the minimum (see eval/README.md). "a|b" means either one counts.
     recall, missing = None, []
     if expected == "answer" and got == "answer":
-        missing = [e for e in case["expected_entries"] if e not in d.cited_entries]
+        missing = [e for e in case["expected_entries"]
+                   if not any(alt in d.cited_entries for alt in e.split("|"))]
         recall = 1 - len(missing) / len(case["expected_entries"])
 
     reply = (d.reply or "").lower()

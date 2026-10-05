@@ -49,6 +49,12 @@ def test_missing_citation_fails_but_extra_citation_is_fine():
     assert score_case(case(), result(cited=["a", "b", "c"]))["passed"]
 
 
+def test_alternative_citations_accept_either_entry():
+    either = case(expected_entries=["a|b"])
+    assert score_case(either, result(cited=["b"]))["passed"]
+    assert score_case(either, result(cited=["c"]))["checks"]["missing_citations"] == ["a|b"]
+
+
 def test_answering_when_escalation_was_expected_is_flagged():
     r = score_case(case(expected_action="ask_owner", expected_entries=[]), result())
     assert r["checks"]["wrongly_answered"] and not r["passed"]

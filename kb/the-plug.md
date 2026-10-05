@@ -357,7 +357,7 @@ These are prices for one sheet; prices for more sheets are discussed with our st
 ### stickers-internal
 **Visibility:** internal · **Status:** confirmed
 
-Only quote the one-sheet prices. For more than one sheet, don't work out a price: use `ask_owner`. Never promise sticker sizes, how many stickers fit on a sheet, or that a customer's design will fit a pre-cut layout; for those questions, use `ask_owner` too.
+You can always explain that we charge per sheet, not per sticker. Only quote the one-sheet prices. For more than one sheet, don't work out a price: use `ask_owner`. Never promise sticker sizes, how many stickers fit on a sheet, or that a customer's design will fit a pre-cut layout; for those questions, use `ask_owner` too.
 
 ---
 

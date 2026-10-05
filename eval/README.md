@@ -16,7 +16,7 @@
 | `notes` | Why the case is labelled this way |
 | `source` | Always `synthetic` in this file |
 
-`expected_entries` lists the citations a correct answer needs at minimum; extra valid citations are not penalised.
+`expected_entries` lists the citations a correct answer needs at minimum; extra valid citations are not penalised. `"a|b"` means citing either entry counts, for answers that can rightly rest on different entries.
 
 `tests/test_eval_cases.py` checks these rules, including that every `expected_entries` ID exists in `kb/`.
 

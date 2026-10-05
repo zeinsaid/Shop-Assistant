@@ -37,10 +37,11 @@ def test_case_is_well_formed(case):
         Attachment(**attachment)  # metadata only (D-010)
 
     entries = case["expected_entries"]
-    assert set(entries) <= KB_IDS, f"unknown KB entries: {set(entries) - KB_IDS}"
+    ids = {alt for e in entries for alt in e.split("|")}  # "a|b": either entry counts
+    assert ids <= KB_IDS, f"unknown KB entries: {ids - KB_IDS}"
     if case["expected_action"] == "answer":
         assert entries, "an answer case must expect at least one citation"
-        assert all(KB.is_public(e) for e in entries), "answers may only rely on public entries (D-020)"
+        assert all(KB.is_public(e) for e in ids), "answers may only rely on public entries (D-020)"
     else:
         assert not entries, "only answer cases expect citations"
 
