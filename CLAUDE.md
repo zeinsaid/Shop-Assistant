@@ -21,7 +21,7 @@ An AI receptionist for small businesses. It answers customer questions from an o
 
 No backend, database or UI yet. Don't scaffold them unless asked.
 
-**Now:** multi-turn conversations (D-023), then per-channel `no_reply` (D-024). KB work is paused until staff send photos of the real price lists; the shop website may become the live demo, so the KB will use real prices, not invented ones.
+**Now:** the KB onboarding interview (D-030): prompt, interview loop, drafting step, then a real interview of The Plug's owner compared with `kb/the-plug.md`. After that: multi-turn (D-023), per-channel `no_reply` (D-024) and the file-drop skip (D-029), built together. The KB has the shop's real prices (2026-10-05); the working model is GPT-6 Luna at effort `medium` (D-022).
 
 ## Core rules (don't break these)
 
@@ -74,11 +74,11 @@ I don't write the code myself; you do. But I want to understand every concept an
 
 Things agreed but deliberately not done yet. Check this list before starting a new phase.
 
-- **Fill the KB placeholders** (17+ entries with `Status: placeholder`, including all `details-*` entries): real prices, lamination and passport-photo prices, contact details in `shop-sending-files`, and a banners entry. Then re-check the expected values of the eval cases that depend on them. Waiting on photos of the real price lists from staff. Also fix the KB/label issues from the 2026-10-01 runs (large-order €100 limit applies to non-merch only, `hardcover` wording, duplicated DTF timing, stationery stock questions, editing details vs `ask_owner`, banners, badges).
-- **KB onboarding interview:** an AI interviews a new owner and drafts their KB (owner reviews before use). Build it after the KB is finished, so the interview's output can be compared against it. Needs a D-entry first.
 - **Multi-turn conversations** (D-023, Proposed): add `history` to `IncomingMessage` and write multi-turn eval cases at the start of phase 3.
 - **Per-channel `no_reply`** (D-024, Proposed): needed before the website chat goes live.
-- **Final model pick** (D-022): rerun the front-runners (GPT-6 Luna, GPT-6.1 Sol) on the finished KB. Also check Gemini's output token count against a real bill if Gemini stays in the running.
+- **File-drop skip** (D-029, Proposed): build with D-023 and D-024.
+- **Price calculator** (D-014): if wrong totals or missed €100 limits keep showing up in the eval (`wrong_amounts`), move price lookup and arithmetic into code as a tool.
+- **Final model pick** (D-022): GPT-6 Luna at `medium` is the working choice. Before going live, read a sample of replies by hand (tone, Greek). Check Gemini's output token count against a real bill only if Gemini comes back into consideration.
 - **Data protection check** (GDPR, EU data residency, DPA) for the chosen provider, before going live on the website.
 - **Go-live KB check:** before going live, add the shop's public WhatsApp/Viber number (one number) and email to `shop-sending-files` (the owner will provide them), and do a final pass over the KB.
 - **Deals the owner always refuses** (D-028): let the owner list deal requests that are always a no (e.g. free binding), so the bot can decline them itself instead of escalating each time.

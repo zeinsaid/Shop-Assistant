@@ -282,6 +282,8 @@ No model invented a price or leaked internal content. GPT-6 Luna and GPT-6.1 Sol
 
 Tentative ranking: GPT-6 Luna first (as safe as the best, about 15× cheaper than Sol), then GPT-6.1 Sol. The final pick waits for a rerun on the finished KB, since these runs used a KB with known issues, and for a manual read of reply quality (tone, arithmetic, Greek), which the scorer can't judge.
 
+**Update (2026-10-05): real KB.** After the KB was rewritten with the shop's real prices (112 cases), GPT-6 Luna at effort `low` scored 105/112 but applied the €100 large-order limit inconsistently (it quoted 700 colour pages at €119 in one run and handed off in another). At effort `medium` it scored 109/112 with no wrong answers, no wrong totals and every hand-off correct, at $0.00025 per message (about $0.25 per 1,000). GPT-6 Luna at `medium` is the working choice; GPT-6.1 Sol wasn't rerun, since Luna now meets the safety bar at a fraction of the cost. Before going live: read a sample of replies by hand (tone, Greek), and recheck if the KB or prompt changes substantially.
+
 ---
 
 ## D-023 — Multi-turn conversations: history goes to the brain
@@ -366,6 +368,34 @@ Tentative ranking: GPT-6 Luna first (as safe as the best, about 15× cheaper tha
 **Consequences:** Extends D-015: `handoff` also covers large orders, not only cases where a person must act. q058, q088, q090 and q100 change to `handoff`; q104 and q105 are added. The €100 check relies on the bot estimating totals from KB rates, so jobs with no listed price can't be checked against it. Later: the owner may define deals that are always refused, so the bot can say no itself (parked).
 
 **Update (2026-10-05):** the item-count limit is replaced by a single price limit: any order whose estimated total at listed prices (before discounts) is over €100 goes to `handoff`, whatever the job. With the real merch prices, a count rule was inconsistent (5 shirts already cost about €100, while 10 mugs are €80), and the owner wants every €100+ order looked at by a person since such orders are rare. q058, q088, q090 and q100 stay `handoff` under the new rule; q104 (8 shirts, €160) becomes `handoff`; q105 changes to 700 colour pages (€119) so it still tests the limit.
+
+---
+
+## D-029 — Plain file drops skip the model
+**Date:** 2026-10-05 · **Status:** Proposed
+
+**Decision:** On channels where `no_reply` is allowed (D-024), a message with at least one attachment and no text gets `no_reply` from code, without calling the model. Text with no letters or digits (only emoji or spaces) counts as no text. Two exceptions send it to the model as usual: the channel doesn't allow `no_reply` (the website chat), or the customer is in an active conversation with the bot (defined with multi-turn, D-023; for example, the bot's last message asked them to send a file). A file with any text ("how much is this?", "2 copies colour pls") always goes to the model.
+
+**Why:** Most WhatsApp traffic is customers in the shop sending files to print. Each model call costs money even when the answer is silence (about $0.0002 with GPT-6 Luna, more with pricier models). Deciding these in code also removes a failure mode (a model replying to a file drop, as Gemini did in the bake-off), adds no delay, and keeps working when the provider is down. Telling a question from an instruction for staff needs the model, so only text-free messages are skipped.
+
+**Consequences:** Built together with D-023 and D-024, since the exception needs conversation history and the switch is a per-channel setting. The skip is recorded in the brain's result (no model attempts, a `skipped` flag) so logs and eval runs show it; the file-only eval cases (q062, q064) then test the code path.
+
+---
+
+## D-030 — KB onboarding interview
+**Date:** 2026-10-05 · **Status:** Proposed
+
+**Decision:** A command-line tool (`python -m onboarding`) builds a first KB for a new business by interviewing the owner.
+- **Interview:** the owner describes the business in their own words; the model then asks one question at a time, working through a business-agnostic checklist: basics (name, location, hours, contact), services and products, prices and how they're calculated (tiers, surcharges, minimums), turnaround, payment, how customers send work, discounts and negotiation, limits on what the bot may quote, what needs the owner or staff, what must never be promised, what is private (internal) versus public, out-of-scope requests, and settings such as the fallback reply. Each turn returns structured output (the question, topics covered, whether it's done), so code can show progress and end the interview.
+- **Draft:** a separate model call turns the transcript into a KB in the standard format. `brain/kb.py` validates it; on errors the model gets one corrective retry.
+- **Review:** the draft is written to a file for the owner to read and edit. Nothing reaches the live KB automatically (as with D-004).
+- **Storage:** transcripts and drafts contain business information, so they're saved locally in a gitignored folder; an interrupted interview can be resumed from its transcript.
+- **Model:** behind the same provider seam as the brain (D-022). It runs once per business, so a stronger model is affordable; the default is chosen by comparing drafts.
+- **Business-agnostic:** the interview and drafting prompts live in `prompts/` and contain nothing business-specific (D-001, D-026); a test checks this.
+
+**Why:** Writing a KB by hand took several sessions of back-and-forth with the developer; an owner can't be expected to know the format, the public/internal split, or which rules a bot needs (limits, never-promise rules, escalation). An interview asks for exactly that, in the owner's words. Two separate jobs keep each prompt focused: interviewing well and writing a strict file format are different tasks, and the draft can be regenerated without redoing the interview.
+
+**Consequences:** Tested first by the owner of The Plug doing the interview, then comparing the draft with the hand-made `kb/the-plug.md` (missing facts, wrong visibility, missing rules). Later options: a simulated owner (a model that secretly knows an existing KB) for automatic testing; reading price lists from photos or spreadsheets, as was done by hand for The Plug; updating an existing KB through an interview.
 
 ---
 
