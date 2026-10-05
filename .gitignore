@@ -29,3 +29,7 @@ eval/results/
 
 # Raw business source material (price photos, spreadsheets) — never committed
 ThePlug_Data/
+
+# Onboarding interviews and KB drafts (business information)
+onboarding/sessions/
+onboarding/drafts/
