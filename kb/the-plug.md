@@ -2,6 +2,7 @@
 business: The Plug Business Center
 location: Asomatou 9, Egkomi, Lefkosia 2414, Cyprus
 currency: EUR
+default_language: en
 fallback_reply: Let me check with the team and get back to you. / Θα ελέγξω με την ομάδα και θα σας απαντήσω.
 last_reviewed: 2026-10-05
 ---

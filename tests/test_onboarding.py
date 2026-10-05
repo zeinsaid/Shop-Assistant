@@ -182,8 +182,7 @@ def test_check_kb_requires_settings_and_a_public_entry():
 
 def test_the_real_kb_passes_the_draft_check():
     text = (Path(__file__).resolve().parent.parent / "kb" / "the-plug.md").read_text(encoding="utf-8")
-    missing = check_kb(text)
-    assert missing == [] or missing == ["front matter is missing 'default_language'"]
+    assert check_kb(text) == []
 
 
 def test_translation_returns_the_text():
