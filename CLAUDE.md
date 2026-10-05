@@ -23,6 +23,13 @@ No backend, database or UI yet. Don't scaffold them unless asked.
 
 **Now:** the KB onboarding interview (D-030): prompt, interview loop, drafting step, then a real interview of The Plug's owner compared with `kb/the-plug.md`. After that: multi-turn (D-023), per-channel `no_reply` (D-024) and the file-drop skip (D-029), built together. The KB has the shop's real prices (2026-10-05); the working model is GPT-6 Luna at effort `medium` (D-022).
 
+## Product direction (owner, 2026-10-05)
+
+Possibly a product for other small businesses, not only The Plug. Keep design choices compatible with that:
+- **Customer side:** an embeddable chat widget or a hosted page per business; channel connectors (WhatsApp, Viber, Telegram) as adapters (D-009).
+- **Owner side:** no command lines. A simple backend/dashboard for the KB, the onboarding interview and connectors. CLIs are dev harnesses only, so keep logic in UI-agnostic classes (e.g. `Interview`). This changes D-012 ("no admin dashboard in v1"): propose an update when the backend is designed.
+- **Owner and staff notifications:** `ask_owner` and `handoff` don't reach anyone yet. To decide with the backend: likely the owner gets questions on an app they already use (D-009 proposes Telegram) and can reply there, with the dashboard as home base; handoffs land in a shared inbox for staff.
+
 ## Core rules (don't break these)
 
 - Every message gets exactly one action: `answer`, `ask_owner`, `handoff`, `no_reply` (D-002, D-015).

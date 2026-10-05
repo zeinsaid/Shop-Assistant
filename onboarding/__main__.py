@@ -1,6 +1,6 @@
 """Interview a business owner in the terminal to build their knowledge base (D-030).
 
-    uv run --env-file .env python -m onboarding --session my-shop --model claude-sonnet-5-5
+    uv run --env-file .env python -m onboarding --session my-shop [--model claude-sonnet-5-5]
 
 The session is saved to onboarding/sessions/<name>.json after every turn (gitignored: it holds
 business information). Run the same command again to resume. Type /quit to stop.
@@ -20,7 +20,7 @@ SESSIONS = Path(__file__).resolve().parent / "sessions"
 def main() -> None:
     parser = argparse.ArgumentParser(prog="python -m onboarding", description=__doc__.split("\n")[0])
     parser.add_argument("--session", required=True, help="a name for this interview, e.g. the business")
-    parser.add_argument("--model", required=True, help="e.g. claude-sonnet-5-5, gpt-6.1-sol, gpt-6-luna")
+    parser.add_argument("--model", default="claude-sonnet-5-5", help="a strong model is worth it here (D-030)")
     parser.add_argument("--effort", default="medium")
     args = parser.parse_args()
     sys.stdout.reconfigure(encoding="utf-8")  # the owner may write Greek; Windows consoles aren't UTF-8

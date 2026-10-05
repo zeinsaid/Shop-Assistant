@@ -267,14 +267,14 @@ class ScriptedClient:
 # --- Choosing a client -------------------------------------------------------------------------
 
 
-def make_client(model: str, effort: str | None = "low") -> LLMClient:
+def make_client(model: str, effort: str | None = "low", max_tokens: int = 16000) -> LLMClient:
     """Pick the client for a model name. New providers are added here (D-022)."""
     if model == "dry-run":
         return DryRunClient()
     if model.startswith("claude-"):
-        return AnthropicClient(model=model, effort=effort)
+        return AnthropicClient(model=model, effort=effort, max_tokens=max_tokens)
     if model.startswith("gpt-"):
-        return OpenAIClient(model=model, effort=effort)
+        return OpenAIClient(model=model, effort=effort, max_tokens=max_tokens)
     if model.startswith("gemini-"):
-        return GeminiClient(model=model, effort=effort)
+        return GeminiClient(model=model, effort=effort, max_tokens=max_tokens)
     raise ValueError(f"no client for model '{model}' (supported: dry-run, claude-*, gpt-*, gemini-*)")
