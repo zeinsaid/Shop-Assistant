@@ -21,7 +21,7 @@ An AI receptionist for small businesses. It answers customer questions from an o
 
 No backend, database or UI yet. Don't scaffold them unless asked.
 
-**Now:** the KB onboarding interview (D-030): prompt, interview loop, drafting step, then a real interview of The Plug's owner compared with `kb/the-plug.md`. After that: multi-turn (D-023), per-channel `no_reply` (D-024) and the file-drop skip (D-029), built together. The KB has the shop's real prices (2026-10-05); the working model is GPT-6 Luna at effort `medium` (D-022).
+**Now:** the KB onboarding interview (D-030). Steps 1-3 are done (`prompts/interview.md`, `onboarding/` with the interview loop and drafting step, `prompts/draft.md`, `prompts/translate_kb.md`). **Next session:** the owner runs the real interview in a terminal (`uv run --env-file .env python -m onboarding --session the-plug`, Claude Sonnet 5.5 by default), describing prices in words, not pasting files, to get a baseline. Then, with the owner's OK, run `python -m onboarding.draft --session the-plug` (about $0.20) and compare the draft with `kb/the-plug.md` entry by entry (missing facts, wrong visibility, missing rules) to improve the prompts. After that: file uploads for the interview (price spreadsheets and photos, D-030 later option; cost/supplier columns must never reach public entries), then multi-turn (D-023), per-channel `no_reply` (D-024) and the file-drop skip (D-029). The KB has the shop's real prices (2026-10-05); the working model is GPT-6 Luna at effort `medium` (D-022).
 
 ## Product direction (owner, 2026-10-05)
 
