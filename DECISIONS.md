@@ -363,6 +363,8 @@ Tentative ranking: GPT-6 Luna first (as safe as the best, about 15× cheaper tha
 
 **Consequences:** Extends D-015: `handoff` also covers large orders, not only cases where a person must act. q058, q088, q090 and q100 change to `handoff`; q104 and q105 are added. The €100 check relies on the bot estimating totals from KB rates, so jobs with no listed price can't be checked against it. Later: the owner may define deals that are always refused, so the bot can say no itself (parked).
 
+**Update (2026-10-05):** the item-count limit is replaced by a single price limit: any order whose estimated total at listed prices (before discounts) is over €100 goes to `handoff`, whatever the job. With the real merch prices, a count rule was inconsistent (5 shirts already cost about €100, while 10 mugs are €80), and the owner wants every €100+ order looked at by a person since such orders are rare. q058, q088, q090 and q100 stay `handoff` under the new rule; q104 (8 shirts, €160) becomes `handoff`; q105 changes to 700 colour pages (€119) so it still tests the limit.
+
 ---
 
 ## Template

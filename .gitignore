@@ -26,3 +26,6 @@ eval/results/
 .vscode/
 .idea/
 .DS_Store
+
+# Raw business source material (price photos, spreadsheets) — never committed
+ThePlug_Data/

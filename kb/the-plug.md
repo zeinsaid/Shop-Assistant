@@ -3,7 +3,7 @@ business: The Plug Business Center
 location: Asomatou 9, Egkomi, Lefkosia 2414, Cyprus
 currency: EUR
 fallback_reply: Let me check with the team and get back to you. / Θα ελέγξω με την ομάδα και θα σας απαντήσω.
-last_reviewed: 2026-09-28
+last_reviewed: 2026-10-05
 ---
 
 # The Plug: Knowledge Base
@@ -20,7 +20,7 @@ Each entry has an ID the bot cites when answering.
 ### shop-hours
 **Visibility:** public · **Status:** confirmed
 
-We're open 24 hours a day, 7 days a week.
+We're open 24 hours a day, 7 days a week. For bigger or more complicated printing jobs (anything beyond standard printing, such as design, booklets or hardcovers), it's best to come between 8:00 and 18:00, when our most experienced staff are in.
 
 ### shop-hours-holidays
 **Visibility:** internal · **Status:** confirmed
@@ -47,7 +47,7 @@ We accept card and cash. Bank transfer is possible for some orders; arrange it w
 ### turnaround-standard
 **Visibility:** public · **Status:** confirmed
 
-Most jobs we do in-house are ready the same day or the next day. If you need something urgently, ask and we'll do our best to have it ready the same day. DTF shirt prints take at least 3 working days.
+Most jobs we do in-house are ready the same day or the next day. If you need something urgently, ask and we'll do our best to have it ready the same day.
 
 ### turnaround-internal
 **Visibility:** internal · **Status:** confirmed
@@ -101,7 +101,7 @@ This chat handles The Plug's printing, scanning, finishing, merchandise and stat
 ### policy-pricing-approach
 **Visibility:** public · **Status:** confirmed
 
-All prices are guides; the final price is confirmed by staff when the order is placed.
+All prices are estimates. Whenever you give a price, say it depends on the actual order and that staff confirm the final price when the order is placed (for example, a file that needs fixing costs more). Never promise or agree to a fixed price.
 
 - **Simple jobs** (one service with a known quantity, size and colour, e.g. "100 black & white A4 pages"): give the estimated total and the rate used.
 - **Jobs missing details** (e.g. "how much is a booklet?"): ask for what's needed (number of pages, size, colour, paper, finishing) and give the relevant rates meanwhile.
@@ -110,12 +110,12 @@ All prices are guides; the final price is confirmed by staff when the order is p
 ### policy-effort-pricing
 **Visibility:** internal · **Status:** confirmed
 
-Pricing reflects staff effort. Jobs that only need to be sent to the printer are cheap. Anything needing editing, design work, manual cutting or assembly costs more and is priced case by case. If a request needs editing or design work, don't quote it; use `ask_owner`.
+Pricing reflects staff effort. Jobs that only need to be sent to the printer are cheap. Anything needing editing, design work, manual cutting or assembly costs more and is priced case by case. If a request needs editing or design work, don't quote it; follow `editing-internal`.
 
 ### policy-discounts
 **Visibility:** internal · **Status:** confirmed
 
-Staff sometimes lower prices for large or labour-heavy jobs (for example large manual scanning jobs, bulk photos, bulk shirts) or waive small charges as goodwill. The bot never offers or agrees to discounts itself. If a customer asks for a better price, use `ask_owner`.
+Prices for standard printing (A4/A3, large format, photos, lamination, special paper, business cards) are fixed. Prices for merchandise and custom jobs vary: staff adjust them for each customer and order, usually starting high, and sometimes lower prices for large or labour-heavy jobs (for example large manual scanning jobs) or waive small charges as goodwill. For merchandise and custom jobs, quote the listed price (never lower); you may say the more you buy, the better the price, but never name a discount or percentage. The bot never offers or agrees to discounts itself: if a customer asks for a better price, use `ask_owner`. The only exception is the student discount on large format, which follows `discount-students-internal`.
 
 ### policy-collect-details
 **Visibility:** internal · **Status:** confirmed
@@ -132,14 +132,20 @@ We don't share supplier names, supplier prices or other internal business detail
 
 Some items, such as hardcover binding, DTF shirt prints and banners, are made with an external partner, which is why they take longer than jobs we do in the shop. We don't share partner names, links or prices.
 
+### banners
+**Visibility:** public · **Status:** confirmed
+
+We do banners. Price and timing depend on the size, material and design, so staff confirm them. For a quote we need: the size, where it will be used (indoor or outdoor), whether the design is ready, quantity, and when you need it.
+
+### banners-internal
+**Visibility:** internal · **Status:** confirmed
+
+Banners are outsourced; don't bring this up yourself (see `outsourcing` if the customer asks). Never estimate a banner price or lead time: collect the details listed in `banners`, then use `ask_owner`.
+
 ### policy-large-orders
 **Visibility:** internal · **Status:** confirmed
 
-Staff handle large orders themselves, whoever the customer is. Use `handoff` straight away, without quoting or collecting details, when a customer asks for:
-- 30 or more shirts, badges, keychains or other merchandise items, or
-- any order whose estimated total at the normal rates would be over €100.
-
-This takes priority over entries that say to collect details or use `ask_owner`. Smaller bulk orders, including asking for a discount on a few shirts, follow `policy-collect-details`: collect the details first, then use `ask_owner`.
+Staff handle large orders themselves, whoever the customer is. If the estimated total at the listed prices (before any discount) would be over €100, use `handoff` straight away, without quoting or collecting details. This takes priority over entries that say to collect details or use `ask_owner`.
 
 ### policy-business-customers
 **Visibility:** internal · **Status:** confirmed
@@ -149,7 +155,7 @@ Staff prefer to work with businesses and organisations directly rather than thro
 ### policy-we-try
 **Visibility:** internal · **Status:** confirmed
 
-For requests not covered here (unusual paper, a customer's own paper, banners, items we don't make in-house), never say no. Tell the customer we'll check and get back to them, and use `ask_owner`. Don't bring up outsourcing yourself.
+For requests not covered here (unusual paper, a customer's own paper, items we don't make in-house), never say no. Tell the customer we'll check and get back to them, and use `ask_owner`. Don't bring up outsourcing yourself.
 
 ---
 
@@ -158,29 +164,24 @@ For requests not covered here (unusual paper, a customer's own paper, banners, i
 Each kind of job needs different details before staff can price it. When a customer asks for a price and hasn't given them, ask for what's missing (see `policy-pricing-approach`). For shirts, see `merch-shirts-bulk`.
 
 ### details-printing
-**Visibility:** public · **Status:** placeholder
+**Visibility:** public · **Status:** confirmed
 
 For a printing job we need: black & white or colour, paper size (A4, A3 or larger), number of pages and copies, single- or double-sided, the paper type if it's not plain, any finishing (binding, lamination), and when you need it.
 
 ### details-large-format
-**Visibility:** public · **Status:** placeholder
+**Visibility:** public · **Status:** confirmed
 
-For posters and other large prints we need: the size (A2, A1 or A0), black & white or colour, paper weight, quantity, whether the file is ready to print or needs editing or design work, and when you need it.
+For posters and other large prints we need: the size (A2, A1 or A0), black & white or colour, whether it's line work or an image with lots of ink, the paper (plain, medium or thick), quantity, whether the file is ready to print or needs editing or design work, and when you need it.
 
 ### details-booklets-binding
-**Visibility:** public · **Status:** placeholder
+**Visibility:** public · **Status:** confirmed
 
 For booklets, bound documents and hardcovers we need: number of pages, black & white or colour, paper, the type of cover (regular, thicker or hardcover), quantity, and when you need it.
 
 ### details-stickers-cards
-**Visibility:** public · **Status:** placeholder
+**Visibility:** public · **Status:** confirmed
 
-For stickers we need: pre-cut or custom shape, number of sheets, and whether the design is ready. For business cards we need: quantity, single- or double-sided, and whether the design is ready.
-
-### details-editing
-**Visibility:** public · **Status:** placeholder
-
-For editing and design work we need: what should be done, the files or photos to work on, any examples you like, and when you need it. Staff quote the price once they've seen the job.
+For stickers we need: pre-cut (circles, rectangles or squares) or custom shape, number of sheets, and whether the design is ready. For business cards we need: quantity, single- or double-sided, and whether you have a ready design or want us to design it.
 
 ---
 
@@ -189,89 +190,169 @@ For editing and design work we need: what should be done, the files or photos to
 ### print-per-page
 **Visibility:** public · **Status:** confirmed
 
-Printing is charged per printed page, not per sheet. A double-sided sheet counts as two pages.
+Printing is charged per printed page, not per sheet: a double-sided sheet counts as two pages, and single- and double-sided pages cost the same. The rate depends on the total number of pages in the job (pages × copies) and applies to every page in it. For example, 3 copies of a 20-page document is 60 pages, all at the 51–100 rate.
 
 ### print-a4-bw
-**Visibility:** public · **Status:** placeholder
+**Visibility:** public · **Status:** confirmed
 
-A4 black & white: €0.20 per page for jobs of up to 10 pages, €0.10 per page for jobs of more than 10 pages, and down to around €0.08–0.09 per page for very large jobs (200–300+ pages). The rate depends on the total size of the job and applies to every page in it (for example, a 100-page job is 100 × €0.10 = €10).
+A4 black & white, price per page by total pages in the job:
+
+| Pages | 1–10 | 11–20 | 21–100 | 101–300 | 301–500 | 501–1000 | 1001–2000 | 2001+ |
+|---|---|---|---|---|---|---|---|---|
+| € per page | 0.20 | 0.15 | 0.10 | 0.09 | 0.08 | 0.07 | 0.06 | 0.05 |
+
+Example: 100 pages = 100 × €0.10 = €10.
 
 ### print-a4-colour
-**Visibility:** public · **Status:** placeholder
+**Visibility:** public · **Status:** confirmed
 
-A4 colour: €0.50 per page for jobs of up to 10 pages, €0.40 per page for jobs of more than 10 pages, €0.30 per page for jobs of more than 50 pages. The rate depends on the total size of the job and applies to every page in it (for example, a 120-page job is 120 × €0.30 = €36).
+A4 colour, price per page by total pages in the job:
+
+| Pages | 1–5 | 6–20 | 21–50 | 51–100 | 101–200 | 201–400 | 401–500 | 501–1000 | 1001+ |
+|---|---|---|---|---|---|---|---|---|---|
+| € per page | 0.50 | 0.40 | 0.35 | 0.30 | 0.27 | 0.23 | 0.20 | 0.17 | 0.15 |
+
+Example: 120 pages = 120 × €0.27 = €32.40.
 
 ### print-a3-bw
-**Visibility:** public · **Status:** placeholder
+**Visibility:** public · **Status:** confirmed
 
-A3 black & white: from €0.50 per page for small quantities, down to around €0.30–0.40 per page for large quantities. The rate depends on the total quantity and applies to every page in the job.
+A3 black & white, price per page by total pages in the job:
+
+| Pages | 1–5 | 6–20 | 21–100 | 101–200 | 201–300 | 301–500 | 501–1000 | 1001–2000 | 2001+ |
+|---|---|---|---|---|---|---|---|---|---|
+| € per page | 0.40 | 0.30 | 0.20 | 0.18 | 0.17 | 0.14 | 0.13 | 0.11 | 0.10 |
 
 ### print-a3-colour
-**Visibility:** public · **Status:** placeholder
+**Visibility:** public · **Status:** confirmed
 
-A3 colour: from €1.00 per page for small quantities, down to around €0.60 per page for large quantities. The rate depends on the total quantity and applies to every page in the job.
+A3 colour, price per page by total pages in the job:
+
+| Pages | 1–5 | 6–20 | 21–50 | 51–100 | 101–200 | 201–400 | 401–500 | 501–1000 | 1001+ |
+|---|---|---|---|---|---|---|---|---|---|
+| € per page | 1.00 | 0.80 | 0.70 | 0.60 | 0.54 | 0.46 | 0.40 | 0.34 | 0.30 |
 
 ---
 
 ## Paper options (A4 / A3)
 
 ### paper-special
-**Visibility:** public · **Status:** placeholder
+**Visibility:** public · **Status:** confirmed
 
-Besides plain paper, we print A4 and A3 on thicker paper up to 300gsm (glossy or matte), plus specialty papers such as tracing paper and coloured paper.
+Besides plain paper (80g, normal price), we print A4 and A3 on:
+- medium (about 120g), thick (about 180g) and extra-thick card (about 300g), each in matte or glossy. For thick cards we usually recommend 300g.
+- 350g card, mainly used for business cards.
+- tracing (transparent) paper.
+- coloured paper, in a selection of colours. Print colours close to the paper's colour don't show well, and we can't print on black paper (printers don't use white ink).
+- shiny pearl and snow-white paper, mainly used for wedding invitations.
 
-Special paper adds €0.30–0.50 per sheet on top of the normal per-page printing price. Example: 20 single-sided black & white pages at €0.10 each, plus a €0.40 paper surcharge per sheet, comes to €0.50 per sheet, so €10.00 in total.
+Special paper is charged per sheet, on top of the normal per-page printing price. The rate depends on the number of sheets and applies to every sheet:
+
+| Sheets | 1–9 | 10–50 | 51+ |
+|---|---|---|---|
+| € per sheet | 0.50 | 0.30 | 0.20 |
+
+Example: 10 single-sided colour A4 pages on thick paper = 10 × €0.40 printing + 10 × €0.30 paper = €7.
+
+### paper-special-internal
+**Visibility:** internal · **Status:** confirmed
+
+The per-sheet rates above cover medium, thick, extra-thick (300g), tracing and coloured paper. 350g card and pearl or snow-white paper are priced by staff: say we have them, collect the details (see `details-printing`), then use `ask_owner`. Paper we don't list (other weights, the customer's own paper) follows `policy-we-try`.
 
 ---
 
 ## Large format printing (A2 and above)
 
 ### print-large-format
-**Visibility:** public · **Status:** placeholder
+**Visibility:** public · **Status:** confirmed
 
-We print A2, A1 and A0, in black & white or colour, on paper from 80gsm (plain) up to 180gsm (heavyweight, the thickest we offer for large format). Price depends on size, colour and paper weight. Guide prices:
-- A2 black & white on plain paper: from €5
-- A2 colour on heavyweight paper: up to around €9
-- A0: from around €9, up to €15–20 for colour on heavyweight paper
+We print A2 (42×59.4 cm), A1 (59.5×84.1 cm) and A0 (84.1×118.9 cm), in black & white or colour. Papers: plain (also called normal, 80g), medium (coated 120g), and thick or heavyweight (coated 140g or 180g; 180g is the thickest). Plain paper is only suitable for line work and other low-ink prints such as architectural drawings; images and anything with large solid areas (colour or black & white) need at least medium (120g), because heavy ink soaks plain paper.
 
-Prices for A1 and for specific size/paper combinations are confirmed by staff.
+Price per print in €, by number of prints in the job:
+
+| Paper | Size | B&W 1–5 | B&W 6–20 | B&W 21–50 | Colour 1–5 | Colour 6–20 | Colour 21–50 |
+|---|---|---|---|---|---|---|---|
+| Plain | A2 | 3.00 | 2.80 | 2.50 | 4.00 | 3.90 | 3.80 |
+| Plain | A1 | 4.00 | 3.60 | 3.40 | 5.00 | 4.80 | 4.50 |
+| Plain | A0 | 7.00 | 6.00 | 5.50 | 9.00 | 8.50 | 8.00 |
+| Medium 120g | A2 | 4.00 | 3.80 | 3.50 | 5.50 | 5.30 | 5.00 |
+| Medium 120g | A1 | 6.00 | 5.20 | 4.80 | 8.00 | 7.50 | 6.80 |
+| Medium 120g | A0 | 8.50 | 7.00 | 6.50 | 12.00 | 9.50 | 9.00 |
+| Thick 140g | A2 | 5.50 | 5.00 | 4.90 | 9.00 | 8.50 | 8.00 |
+| Thick 140g | A1 | 8.50 | 8.30 | 8.00 | 14.00 | 13.50 | 13.00 |
+| Thick 140g | A0 | 11.50 | 10.50 | 9.50 | 18.50 | 17.00 | 15.50 |
+| Thick 180g | A2 | 6.50 | 6.00 | 5.90 | 10.00 | 9.50 | 9.00 |
+| Thick 180g | A1 | 9.50 | 9.30 | 9.00 | 15.00 | 14.50 | 14.00 |
+| Thick 180g | A0 | 13.00 | 11.50 | 11.00 | 20.00 | 18.00 | 17.50 |
+
+For more than 50 prints, staff quote the price.
+
+### print-canvas
+**Visibility:** public · **Status:** confirmed
+
+We print on canvas in the shop. Price per piece: A4 €20 colour / €15 black & white, A3 €30 / €25, A2 €40 / €35, A1 €50 / €45.
+
+### print-canvas-internal
+**Visibility:** internal · **Status:** confirmed
+
+Canvas is a rare, special job. You may say we do it and give the listed price for a single piece. For anything the list doesn't cover (several pieces, other sizes, special requests), don't work out a price: use `ask_owner`.
+
+### discount-students-large-format
+**Visibility:** public · **Status:** confirmed
+
+Students get 30% off large format prints that cost more than €5 per print.
+
+### discount-students-internal
+**Visibility:** internal · **Status:** confirmed
+
+Never mention the student discount unless the customer asks whether there's a discount. When they ask: if they haven't said they're a student, ask; if they are, take 30% off every large format print whose listed price per print is over €5 (prints at €5 or less get no student discount; canvas isn't included). Check the €100 limit in `policy-large-orders` against the price before the discount.
 
 ---
 
 ## Business cards and ID photos
 
 ### business-cards
-**Visibility:** public · **Status:** placeholder
+**Visibility:** public · **Status:** confirmed
 
-Business cards are priced by quantity: 100 cards for €20, 250 cards for €40. Double-sided cards are priced as double the quantity (e.g. 125 double-sided cards are priced as 250 cards). Prices for other quantities are confirmed by staff.
+Business cards, printed on 350g card: 100 for €25, 200 for €45, 300 for €55, 400 for €65, 500 for €75, 1000 for €110. Double-sided cards are priced as double the quantity (100 double-sided cards are priced as 200). Staff confirm prices for other quantities. You can send a ready design, or give us your details and we design the card for you; design work costs extra and staff quote it.
 
 ### passport-photos
-**Visibility:** public · **Status:** placeholder
+**Visibility:** public · **Status:** confirmed
 
-We do passport and ID photos. (Price to be added; until then, staff confirm it.)
+Passport and ID photos come in sets of 8: €15 if we take the photo in the shop, €10 if we print them from your own photo.
 
 ---
 
 ## Stickers
 
-### stickers-precut
+### stickers
 **Visibility:** public · **Status:** confirmed
 
-Pre-cut sticker sheets: €3 per sheet. We charge per sheet, not per sticker. How many stickers fit on a sheet depends on the pre-cut layout, from 1–2 large stickers up to around 50 small ones.
+Sticker paper, price per sheet:
+- A4 sticker sheet, either pre-cut (circles or rectangles) or a whole sheet without cuts: €3.
+- A3 whole sticker sheet without cuts (no pre-cut A3): €5.
+- Custom-cut stickers (any shape, cut on our cutting machine): €4 per A4 sheet, €6 per A3 sheet.
 
-### stickers-custom-cut
-**Visibility:** public · **Status:** confirmed
+These are prices for one sheet; prices for more sheets are discussed with our staff.
 
-Custom-cut stickers (any shape): €5 per sheet. These are printed and then cut on a cutting machine, which takes more time.
+### stickers-internal
+**Visibility:** internal · **Status:** confirmed
+
+Only quote the one-sheet prices. For more than one sheet, don't work out a price: use `ask_owner`. Never promise sticker sizes, how many stickers fit on a sheet, or that a customer's design will fit a pre-cut layout; for those questions, use `ask_owner` too.
 
 ---
 
 ## Finishing
 
 ### binding
-**Visibility:** public · **Status:** placeholder
+**Visibility:** public · **Status:** confirmed
 
-Binding: from €2.50 for a thin document, rising to €3, €4 and up to €5 for a very thick book. Larger bindings take more work.
+Binding is plastic spiral binding: from €2.50 for a thin document up to €5 for a very thick book, depending on the number of pages. It's one charge per book, on top of printing. For very small books, like magazines, we use staple binding (see `booklets`).
+
+### binding-other
+**Visibility:** internal · **Status:** confirmed
+
+We also have plastic sleeve binding (rarely used; don't offer it) and glue binding. Only if the customer asks whether we do glue binding, say yes. Glue binding is made with our external partner and needs a semi-hard or hard cover, so never estimate its price or timing: use `ask_owner`.
 
 ### binding-waiver
 **Visibility:** internal · **Status:** confirmed
@@ -279,19 +360,29 @@ Binding: from €2.50 for a thin document, rising to €3, €4 and up to €5 f
 For larger orders (printing over roughly €20), staff often give binding for free as a goodwill gesture, presented to the customer as a gift once the order is done. The bot must never promise or mention free binding; it quotes binding at the normal price and leaves any waiver to staff. If a customer asks whether binding is free, that's a request for a better price: use `ask_owner` (see `policy-discounts`).
 
 ### lamination
-**Visibility:** public · **Status:** placeholder
+**Visibility:** public · **Status:** confirmed
 
-We laminate. Lamination is charged separately, on top of the normal printing price. (Lamination price to be added; until then, staff confirm it.)
+Lamination is charged per sheet, separately from printing. A double-sided sheet is laminated once, so 10 double-sided pages = 5 sheets of lamination. The rate depends on the number of sheets and applies to every sheet:
+
+| Sheets | 1 | 2–5 | 6–10 | 11–20 | 21–50 | 51+ |
+|---|---|---|---|---|---|---|
+| A4, € per sheet | 1.00 | 0.85 | 0.70 | 0.60 | 0.50 | 0.40 |
+
+| Sheets | 1 | 2–5 | 6–10 | 11–30 | 31+ |
+|---|---|---|---|---|---|
+| A3, € per sheet | 1.50 | 1.20 | 1.00 | 0.80 | 0.70 |
+
+Example: printing and laminating 10 single-sided colour A4 pages = 10 × €0.40 printing + 10 × €0.70 lamination = €11.
 
 ### booklets
 **Visibility:** public · **Status:** confirmed
 
-We make booklets (folded and stapled in the middle, with an optional thicker cover). Price depends on the job. Simple booklets from a ready-to-print document on plain paper are straightforward; thick covers or documents that need preparing take more work and are quoted by staff.
+We make stapled booklets (folded and stapled in the middle, like a magazine). An A4 booklet is printed on A3, two A4 pages on each side of the sheet, so it's charged as half its A4 page count in A3 pages, plus €3–5 for folding and stapling. Example: a 30-page A4 colour booklet = 15 A3 colour pages × €0.80 = €12, plus €3–5, so about €15–17. Documents that need rearranging or trimming for booklet printing take extra work, so staff confirm the final price.
 
 ### hardcover
-**Visibility:** public · **Status:** placeholder
+**Visibility:** public · **Status:** confirmed
 
-We make hardcover bound books. The hardcover costs around €30 on top of the normal printing price for the pages inside. Hardcovers take longer than regular jobs; staff confirm the timing.
+We offer hardcover bound books. The hardcover costs around €35 on top of the normal printing price for the pages inside. Hardcovers take about 3 working days from when the order is confirmed and paid.
 
 ### hardcover-sourcing
 **Visibility:** internal · **Status:** confirmed
@@ -305,22 +396,24 @@ Hardcovers are outsourced. Don't bring this up yourself. If the customer asks wh
 ### editing
 **Visibility:** public · **Status:** confirmed
 
-We do photo editing and design work (Photoshop). Price depends on the job and how long it takes, so staff quote it case by case.
+We do editing and design. Simple edits (adding or removing text, resizing) and full design work (posters, shirts, business cards, invitations and more). Editing and design cost extra and take more time, so they're priced in person: it's best to come in and discuss the job with our staff, and for design work with our manager.
 
 ### editing-internal
 **Visibility:** internal · **Status:** confirmed
 
-Editing prices vary heavily between jobs and staff. The bot never estimates an editing price; any editing price question uses `ask_owner`.
+Never estimate a price or time for editing or design. If the customer asks whether we can do something, say yes and suggest discussing it in the shop (design work with our manager). If they want a price or want to start an editing or design job, use `handoff`.
 
 ---
 
 ## Scanning
 
 ### scanning
-**Visibility:** public · **Status:** placeholder
+**Visibility:** public · **Status:** confirmed
 
 - Manual scanning (single items like passports or IDs, bound books, anything that has to be placed and flipped by hand): €0.50 per page.
-- Automatic scanning (loose stacks of documents fed through our document scanner): around €0.10 per page.
+- Automatic scanning (loose stacks of documents fed through our document scanner): €0.10 per page.
+
+For large manual scanning jobs, such as whole books, the price can be discussed with our staff.
 
 ### scanning-large-jobs
 **Visibility:** internal · **Status:** confirmed
@@ -334,59 +427,81 @@ For large manual scanning jobs, staff are willing to go below the per-page price
 ### photo-prints
 **Visibility:** public · **Status:** confirmed
 
-Photo prints on photo paper: €0.50 per print for 15×10 cm, €1.00 per print for 15×20 cm. Discounts are available for large quantities.
+Photo prints on photo paper, price per print by number of prints in the job:
 
-### photo-prints-bulk
-**Visibility:** internal · **Status:** placeholder
-
-Orders of around 100 prints or fewer simply follow the normal per-print price in `photo-prints`. For much larger orders (hundreds of prints), prices can go down to around €0.25 (15×10) and €0.80 (15×20). The exact bulk price is decided by staff; for bulk orders the bot says discounts are available and escalates (`ask_owner`; over €100 at normal prices, `policy-large-orders` applies).
-
----
+| Prints | 1–50 | 51–100 | 101+ |
+|---|---|---|---|
+| 15×10 cm | €0.50 | €0.40 | €0.35 |
+| 15×20 cm | €1.00 | €0.80 | €0.70 |---
 
 ## Merchandise
 
-### merch-keychains
-**Visibility:** public · **Status:** placeholder
+### merch-items
+**Visibility:** public · **Status:** confirmed
 
-Custom keychains: around €8–10 depending on the design. We have many designs available; staff can show you the full catalogue in the shop.
+Custom printed items, price per piece:
+- Mugs: €12 for 1, €10 each for 2–4, €8 each for 5 or more. Printing on a non-standard mug adds €2 per mug, and staff check it can be printed.
+- Coasters, key rings and name badges: €8 for 1, €7.50 each for 2–4, €5 each for 5 or more.
+- Tote bags and pillows: €25 printed on one side, €30 on both sides. Bringing your own tote bag takes €5 off.
+- Slates: €20 (10×15 cm), €25 (15×20 cm), €30 (30×30 cm).
+- Wooden photo slates (18×27 cm): €30 for 1, €25 each for 2–4, €18 each for 5 or more.
+- Teddy bears: €25 for 1, €20 each for 2–4, €18 each for 5 or more.
+
+The more you order, the better the price. Staff can show you catalogues of shirts, hoodies, mugs, keychains and other printable items in the shop.
+
+### merch-items-internal
+**Visibility:** internal · **Status:** confirmed
+
+For more than one tote bag, pillow or slate, don't work out a price: say the more you order, the better the price, and use `handoff` if the customer wants an actual price.
 
 ### merch-catalogue
 **Visibility:** internal · **Status:** confirmed
 
-Staff show customers the supplier's customer-facing catalogue (the version without supplier prices). Never share supplier names, links or supplier prices.
+Staff show customers a textile catalogue (shirts, hoodies) and our supplier's website for printable items, both without supplier prices. Never share supplier names, links or supplier prices; suggest browsing the catalogues with staff in the shop.
 
 ### merch-shirts
-**Visibility:** public · **Status:** placeholder
+**Visibility:** public · **Status:** confirmed
 
-Custom t-shirts:
-- Sublimation or vinyl: around €15 per shirt, up to €20 for double-sided or complex designs
-- DTF prints: €20–25 per shirt, depending on print size and whether it's double-sided; takes at least 3 working days
+Custom t-shirts, price per shirt. We prefer to supply the shirts, but you can bring your own:
 
-Discounts are available for orders of 10 or more shirts.
+| Print | Our shirt, one side | Our shirt, both sides | Your shirt, one side | Your shirt, both sides |
+|---|---|---|---|---|
+| DTF | €20 | €25 | €15 | €20 |
+| Vinyl | €17 | €22 | €12 | €17 |
+| Sublimation | €20 | €25 | €15 | €20 |
+
+DTF prints take at least 3 working days. The more shirts you order, the better the price.
 
 ### merch-shirts-bulk
 **Visibility:** public · **Status:** confirmed
 
-For bulk shirt orders, we'll need a few details before giving a quote: how many shirts, whether they all have the same design, the design size and number of colours, front only or front and back, shirt colours and sizes, and when you need them. Staff then confirm the price and any bulk discount.
+For bulk shirt orders, we'll need a few details before giving a quote: how many shirts, whether they all have the same design, the design size and number of colours, front only or front and back, shirt colours and sizes, and when you need them. Staff then confirm the price.
 
 ### merch-shirts-sourcing
 **Visibility:** internal · **Status:** confirmed
 
-DTF prints are outsourced and then heat-pressed in the shop. Don't bring outsourcing up yourself. If the customer asks who makes them, or why they take longer or can't be done the same day, you may say the print is made with an external partner and finished in the shop (see `outsourcing`). Our partner needs at least 3 working days, so DTF prints can't be done sooner; explain that rather than escalating. Never give partner names, links or prices, and never claim they're made in-house. The exact bulk discount for 10+ shirts is decided by staff.
+DTF prints are outsourced and then heat-pressed in the shop. Don't bring outsourcing up yourself. If the customer asks who makes them, or why they take longer or can't be done the same day, you may say the print is made with an external partner and finished in the shop (see `outsourcing`). Our partner needs at least 3 working days, so DTF prints can't be done sooner; explain that rather than escalating. Never give partner names, links or prices, and never claim they're made in-house.
 
 ---
 
 ## Stationery
 
 ### stationery
-**Visibility:** public · **Status:** placeholder
+**Visibility:** public · **Status:** confirmed
 
-We sell stationery, including USB sticks, calculators, pens, highlighters, erasers, notebooks (including notebooks with thicker paper), folders, binders, poster boards, canvases, paint, and tracing paper (sheets and rolls). (Full stock list to be added from the shop's system.)
+We sell stationery and art supplies, including:
+- Writing: pens, pencils and mechanical pencils, markers (permanent, whiteboard, metallic, paint and acrylic markers), highlighters, correction pens and tape, erasers, sharpeners.
+- Paper: notebooks and exercise books, refill pads, graph paper pads, sticky notes, diaries, envelopes.
+- Art and architecture: sketchbooks and sketch pads (including heavyweight and black paper), mixed-media pads, tracing paper pads and rolls, stretched canvases in many sizes, acrylic paints, brushes, charcoal, card, mount board, foam board, grey board and cardboard, cutting mats, craft knives, rulers and scale rulers.
+- Office: staplers and staples, hole punches, paper and binder clips, push pins, tape (clear, double-sided, foam), glue, Blu Tack, scissors, clear bags and sheet protectors, lanyards, sign and name card stands.
+- USB sticks and calculators.
+
+We also sell photo frames.
 
 ### stationery-internal
 **Visibility:** internal · **Status:** confirmed
 
-Stock changes daily, so say "we usually stock…" rather than guaranteeing availability. Customers use loose names (a "blank book" or "sketchbook" may mean a notebook), so match by meaning. Questions about specific brands or models, or exact quantities in stock, use `ask_owner`.
+Stock changes daily. For a general question about an item in these categories ("do you have poster boards?"), say we usually stock it, without guaranteeing it's in stock right now. Customers use loose names (a "blank book" or "sketchbook" may mean a notebook; "poster board" may mean foam board or mount board), so match by meaning. Specific brands or models, exact quantities in stock, and stationery prices aren't in the knowledge base: use `ask_owner`.
 
 ---
 
