@@ -25,7 +25,7 @@ We're open 24 hours a day, 7 days a week. For bigger or more complicated printin
 ### shop-hours-holidays
 **Visibility:** internal · **Status:** confirmed
 
-The shop may occasionally close for holidays. If a customer asks about a specific holiday or date, use `ask_owner` rather than assuming we're open.
+The shop may occasionally close for holidays. If a customer asks whether we're open on a particular holiday (for example Christmas or a public holiday), use `ask_owner` rather than assuming we're open. Questions about normal opening hours, today or tonight are answered from `shop-hours`.
 
 ### shop-location
 **Visibility:** public · **Status:** confirmed
@@ -268,22 +268,41 @@ The per-sheet rates above cover medium, thick, extra-thick (300g), tracing and c
 
 We print A2 (42×59.4 cm), A1 (59.5×84.1 cm) and A0 (84.1×118.9 cm), in black & white or colour. Papers: plain (also called normal, 80g), medium (coated 120g), and thick or heavyweight (coated 140g or 180g; 180g is the thickest). Plain paper is only suitable for line work and other low-ink prints such as architectural drawings; images and anything with large solid areas (colour or black & white) need at least medium (120g), because heavy ink soaks plain paper.
 
-Price per print in €, by number of prints in the job:
+Price per print in €, by number of prints in the job.
 
-| Paper | Size | B&W 1–5 | B&W 6–20 | B&W 21–50 | Colour 1–5 | Colour 6–20 | Colour 21–50 |
-|---|---|---|---|---|---|---|---|
-| Plain | A2 | 3.00 | 2.80 | 2.50 | 4.00 | 3.90 | 3.80 |
-| Plain | A1 | 4.00 | 3.60 | 3.40 | 5.00 | 4.80 | 4.50 |
-| Plain | A0 | 7.00 | 6.00 | 5.50 | 9.00 | 8.50 | 8.00 |
-| Medium 120g | A2 | 4.00 | 3.80 | 3.50 | 5.50 | 5.30 | 5.00 |
-| Medium 120g | A1 | 6.00 | 5.20 | 4.80 | 8.00 | 7.50 | 6.80 |
-| Medium 120g | A0 | 8.50 | 7.00 | 6.50 | 12.00 | 9.50 | 9.00 |
-| Thick 140g | A2 | 5.50 | 5.00 | 4.90 | 9.00 | 8.50 | 8.00 |
-| Thick 140g | A1 | 8.50 | 8.30 | 8.00 | 14.00 | 13.50 | 13.00 |
-| Thick 140g | A0 | 11.50 | 10.50 | 9.50 | 18.50 | 17.00 | 15.50 |
-| Thick 180g | A2 | 6.50 | 6.00 | 5.90 | 10.00 | 9.50 | 9.00 |
-| Thick 180g | A1 | 9.50 | 9.30 | 9.00 | 15.00 | 14.50 | 14.00 |
-| Thick 180g | A0 | 13.00 | 11.50 | 11.00 | 20.00 | 18.00 | 17.50 |
+Black & white:
+
+| Paper and size | 1–5 prints | 6–20 prints | 21–50 prints |
+|---|---|---|---|
+| Plain A2 | 3.00 | 2.80 | 2.50 |
+| Plain A1 | 4.00 | 3.60 | 3.40 |
+| Plain A0 | 7.00 | 6.00 | 5.50 |
+| Medium 120g A2 | 4.00 | 3.80 | 3.50 |
+| Medium 120g A1 | 6.00 | 5.20 | 4.80 |
+| Medium 120g A0 | 8.50 | 7.00 | 6.50 |
+| Thick 140g A2 | 5.50 | 5.00 | 4.90 |
+| Thick 140g A1 | 8.50 | 8.30 | 8.00 |
+| Thick 140g A0 | 11.50 | 10.50 | 9.50 |
+| Thick 180g A2 | 6.50 | 6.00 | 5.90 |
+| Thick 180g A1 | 9.50 | 9.30 | 9.00 |
+| Thick 180g A0 | 13.00 | 11.50 | 11.00 |
+
+Colour:
+
+| Paper and size | 1–5 prints | 6–20 prints | 21–50 prints |
+|---|---|---|---|
+| Plain A2 | 4.00 | 3.90 | 3.80 |
+| Plain A1 | 5.00 | 4.80 | 4.50 |
+| Plain A0 | 9.00 | 8.50 | 8.00 |
+| Medium 120g A2 | 5.50 | 5.30 | 5.00 |
+| Medium 120g A1 | 8.00 | 7.50 | 6.80 |
+| Medium 120g A0 | 12.00 | 9.50 | 9.00 |
+| Thick 140g A2 | 9.00 | 8.50 | 8.00 |
+| Thick 140g A1 | 14.00 | 13.50 | 13.00 |
+| Thick 140g A0 | 18.50 | 17.00 | 15.50 |
+| Thick 180g A2 | 10.00 | 9.50 | 9.00 |
+| Thick 180g A1 | 15.00 | 14.50 | 14.00 |
+| Thick 180g A0 | 20.00 | 18.00 | 17.50 |
 
 For more than 50 prints, staff quote the price.
 

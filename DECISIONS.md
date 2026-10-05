@@ -352,6 +352,8 @@ Tentative ranking: GPT-6 Luna first (as safe as the best, about 15× cheaper tha
 
 **Consequences:** The scorer can't judge reply quality (tone, correct arithmetic, whether an internal rule leaked in paraphrase) beyond `must_not_contain`. Those need reading the replies in the result files, or an LLM judge later. Prices in `eval/prices.json` must be re-checked before the bake-off.
 
+**Update (2026-10-05):** cases can list `expected_amounts`, the numbers a correct answer must state (such as a total). The scorer reads every number in the reply (decimal points or commas) and reports missing ones as `wrong_amounts`; a case only passes with all of them. This is the evidence D-014 asks for before building the price calculator: the first live run on the real KB showed a model reading the wrong row of a price table, which `passed` didn't catch.
+
 ---
 
 ## D-028 — Large orders go straight to staff

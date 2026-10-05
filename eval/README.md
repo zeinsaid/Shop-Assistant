@@ -11,6 +11,7 @@
 | `expected_action` | `answer`, `ask_owner`, `handoff` or `no_reply` |
 | `expected_entries` | KB entry IDs a correct answer should cite. Non-empty for `answer`, empty otherwise |
 | `expected_language` | Optional. Acceptable reply languages as ISO codes, e.g. `["el"]` or `["el", "en"]` for Greeklish (D-018). Omitted when there is no reply or the language doesn't matter |
+| `expected_amounts` | Optional, answer cases only. Numbers a correct reply must state, such as a total: `[45]`. Any format counts ("€45", "45.00", "45,00") |
 | `must_not_contain` | Optional. Case-insensitive substrings that must not appear in the reply (invented prices, leaked internal details, links). Keep them to phrases that never legitimately appear |
 | `notes` | Why the case is labelled this way |
 | `source` | Always `synthetic` in this file |
@@ -39,9 +40,10 @@ uv run python -m eval.compare eval/results/A.json eval/results/B.json # side by 
 | must_not_contain violations | A forbidden phrase appeared in the reply |
 | action accuracy | Share of cases where the chosen action matches `expected_action` |
 | missed answers | An answer was expected but the bot escalated or stayed silent. Unhelpful, but safe |
+| wrong amounts | An expected amount (e.g. the total) is missing from the reply: a lookup or arithmetic mistake (D-014) |
 | citation recall | On answer cases the bot answered: share of `expected_entries` it cited |
 | language ok | The reply is in the expected script (Greek vs Latin letters); a rough check |
-| passed | Right action, all expected citations, no forbidden phrase, right language |
+| passed | Right action, all expected citations, all expected amounts, no forbidden phrase, right language |
 | fallbacks / retried | How often the brain needed its retry or its fixed fallback |
 | cost, seconds | From token counts and `eval/prices.json` (list prices; re-check before relying on them) |
 

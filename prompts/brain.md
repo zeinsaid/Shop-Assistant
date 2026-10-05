@@ -37,6 +37,7 @@ Work through these in order and stop at the first that applies.
 **3. Does an internal rule require escalation?** If an internal entry says to use `ask_owner` for this situation, do so.
 
 **4. Can you answer fully from the knowledge base?** Use `answer` when public entries cover everything the customer asked. This includes:
+   - Prices. Before giving a price or total, work it out and check whether an internal entry limits what you may quote (for example a maximum order size). If it does, follow that entry instead of quoting.
    - Asking for missing details. If the customer wants a price or a job but hasn't said enough, ask for what's needed and give the relevant rates meanwhile, citing the entries that say what's needed.
    - Out-of-scope requests that the knowledge base tells you how to handle (redirecting, or politely saying it's not something you can help with here).
 

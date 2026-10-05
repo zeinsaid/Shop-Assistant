@@ -8,7 +8,7 @@ from brain.kb import load_kb, parse_kb
 from brain.llm import Completion, DryRunClient, ScriptedClient
 from brain.schema import BrainDecision
 from eval import compare, run_eval
-from eval.scoring import cost_usd, dominant_script, score_case, summarise
+from eval.scoring import amounts_in, cost_usd, dominant_script, score_case, summarise
 
 ROOT = Path(__file__).resolve().parent.parent
 KB_PATH = ROOT / "kb" / "the-plug.md"
@@ -58,6 +58,23 @@ def test_answering_when_escalation_was_expected_is_flagged():
 def test_escalating_when_an_answer_was_expected_is_a_missed_answer():
     r = score_case(case(), result(action="ask_owner", cited=[], question="Q?"))
     assert r["checks"]["missed_answer"] and not r["checks"]["wrongly_answered"]
+
+
+def test_amounts_are_read_in_common_formats():
+    assert amounts_in("€45, or 2,50 € each, 1,000 pages at €0.17") == [45, 2.5, 1000, 0.17]
+
+
+def test_expected_amount_must_appear_in_the_reply():
+    good = score_case(case(expected_amounts=[45]), result(reply="3 prints are €45.00 in total."))
+    assert good["passed"] and good["checks"]["missing_amounts"] == []
+    wrong = score_case(case(expected_amounts=[45]), result(reply="3 prints are €60."))
+    assert not wrong["passed"] and wrong["checks"]["missing_amounts"] == [45]
+    assert summarise([wrong])["wrong_amounts"] == ["t1"]
+
+
+def test_amounts_are_not_checked_when_the_bot_escalated():
+    r = score_case(case(expected_amounts=[45]), result(action="ask_owner", cited=[], question="Q?"))
+    assert r["checks"]["missing_amounts"] == []
 
 
 def test_must_not_contain_is_case_insensitive():

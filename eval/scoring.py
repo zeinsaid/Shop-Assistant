@@ -8,6 +8,7 @@ correct bot would have escalated, handed off or stayed silent. That's where inve
 leaked internal rules come from. It should be zero.
 """
 
+import re
 import unicodedata
 from collections import Counter, defaultdict
 from statistics import mean
@@ -30,6 +31,25 @@ def dominant_script(text: str) -> str | None:
         unicodedata.name(ch, "UNKNOWN").split()[0] for ch in text if ch.isalpha()
     )
     return scripts.most_common(1)[0][0] if scripts else None
+
+
+# A number as written in a reply: "45", "2.50", "2,50" (decimal comma) or "1,000" (thousands).
+NUMBER = re.compile(r"\d+(?:[.,]\d+)*")
+
+
+def amounts_in(text: str) -> list[float]:
+    """Every number in a reply, read as a float, so "€2.50", "2,50 €" and "2.5" all match 2.5."""
+    found = []
+    for token in NUMBER.findall(text):
+        if re.fullmatch(r"\d{1,3}(,\d{3})+(\.\d+)?", token):  # 1,000 or 1,000.50
+            token = token.replace(",", "")
+        elif "," in token and "." not in token:  # decimal comma, common in Greek
+            token = token.replace(",", ".")
+        try:
+            found.append(float(token))
+        except ValueError:  # something like 1.2.3
+            continue
+    return found
 
 
 def cost_usd(tokens: dict[str, int], price: dict[str, float] | None) -> float | None:
@@ -67,6 +87,13 @@ def score_case(case: dict, result: BrainResult | None, error: str | None = None,
     reply = (d.reply or "").lower()
     hits = [p for p in case.get("must_not_contain", []) if p.lower() in reply]
 
+    # Amounts: the key numbers a correct reply must state (e.g. a total). Checked only when the
+    # bot answered; a number counts if it appears anywhere in the reply.
+    missing_amounts = []
+    if case.get("expected_amounts") and got == "answer":
+        stated = amounts_in(d.reply or "")
+        missing_amounts = [a for a in case["expected_amounts"] if not any(abs(a - x) < 0.005 for x in stated)]
+
     # Language: only when the case asks for it, there's a reply, and we know the script.
     detected, language_ok = None, None
     wanted = [LANGUAGE_SCRIPT.get(lang) for lang in case.get("expected_language", [])]
@@ -81,10 +108,11 @@ def score_case(case: dict, result: BrainResult | None, error: str | None = None,
         "citation_recall": recall,
         "missing_citations": missing,
         "must_not_contain_hits": hits,
+        "missing_amounts": missing_amounts,
         "reply_script": detected,
         "language_ok": language_ok,
     }
-    passed = (checks["action_correct"] and not hits and language_ok is not False
+    passed = (checks["action_correct"] and not hits and not missing_amounts and language_ok is not False
               and (recall is None or recall == 1))
 
     tokens = {
@@ -142,6 +170,7 @@ def summarise(records: list[dict]) -> dict:
         "wrongly_answered": ids(lambda r: r["checks"]["wrongly_answered"]),
         "must_not_contain_violations": ids(lambda r: r["checks"]["must_not_contain_hits"]),
         "missed_answers": ids(lambda r: r["checks"]["missed_answer"]),
+        "wrong_amounts": ids(lambda r: r["checks"].get("missing_amounts")),
         "citation_recall": round(mean(recalls), 3) if recalls else None,
         "language_ok": f"{sum(languages)}/{len(languages)}" if languages else None,
         "fallbacks": ids(lambda r: r["fallback_used"]),

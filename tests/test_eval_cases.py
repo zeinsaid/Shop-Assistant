@@ -47,6 +47,10 @@ def test_case_is_well_formed(case):
     if "expected_language" in case:
         languages = case["expected_language"]
         assert languages and all(isinstance(x, str) and x for x in languages)
+    if "expected_amounts" in case:
+        amounts = case["expected_amounts"]
+        assert case["expected_action"] == "answer", "amounts are only checked on answers"
+        assert amounts and all(isinstance(x, (int, float)) and not isinstance(x, bool) for x in amounts)
     if "must_not_contain" in case:
         phrases = case["must_not_contain"]
         assert phrases and all(isinstance(x, str) and x for x in phrases)

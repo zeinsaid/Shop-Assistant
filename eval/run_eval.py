@@ -113,6 +113,7 @@ def print_summary(s: dict, log=print) -> None:
     log(f"wrongly answered: {len(s['wrongly_answered'])} {s['wrongly_answered'] or ''}")
     log(f"must_not_contain violations: {len(s['must_not_contain_violations'])} {s['must_not_contain_violations'] or ''}")
     log(f"missed answers: {len(s['missed_answers'])} | citation recall {s['citation_recall']} | language {s['language_ok']}")
+    log(f"wrong amounts: {len(s['wrong_amounts'])} {s['wrong_amounts'] or ''}")
     log(f"fallbacks {len(s['fallbacks'])} | retried {len(s['retried'])} | dropped citations {s['dropped_citations']}"
         f" | errors {len(s['errors'])}")
     log(f"cost ${s['cost_usd']} (${s['cost_per_case_usd']}/case) | mean {s['mean_seconds']}s/case | tokens {s['tokens']}")
