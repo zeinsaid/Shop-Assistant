@@ -64,7 +64,8 @@ def run(cases: list[dict], brain: Brain, price: dict | None, log=print) -> tuple
     """Run every case. Returns the scored records and, if the run was aborted, why."""
     records = []
     for n, case in enumerate(cases, 1):
-        message = IncomingMessage(text=case["message"], attachments=case["attachments"])
+        message = IncomingMessage(text=case["message"], attachments=case["attachments"],
+                                  history=case.get("history", []))
         start = time.perf_counter()
         try:
             result = brain.decide(message)
@@ -113,7 +114,8 @@ def print_summary(s: dict, log=print) -> None:
     log(f"wrongly answered: {len(s['wrongly_answered'])} {s['wrongly_answered'] or ''}")
     log(f"must_not_contain violations: {len(s['must_not_contain_violations'])} {s['must_not_contain_violations'] or ''}")
     log(f"missed answers: {len(s['missed_answers'])} | citation recall {s['citation_recall']} | language {s['language_ok']}")
-    log(f"wrong amounts: {len(s['wrong_amounts'])} {s['wrong_amounts'] or ''}")
+    log(f"wrong amounts: {len(s['wrong_amounts'])} {s['wrong_amounts'] or ''}"
+        f" | incomplete owner questions: {len(s['incomplete_questions'])} {s['incomplete_questions'] or ''}")
     log(f"fallbacks {len(s['fallbacks'])} | retried {len(s['retried'])} | dropped citations {s['dropped_citations']}"
         f" | errors {len(s['errors'])}")
     log(f"cost ${s['cost_usd']} (${s['cost_per_case_usd']}/case) | mean {s['mean_seconds']}s/case | tokens {s['tokens']}")

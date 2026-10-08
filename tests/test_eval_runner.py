@@ -159,8 +159,9 @@ def test_dry_run_over_the_real_eval_set():
     brain = Brain(load_kb(KB_PATH), DryRunClient())
     records, aborted = run_eval.run(cases, brain, price=None, log=lambda _: None)
     assert aborted is None and len(records) == len(cases)
-    # The dry-run client always escalates, so exactly the ask_owner cases are right.
-    expected_right = sum(c["expected_action"] == "ask_owner" for c in cases)
+    # The dry-run client always escalates, so exactly the ask_owner cases are right, except those
+    # that check the owner question for details: its placeholder question has none.
+    expected_right = sum(c["expected_action"] == "ask_owner" and "question_must_contain" not in c for c in cases)
     assert summarise(records)["passed"] == expected_right
 
 
@@ -226,3 +227,27 @@ def test_main_writes_a_result_file_and_compare_reads_it(tmp_path, capsys):
     compare.main([str(first), str(second)])
     out = capsys.readouterr().out
     assert "wrongly answered" in out and "vs baseline" in out and ("now passing (1)" in out or "now failing (1)" in out)
+
+
+# --- multi-turn cases (D-023) ------------------------------------------------------------------
+
+
+def test_owner_question_must_carry_the_collected_details():
+    c = case(expected_action="ask_owner", expected_entries=[], question_must_contain=["Outdoor", "friday"])
+    good = score_case(c, result("ask_owner", "Let me check.", (), "Banner 2x1 m, outdoor, by Friday."))
+    bad = score_case(c, result("ask_owner", "Let me check.", (), "Customer wants a banner."))
+    assert good["passed"] and good["checks"]["missing_in_question"] == []
+    assert not bad["passed"] and bad["checks"]["missing_in_question"] == ["Outdoor", "friday"]
+    assert summarise([good, bad])["incomplete_questions"] == ["t1"]
+
+
+def test_history_reaches_the_brain_and_the_record():
+    history = [{"role": "customer", "text": "how much for posters?"},
+               {"role": "bot", "action": "answer", "text": "Which size?"}]
+    client = ScriptedClient([json.dumps({"reasoning": "r", "action": "answer", "reply": "A1 is €5.",
+                                         "cited_entries": ["a"], "question_for_owner": None})])
+    brain = Brain(parse_kb("### a\n**Visibility:** public · **Status:** confirmed\n\nA."), client, prompt="x")
+    records, _ = run_eval.run([case(message="A1", expected_entries=["a"], history=history)], brain, None,
+                              log=lambda _: None)
+    assert "[bot, answer] Which size?" in client.calls[0][1][0]["content"]
+    assert records[0]["history"] == history and records[0]["passed"]

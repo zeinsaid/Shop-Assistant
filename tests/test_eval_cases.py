@@ -9,7 +9,7 @@ from pathlib import Path
 import pytest
 
 from brain.kb import load_kb
-from brain.schema import Action, Attachment
+from brain.schema import Action, Attachment, Role, Turn
 
 ROOT = Path(__file__).resolve().parent.parent
 
@@ -55,3 +55,11 @@ def test_case_is_well_formed(case):
     if "must_not_contain" in case:
         phrases = case["must_not_contain"]
         assert phrases and all(isinstance(x, str) and x for x in phrases)
+    if "question_must_contain" in case:
+        phrases = case["question_must_contain"]
+        assert case["expected_action"] == "ask_owner", "the owner question only exists on ask_owner"
+        assert phrases and all(isinstance(x, str) and x for x in phrases)
+    if "history" in case:
+        turns = [Turn(**t) for t in case["history"]]  # same rules as the brain's input (D-023)
+        assert turns, "leave history out rather than empty"
+        assert any(t.role is Role.CUSTOMER for t in turns), "a conversation starts with the customer"

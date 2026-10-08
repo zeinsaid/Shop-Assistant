@@ -71,6 +71,8 @@ def score_case(case: dict, result: BrainResult | None, error: str | None = None,
         "expected_entries": case["expected_entries"],
         "seconds": round(seconds, 2),
     }
+    if case.get("history"):
+        record["history"] = case["history"]
     if result is None:
         return {**record, "status": "error", "error": error, "passed": False}
 
@@ -95,6 +97,13 @@ def score_case(case: dict, result: BrainResult | None, error: str | None = None,
         stated = amounts_in(d.reply or "")
         missing_amounts = [a for a in case["expected_amounts"] if not any(abs(a - x) < 0.005 for x in stated)]
 
+    # Owner question: after collecting details (D-016), the question must carry them, so the owner
+    # can settle it in one reply. Checked only when the bot asked the owner.
+    missing_in_question = []
+    if case.get("question_must_contain") and got == "ask_owner":
+        question = (d.question_for_owner or "").lower()
+        missing_in_question = [p for p in case["question_must_contain"] if p.lower() not in question]
+
     # Language: only when the case asks for it, there's a reply, and we know the script.
     detected, language_ok = None, None
     wanted = [LANGUAGE_SCRIPT.get(lang) for lang in case.get("expected_language", [])]
@@ -110,11 +119,12 @@ def score_case(case: dict, result: BrainResult | None, error: str | None = None,
         "missing_citations": missing,
         "must_not_contain_hits": hits,
         "missing_amounts": missing_amounts,
+        "missing_in_question": missing_in_question,
         "reply_script": detected,
         "language_ok": language_ok,
     }
-    passed = (checks["action_correct"] and not hits and not missing_amounts and language_ok is not False
-              and (recall is None or recall == 1))
+    passed = (checks["action_correct"] and not hits and not missing_amounts and not missing_in_question
+              and language_ok is not False and (recall is None or recall == 1))
 
     tokens = {
         "input": result.input_tokens,
@@ -172,6 +182,7 @@ def summarise(records: list[dict]) -> dict:
         "must_not_contain_violations": ids(lambda r: r["checks"]["must_not_contain_hits"]),
         "missed_answers": ids(lambda r: r["checks"]["missed_answer"]),
         "wrong_amounts": ids(lambda r: r["checks"].get("missing_amounts")),
+        "incomplete_questions": ids(lambda r: r["checks"].get("missing_in_question")),
         "citation_recall": round(mean(recalls), 3) if recalls else None,
         "language_ok": f"{sum(languages)}/{len(languages)}" if languages else None,
         "fallbacks": ids(lambda r: r["fallback_used"]),

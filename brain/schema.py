@@ -29,6 +29,44 @@ class Attachment(BaseModel):
     pages: int | None = Field(default=None, ge=1, description="Page count, when known.")
 
 
+class Role(StrEnum):
+    """Who wrote an earlier message in the conversation (D-023)."""
+
+    CUSTOMER = "customer"
+    BOT = "bot"
+    STAFF = "staff"  # a person from the business writing in the chat (staff or the owner)
+
+
+class Turn(BaseModel):
+    """One earlier message, exactly as the customer saw it (D-023).
+
+    Only what was sent in the chat belongs here: never the bot's reasoning or citations, and never
+    the owner's raw answer to an `ask_owner` (the bot's message relaying it is the bot turn).
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    role: Role
+    text: str = ""
+    attachments: list[Attachment] = Field(default_factory=list)
+    action: Action | None = Field(default=None, description="Bot turns only: the action that sent it.")
+
+    @model_validator(mode="after")
+    def check_role_fields(self) -> "Turn":
+        if self.role is Role.BOT:
+            if self.action is None:
+                raise ValueError("a bot turn needs the action that sent it")
+            if self.action is Action.NO_REPLY:
+                raise ValueError("'no_reply' sends nothing, so it never appears in the history")
+        elif self.action is not None:
+            raise ValueError("only bot turns have an action")
+        if self.attachments and self.role is not Role.CUSTOMER:
+            raise ValueError("only customer turns have attachments")
+        if not self.text.strip() and not self.attachments:
+            raise ValueError("a turn needs text or an attachment")
+        return self
+
+
 class IncomingMessage(BaseModel):
     """One customer message, in the channel-independent shape the brain works with."""
 
@@ -36,6 +74,7 @@ class IncomingMessage(BaseModel):
 
     text: str = ""
     attachments: list[Attachment] = Field(default_factory=list)
+    history: list[Turn] = Field(default_factory=list, description="Earlier messages, oldest first (D-023).")
 
 
 class BrainDecision(BaseModel):

@@ -15,7 +15,7 @@ from pydantic import ValidationError
 
 from brain.kb import KnowledgeBase
 from brain.llm import Completion, LLMClient, Message
-from brain.schema import Action, BrainDecision, IncomingMessage
+from brain.schema import Action, BrainDecision, IncomingMessage, Role, Turn
 
 PROMPT_PATH = Path(__file__).resolve().parent.parent / "prompts" / "brain.md"
 
@@ -31,8 +31,14 @@ CORRECTION = (
     "answer with a public knowledge-base entry, don't answer: choose another action."
 )
 
+# How many earlier messages the model sees (D-023). Older ones rarely matter in a chat, and the
+# cap keeps the cost of a message flat however long the conversation gets.
+HISTORY_LIMIT = 10
+
 # Our input tags. Customer text can't be allowed to open or close them (see format_message).
-TAG = re.compile(r"</?\s*(customer_message|attachments|knowledge_base)\s*>", re.IGNORECASE)
+TAG = re.compile(
+    r"</?\s*(customer_message|attachments|knowledge_base|conversation_history)\s*>", re.IGNORECASE
+)
 
 
 @dataclass
@@ -128,6 +134,7 @@ class Brain:
             question_for_owner=(
                 "The assistant couldn't produce a valid answer to this customer message. "
                 f"Message: {message.text or '(no text)'}. Attachments: {_describe_attachments(message)}."
+                + (f"\nEarlier in the conversation:\n{format_history(message.history)}" if message.history else "")
             ),
         )
 
@@ -138,11 +145,33 @@ def build_system_prompt(instructions: str, kb: KnowledgeBase) -> str:
 
 
 def format_message(message: IncomingMessage) -> str:
-    """Wrap the customer's message in the tags the prompt describes."""
+    """Wrap the conversation so far and the customer's message in the tags the prompt describes."""
+    history = ""
+    if message.history:
+        history = f"<conversation_history>\n{_neutralise(format_history(message.history))}\n</conversation_history>\n"
     return (
+        f"{history}"
         f"<customer_message>\n{_neutralise(message.text)}\n</customer_message>\n"
         f"<attachments>\n{_neutralise(_describe_attachments(message, bullet=True))}\n</attachments>"
     )
+
+
+def format_history(turns: list[Turn], limit: int = HISTORY_LIMIT) -> str:
+    """The last `limit` turns as a transcript, one '[who] text' block per message (D-023).
+
+    Lines after the first in a message are indented, so only a real turn starts a line with '[':
+    a customer can't fake a bot or staff message by typing '[bot, answer] ...' on a new line.
+    """
+    shown = turns[-limit:]
+    lines = [f"({len(turns) - len(shown)} earlier messages not shown)"] if len(turns) > len(shown) else []
+    for turn in shown:
+        label = f"{turn.role}, {turn.action}" if turn.role is Role.BOT else str(turn.role)
+        parts = [turn.text.strip()] if turn.text.strip() else []
+        if turn.attachments:
+            parts.append(f"(attachments: {_describe_attachments(turn)})")
+        body = "\n".join(parts).replace("\n", "\n  ")
+        lines.append(f"[{label}] {body}")
+    return "\n".join(lines)
 
 
 def _neutralise(text: str) -> str:
@@ -150,7 +179,7 @@ def _neutralise(text: str) -> str:
     return TAG.sub(lambda m: m.group(0).replace("<", "&lt;").replace(">", "&gt;"), text)
 
 
-def _describe_attachments(message: IncomingMessage, bullet: bool = False) -> str:
+def _describe_attachments(message: IncomingMessage | Turn, bullet: bool = False) -> str:
     if not message.attachments:
         return "none"
     parts = []

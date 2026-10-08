@@ -119,7 +119,7 @@ A running record of the significant choices made on this project: what was decid
 ## D-011 — Evaluation set before code
 **Date:** 2026-09-28 · **Status:** Accepted
 
-**Decision:** Build `eval/questions.jsonl` (started at ~50 cases, now 114, each labelled with `expected_action`) before writing the bot. Sources: real messages from The Plug's WhatsApp (anonymized: names, phone numbers and emails removed) plus deliberately difficult synthetic cases (typos, Greek/English mix, pasted text containing questions, discount manipulation), tagged `"source": "synthetic"`.
+**Decision:** Build `eval/questions.jsonl` (started at ~50 cases, now 128, each labelled with `expected_action`) before writing the bot. Sources: real messages from The Plug's WhatsApp (anonymized: names, phone numbers and emails removed) plus deliberately difficult synthetic cases (typos, Greek/English mix, pasted text containing questions, discount manipulation), tagged `"source": "synthetic"`.
 
 **Why:** The eval set is the project's test suite; every prompt change is re-run against it. Key metric: invented answers (should be zero), followed by correct action choice.
 
@@ -287,13 +287,23 @@ Tentative ranking: GPT-6 Luna first (as safe as the best, about 15× cheaper tha
 ---
 
 ## D-023 — Multi-turn conversations: history goes to the brain
-**Date:** 2026-09-28 · **Status:** Proposed
+**Date:** 2026-09-28 (design settled 2026-10-08) · **Status:** Accepted
 
-**Decision:** The brain is still called once per incoming customer message, but with the conversation so far. `IncomingMessage` gains `history`: an ordered list of earlier turns, each with a `role` (`customer`, `bot` or `owner`) and `text`. Eval cases gain an optional `history` field; `message` stays the customer's latest message.
+**Decision:** The brain is still called once per incoming customer message and decides for that message only, but it also sees the conversation so far.
+- **Shape:** `IncomingMessage` gains `history`, a list of `Turn`s, oldest first. A turn has a `role` (`customer`, `bot` or `staff`), `text`, attachment metadata (customer turns only) and, for bot turns, the `action` that sent it. A `no_reply` sends nothing, so it never appears.
+- **Content:** only what the customer saw in the chat. Never the bot's reasoning or citations, which often name internal entries. Never the owner's raw answer to an `ask_owner`, which may contain internal details: the bot's message relaying it is the bot turn. `staff` covers anyone from the business writing in the chat, the owner included.
+- **Format:** a plain transcript in the user message, between `<conversation_history>` tags, before `<customer_message>`: one `[customer]`, `[bot, <action>]` or `[staff]` line per message. Continuation lines are indented, so a customer can't fake a turn by typing `[bot, answer] ...`, and the tag is escaped like the others (D-025).
+- **Cap:** the last 10 turns (`HISTORY_LIMIT`), with a note saying how many earlier ones were left out.
+- **Prompt rules:** decide for the latest message; facts still come only from the KB, not from earlier bot replies; don't contradict what staff told the customer (questions about it are a `handoff`); once requested details are in, quote or `ask_owner` with every detail gathered; a chase while waiting on the owner is `ask_owner` again with the whole request restated; a file the bot asked for is addressed to us, not `no_reply`.
+- **Eval:** cases take an optional `history` (fixed, written by hand) and the expected action applies to `message` alone. A new optional check, `question_must_contain`, scores whether the owner question carries the collected details (D-016).
 
 **Why:** Follow-ups like "yes, colour please" can't be understood alone, and D-016 (collect details first, then escalate) only works across turns.
+- A transcript rather than the providers' native chat roles: the bot's past turns were JSON decisions, staff messages have no chat role, and the three providers treat roles differently. The system prompt (instructions + KB) stays identical, so prompt caching is unaffected.
+- The bot's action on each of its turns tells the model when a question is still open with the owner, which the holding text only implies. Action names aren't internal content.
+- Fixed histories in the eval keep runs comparable and cheap; simulating whole conversations with the live bot would cost more and give different results each run.
+- 10 turns keeps the cost per message flat; older messages rarely matter in a chat.
 
-**Consequences:** Deferred to the start of phase 3, together with writing the multi-turn eval cases; single-message cases keep working because `history` is optional. Open questions: how owner replies appear in history, a cap on how many turns to include, how `waiting_on_owner` (D-005) interacts, and how detail collection is scored across turns.
+**Consequences:** Single-message cases are unchanged, since `history` is optional. The phase-3 server builds the history and owns conversation states (D-005): during a `handoff` the brain isn't called at all, and when an `ask_owner` chase comes in, the server merges it into the open question. Owner and staff flows as the owner sees them (2026-10-08): the owner gets questions on an app they already use and the bot relays the answer (a bot turn); staff reply to the customer in the same channel (staff turns). D-029's "active conversation" exception can now be built on the history. Eval cases q115–q127 cover follow-ups, detail collection, chasing, files asked for and not asked for, a false "you promised" claim, the €100 limit across turns and a language switch.
 
 ---
 

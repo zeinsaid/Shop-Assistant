@@ -3,17 +3,20 @@
     uv run python -m brain --kb kb/the-plug.md "how much for 100 b&w pages"
     uv run python -m brain --kb kb/the-plug.md --file thesis.pdf:42 ""
     uv run --env-file .env python -m brain --kb kb/the-plug.md --live "are you open now?"
+    uv run python -m brain --kb kb/the-plug.md --history chat.json "yes colour pls"
 
 Without --live nothing is sent anywhere and nothing is paid (DryRunClient).
 """
 
 import argparse
+import json
 import sys
+from pathlib import Path
 
 from brain.brain import Brain, format_message
 from brain.kb import load_kb
 from brain.llm import DryRunClient, make_client
-from brain.schema import Attachment, IncomingMessage
+from brain.schema import Attachment, IncomingMessage, Turn
 
 
 def parse_file(spec: str) -> Attachment:
@@ -30,6 +33,8 @@ def main() -> None:
     parser.add_argument("--kb", required=True, help="path to the knowledge base markdown file")
     parser.add_argument("--file", action="append", default=[], metavar="NAME[:PAGES]",
                         help="an attachment (metadata only); repeat for several")
+    parser.add_argument("--history", type=Path, metavar="FILE",
+                        help="earlier messages: a JSON list of turns, as in eval cases (D-023)")
     parser.add_argument("--live", action="store_true", help="call the real model (costs money, needs a key)")
     parser.add_argument("--model", default="claude-sonnet-5-5")
     parser.add_argument("--effort", default="low", help="model effort: low, medium, high, xhigh or max")
@@ -37,7 +42,8 @@ def main() -> None:
     args = parser.parse_args()
     sys.stdout.reconfigure(encoding="utf-8")  # Windows consoles default to a code page without Greek
 
-    message = IncomingMessage(text=args.text, attachments=[parse_file(f) for f in args.file])
+    history = [Turn(**t) for t in json.loads(args.history.read_text(encoding="utf-8"))] if args.history else []
+    message = IncomingMessage(text=args.text, attachments=[parse_file(f) for f in args.file], history=history)
     client = make_client(args.model, args.effort) if args.live else DryRunClient()
     brain = Brain(load_kb(args.kb), client)
 

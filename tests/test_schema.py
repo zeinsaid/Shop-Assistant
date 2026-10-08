@@ -1,7 +1,7 @@
 import pytest
 from pydantic import ValidationError
 
-from brain.schema import Action, Attachment, BrainDecision, IncomingMessage
+from brain.schema import Action, Attachment, BrainDecision, IncomingMessage, Role, Turn
 
 
 def decision(**overrides) -> dict:
@@ -170,3 +170,38 @@ def test_attachment_has_no_way_to_carry_file_contents():
 def test_attachment_rejects_zero_pages():
     with pytest.raises(ValidationError):
         Attachment(type="pdf", filename="a.pdf", pages=0)
+
+
+# --- conversation history (D-023) --------------------------------------------------------------
+
+
+def test_history_turns_from_eval_style_dicts():
+    m = IncomingMessage(
+        text="yes colour pls",
+        history=[
+            {"role": "customer", "text": "how much for 10 pages?"},
+            {"role": "bot", "action": "answer", "text": "Colour or black & white?"},
+            {"role": "staff", "text": "Hi, I'm at the counter if you need anything."},
+            {"role": "customer", "attachments": [{"type": "pdf", "filename": "notes.pdf", "pages": 10}]},
+        ],
+    )
+    assert [t.role for t in m.history] == [Role.CUSTOMER, Role.BOT, Role.STAFF, Role.CUSTOMER]
+    assert m.history[1].action is Action.ANSWER
+    assert IncomingMessage().history == []
+
+
+@pytest.mark.parametrize(
+    "turn",
+    [
+        {"role": "bot", "text": "Hi!"},  # a bot turn must say which action sent it
+        {"role": "bot", "action": "no_reply", "text": "x"},  # no_reply sends nothing to show
+        {"role": "customer", "action": "answer", "text": "hi"},  # only bot turns have an action
+        {"role": "staff", "text": "here", "attachments": [{"type": "pdf", "filename": "a.pdf"}]},
+        {"role": "customer", "text": "  "},  # nothing at all
+        {"role": "owner", "text": "€18"},  # the owner's raw answers never go in (D-023)
+        {"role": "bot", "action": "answer", "text": "Hi", "reasoning": "internal"},  # no extra fields
+    ],
+)
+def test_invalid_turns_are_rejected(turn):
+    with pytest.raises(ValidationError):
+        Turn(**turn)

@@ -11,7 +11,7 @@ An AI receptionist for small businesses. It answers customer questions from an o
 
 ## Current phase
 
-**Phase 1 (done):** knowledge base (`kb/the-plug.md`), labelled eval set (`eval/questions.jsonl`, 114 cases), decisions log.
+**Phase 1 (done):** knowledge base (`kb/the-plug.md`), labelled eval set (`eval/questions.jsonl`, 128 cases), decisions log.
 
 **Phase 2 (now): the brain.** In order:
 1. Output schema (`brain/schema.py`): a Pydantic `BrainDecision` (see D-019, D-020). **Done.**
@@ -21,7 +21,11 @@ An AI receptionist for small businesses. It answers customer questions from an o
 
 No backend, database or UI yet. Don't scaffold them unless asked.
 
-**Now:** the KB onboarding interview (D-030). Steps 1-3 are done (`prompts/interview.md`, `onboarding/` with the interview loop and drafting step, `prompts/draft.md`, `prompts/translate_kb.md`). **Baseline done (2026-10-08):** the owner ran the real interview (59 turns, all topics) and two drafts were compared with `kb/the-plug.md`. Fixes went into both prompts: public vs internal (answers need a public entry), `ask_owner` vs `handoff` chosen by what it takes rather than who receives it, keeping tier boundaries, one place per fact, no invented rules or recaps, and closing questions about forgotten services. The last three draft-prompt fixes haven't been checked with a redraft yet; the owner chose not to, since it doesn't have to be perfect. Session and drafts are in `onboarding/sessions/` and `onboarding/drafts/` (gitignored). KB answers from the comparison were applied (name, same-day printing, polite no to discount requests, unusual requests → `handoff`). Not yet in the KB, from the interview: shirt quantity discounts, stamps (€35), sticker prices include printing, annoyed-at-large-format-price → `handoff`. **Priorities (owner, 2026-10-08):** the main bot matters most. It may go live only at The Plug, otherwise it's a portfolio project. For now the owner builds the KBs by hand (doing the interview with any new business personally), so the interview is a nice-to-have and is parked. **Next:** multi-turn (D-023), then per-channel `no_reply` (D-024) and the file-drop skip (D-029). The KB has the shop's real prices (2026-10-05); the working model is GPT-6 Luna at effort `medium` (D-022).
+**Priorities (owner, 2026-10-08):** the main bot matters most. It may go live only at The Plug; otherwise it's a portfolio project. For now the owner builds KBs by hand (and would run the interview with any new business personally), so the interview is a nice-to-have and is parked.
+
+**Multi-turn (D-023), built 2026-10-08:** `history` on `IncomingMessage`, transcript formatting with a 10-turn cap, a prompt section, eval support (`history`, `question_must_contain`) and cases q115-q127, tested without a model. **Next:** a GPT-6 Luna run on q115-q127 (with the owner's OK), then per-channel `no_reply` (D-024) and the file-drop skip (D-029). The KB has the shop's real prices (2026-10-05); the working model is GPT-6 Luna at effort `medium` (D-022).
+
+**KB onboarding interview (D-030), parked:** steps 1-3 built (`prompts/interview.md`, `prompts/draft.md`, `prompts/translate_kb.md`, `onboarding/`). Baseline done 2026-10-08: the owner ran the real interview (59 turns, all topics), two drafts were compared with `kb/the-plug.md`, and both prompts were fixed (public vs internal, `ask_owner` vs `handoff` by what it takes, tier boundaries, one place per fact, no invented rules or recaps, closing questions about forgotten services). The last three draft-prompt fixes are unchecked by a redraft. Sessions and drafts are in `onboarding/sessions/` and `onboarding/drafts/` (gitignored). Interview facts not yet in the KB: shirt quantity discounts, stamps (€35), sticker prices include printing.
 
 ## Product direction (owner, 2026-10-05)
 
@@ -81,7 +85,6 @@ I don't write the code myself; you do. But I want to understand every concept an
 
 Things agreed but deliberately not done yet. Check this list before starting a new phase.
 
-- **Multi-turn conversations** (D-023, Proposed): add `history` to `IncomingMessage` and write multi-turn eval cases at the start of phase 3.
 - **Per-channel `no_reply`** (D-024, Proposed): needed before the website chat goes live.
 - **File-drop skip** (D-029, Proposed): build with D-023 and D-024.
 - **Price calculator** (D-014): if wrong totals or missed €100 limits keep showing up in the eval (`wrong_amounts`), move price lookup and arithmetic into code as a tool.
