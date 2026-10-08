@@ -10,6 +10,7 @@ import pytest
 
 from brain.kb import load_kb
 from brain.schema import Action, Attachment, Role, Turn
+from eval.run_eval import ALWAYS_REPLY_FIELDS, for_setting
 
 ROOT = Path(__file__).resolve().parent.parent
 
@@ -29,8 +30,18 @@ def test_case_ids_are_unique():
     assert len(ids) == len(set(ids))
 
 
+@pytest.mark.parametrize("always_reply", [False, True], ids=["no_reply-allowed", "always-reply"])
 @pytest.mark.parametrize("case", CASES, ids=[c["id"] for c in CASES])
-def test_case_is_well_formed(case):
+def test_case_is_well_formed(case, always_reply):
+    # Every case is checked as it applies on both kinds of channel (D-024).
+    overrides = case.get("always_reply", {})
+    assert set(overrides) <= ALWAYS_REPLY_FIELDS, f"can't override {set(overrides) - ALWAYS_REPLY_FIELDS}"
+    if case["expected_action"] == "no_reply":
+        assert overrides.get("expected_action", "no_reply") != "no_reply", (
+            "a no_reply case needs an always_reply expectation: website chats reply to everything"
+        )
+    case = for_setting(case, always_reply)
+
     assert case["source"] == "synthetic", "only synthetic cases may be committed"
     assert Action(case["expected_action"])
     for attachment in case["attachments"]:

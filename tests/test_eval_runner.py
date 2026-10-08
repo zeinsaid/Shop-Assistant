@@ -251,3 +251,12 @@ def test_history_reaches_the_brain_and_the_record():
                               log=lambda _: None)
     assert "[bot, answer] Which size?" in client.calls[0][1][0]["content"]
     assert records[0]["history"] == history and records[0]["passed"]
+
+
+def test_always_reply_overrides_apply_only_in_that_setting():
+    c = case(expected_action="no_reply", expected_entries=[],
+             always_reply={"expected_action": "answer", "expected_entries": ["a"]})
+    assert run_eval.for_setting(c, False)["expected_action"] == "no_reply"
+    merged = run_eval.for_setting(c, True)
+    assert merged["expected_action"] == "answer" and merged["expected_entries"] == ["a"]
+    assert "always_reply" not in merged

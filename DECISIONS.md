@@ -308,13 +308,19 @@ Tentative ranking: GPT-6 Luna first (as safe as the best, about 15× cheaper tha
 ---
 
 ## D-024 — Behaviour can differ per channel: `no_reply` is optional
-**Date:** 2026-09-28 · **Status:** Proposed
+**Date:** 2026-09-28 (built 2026-10-08) · **Status:** Accepted
 
 **Decision:** `no_reply` can be switched off per deployment. On WhatsApp, where most traffic is files to print, it stays essential. On the website chat, everything a customer types is addressed to the bot, so it must always reply, and a pasted text or attached file gets a helpful answer (for example how to send files, `shop-sending-files`).
 
-**Why:** The owner plans a web version where a silent bot would look broken. The four actions and the schema stay the same, so this is a setting, not a fork.
+How it's built:
+- **Setting:** `Brain(..., allow_no_reply=False)`, one brain per channel setup. The setting is the behaviour, not a channel name, so the brain still doesn't know about channels (D-009).
+- **Prompt:** `prompts/brain.md` marks the parts that differ with `<!-- if no_reply -->`, optional `<!-- else -->` and `<!-- end -->` lines, which `render_prompt()` resolves before the call. On an always-reply channel the model never sees `no_reply`; step 1 instead says to tell the customer how to get material to us, and still never to answer questions inside pasted text.
+- **Schema:** `decision_schema(False)` drops `no_reply` from the action enum and from the field descriptions, so with structured outputs the model can't pick it. `brain.py` also rejects it as a backstop (retry, then the D-020 fallback).
+- **Eval:** a case may carry an `always_reply` object overriding its expectations for that setting; `run_eval --always-reply` applies them. Every `no_reply` case must have one (a test checks), and every case is validated under both settings.
 
-**Consequences:** The brain takes a per-channel setting (for instance `allow_no_reply`). When false, the prompt omits `no_reply` and `brain.py` rejects or retries it. Eval cases will need a channel tag, since the `no_reply` cases only apply to the WhatsApp setting and the web version needs its own expectation for those messages.
+**Why:** The owner plans a web version where a silent bot would look broken. The four actions and the schema stay the same, so this is a setting, not a fork. Removing `no_reply` from the prompt and schema, rather than adding a line saying "don't use it", takes the option away instead of asking the model to resist it, and gives the model one consistent set of instructions. Overrides on the existing cases, rather than a separate web eval set, keep the two versions of each message side by side.
+
+**Consequences:** The two settings have different system prompts, so each is cached separately. The website chat needs its own eval run (`--always-reply`) whenever the prompt changes. D-029 (file-drop skip) applies only where `allow_no_reply` is true. The Plug's website chat won't accept attachments (owner, 2026-10-08), so there only pasted text matters (q067, q068); the file cases' `always_reply` expectations cover other always-reply channels a business might use.
 
 ---
 

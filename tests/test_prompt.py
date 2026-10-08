@@ -34,3 +34,13 @@ def test_prompt_is_business_agnostic():
     assert distinctive, "no distinctive word in the business name to check"
     for word in distinctive:
         assert not re.search(rf"\b{re.escape(word)}\b", PROMPT.lower()), f"business name in prompt: {word}"
+
+
+def test_always_reply_rendering_never_mentions_no_reply():
+    # D-024: on channels that always reply, the model never sees the option.
+    from brain.brain import render_prompt
+
+    for allow in (True, False):
+        rendered = render_prompt(PROMPT, allow)
+        assert "<!--" not in rendered, "a channel block wasn't resolved"
+        assert ("`no_reply`" in rendered) is allow

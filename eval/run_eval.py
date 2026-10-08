@@ -2,6 +2,7 @@
 
     uv run python -m eval.run_eval --kb kb/the-plug.md                        # dry run, free
     uv run python -m eval.run_eval --kb kb/the-plug.md --ids q001,q067        # a few cases
+    uv run python -m eval.run_eval --kb kb/the-plug.md --always-reply         # as a website chat (D-024)
     uv run --env-file .env python -m eval.run_eval --kb kb/the-plug.md --model claude-sonnet-5-5
 
 Results go to eval/results/ (gitignored). Runs on real cases (a file under eval/real/) always
@@ -35,6 +36,17 @@ ABORT_AFTER = 3  # if the first N cases all fail, stop: it's almost certainly se
 def load_cases(path: Path) -> list[dict]:
     lines = path.read_text(encoding="utf-8").splitlines()
     return [json.loads(line) for line in lines if line.strip()]
+
+
+# What a case may change about its expectations when every message must get a reply (D-024).
+ALWAYS_REPLY_FIELDS = {"expected_action", "expected_entries", "expected_amounts", "expected_language",
+                       "must_not_contain", "question_must_contain", "notes"}
+
+
+def for_setting(case: dict, always_reply: bool) -> dict:
+    """The case as it applies to this channel setting: its `always_reply` overrides, if any."""
+    overrides = case.get("always_reply", {}) if always_reply else {}
+    return {k: v for k, v in case.items() if k != "always_reply"} | overrides
 
 
 def select(cases: list[dict], ids: str | None = None, category: str | None = None,
@@ -132,20 +144,23 @@ def main(argv: list[str] | None = None) -> Path:
     parser.add_argument("--ids", help="comma-separated case IDs to run")
     parser.add_argument("--category", help="only run cases in this category")
     parser.add_argument("--limit", type=int, help="only run the first N cases")
+    parser.add_argument("--always-reply", action="store_true",
+                        help="run as a channel where every message gets a reply, e.g. a website chat (D-024)")
     parser.add_argument("--prices", type=Path, default=DEFAULT_PRICES)
     parser.add_argument("--out-dir", type=Path)
     args = parser.parse_args(argv)
     sys.stdout.reconfigure(encoding="utf-8")  # replies may be Greek; Windows consoles aren't UTF-8
 
-    cases = select(load_cases(args.cases), args.ids, args.category, args.limit)
+    cases = [for_setting(c, args.always_reply) for c in select(load_cases(args.cases), args.ids, args.category, args.limit)]
     if not cases:
         raise SystemExit("no cases selected")
     out_dir = results_dir(args.cases, args.out_dir)
     price = json.loads(args.prices.read_text(encoding="utf-8")).get(args.model)
-    brain = Brain(load_kb(args.kb), make_client(args.model, args.effort))
+    brain = Brain(load_kb(args.kb), make_client(args.model, args.effort), allow_no_reply=not args.always_reply)
 
     started = datetime.now()
     print(f"running {len(cases)} cases on {args.model} (effort {args.effort})"
+          f"{', always reply' if args.always_reply else ''}"
           f"{'' if price else ' - no price known, cost not reported'}")
     records, aborted = run(cases, brain, price)
     summary = summarise(records)
@@ -156,6 +171,7 @@ def main(argv: list[str] | None = None) -> Path:
             "started_at": started.isoformat(timespec="seconds"),
             "model": args.model,
             "effort": args.effort,
+            "always_reply": args.always_reply,
             "kb": str(args.kb),
             "kb_fingerprint": fingerprint(args.kb),
             "prompt_fingerprint": fingerprint(PROMPT_PATH),
@@ -169,7 +185,7 @@ def main(argv: list[str] | None = None) -> Path:
         "cases": records,
     }
     out_dir.mkdir(parents=True, exist_ok=True)
-    path = out_dir / f"{started:%Y%m%d-%H%M%S}_{args.model}.json"
+    path = out_dir / f"{started:%Y%m%d-%H%M%S}_{args.model}{'_always-reply' if args.always_reply else ''}.json"
     path.write_text(json.dumps(output, ensure_ascii=False, indent=2), encoding="utf-8")
     print(f"\n{'ABORTED: ' + aborted + chr(10) if aborted else ''}saved {path}")
     return path

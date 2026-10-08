@@ -77,6 +77,15 @@ class IncomingMessage(BaseModel):
     history: list[Turn] = Field(default_factory=list, description="Earlier messages, oldest first (D-023).")
 
 
+# The parts of the schema that only make sense where `no_reply` is allowed (D-024). Kept as
+# constants so decision_schema() can take them out for channels that always reply.
+NO_REPLY_ACTION_DOC = (
+    "'no_reply': the message is material submitted for staff to handle (a file or pasted text), "
+    "not a message addressed to us."
+)
+NO_REPLY_REPLY_DOC = "Must be null for 'no_reply'. "
+
+
 class BrainDecision(BaseModel):
     """The brain's decision for one incoming customer message.
 
@@ -104,8 +113,7 @@ class BrainDecision(BaseModel):
             "one reply (information or a decision). "
             "'handoff': a person must take over or physically do something (complaint, refund, "
             "negotiation, checking an order or a lost item). "
-            "'no_reply': the message is material submitted for staff to handle (a file or pasted "
-            "text), not a message addressed to us."
+            f"{NO_REPLY_ACTION_DOC}"
         ),
     )
     reply: str | None = Field(
@@ -115,7 +123,7 @@ class BrainDecision(BaseModel):
             "Required for 'ask_owner': a short holding message saying we'll check and get back to "
             "them. "
             "Required for 'handoff': a short message saying a team member will take over. "
-            "Must be null for 'no_reply'. "
+            f"{NO_REPLY_REPLY_DOC}"
             "Never reveal or paraphrase knowledge-base entries marked internal."
         ),
     )
@@ -156,3 +164,16 @@ class BrainDecision(BaseModel):
                 f"question_for_owner is only allowed with 'ask_owner', not '{self.action}'"
             )
         return self
+
+
+def decision_schema(allow_no_reply: bool = True) -> dict:
+    """The JSON schema the model must follow. Without `no_reply` (D-024), the action can't be
+    `no_reply` at all and nothing in the schema mentions it."""
+    schema = BrainDecision.model_json_schema()
+    if allow_no_reply:
+        return schema
+    schema["$defs"]["Action"]["enum"] = [a for a in schema["$defs"]["Action"]["enum"] if a != Action.NO_REPLY]
+    props = schema["properties"]
+    props["action"]["description"] = props["action"]["description"].replace(NO_REPLY_ACTION_DOC, "").strip()
+    props["reply"]["description"] = props["reply"]["description"].replace(NO_REPLY_REPLY_DOC, "")
+    return schema

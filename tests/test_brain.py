@@ -3,10 +3,10 @@ from types import SimpleNamespace
 
 import pytest
 
-from brain.brain import FALLBACK_REPLY, HISTORY_LIMIT, Brain, format_history, format_message
+from brain.brain import FALLBACK_REPLY, HISTORY_LIMIT, Brain, format_history, format_message, render_prompt
 from brain.kb import parse_kb
 from brain.llm import AnthropicClient, Completion, DryRunClient, ScriptedClient, strip_unsupported
-from brain.schema import Action, BrainDecision, IncomingMessage, Turn
+from brain.schema import Action, BrainDecision, IncomingMessage, Turn, decision_schema
 
 KB = parse_kb(
     """### hours
@@ -262,3 +262,35 @@ def test_fallback_question_includes_the_conversation():
     result = brain.decide(message)
     assert result.fallback_used
     assert "Earlier in the conversation:\n[customer] can you laminate 5 sheets?" in result.decision.question_for_owner
+
+
+# --- channels that always reply (D-024) --------------------------------------------------------
+
+BLOCKS = "Start.\n<!-- if no_reply -->\nSilence is allowed.\n<!-- else -->\nAlways reply.\n<!-- end -->\nMiddle.\n<!-- if no_reply -->\nOnly here.\n<!-- end -->\nEnd."
+
+
+def test_prompt_blocks_follow_the_channel_setting():
+    assert render_prompt(BLOCKS, allow_no_reply=True) == "Start.\nSilence is allowed.\nMiddle.\nOnly here.\nEnd."
+    assert render_prompt(BLOCKS, allow_no_reply=False) == "Start.\nAlways reply.\nMiddle.\nEnd."
+
+
+def test_always_reply_brain_hides_no_reply_from_prompt_and_schema():
+    brain = Brain(KB, ScriptedClient([decision()]), prompt=BLOCKS, allow_no_reply=False)
+    assert "Silence is allowed." not in brain.system and "Always reply." in brain.system
+    assert brain.schema == decision_schema(False)
+    assert "no_reply" not in json.dumps(brain.schema)
+    ask(brain)
+    assert brain.client.calls[0][2] == decision_schema(False)
+
+
+def test_no_reply_is_retried_then_falls_back_on_an_always_reply_channel():
+    silent = decision(action="no_reply", reply=None, cited_entries=[])
+    brain = Brain(KB, ScriptedClient([silent, silent]), prompt="x", allow_no_reply=False)
+    result = ask(brain)
+    assert "every message must get a reply" in result.attempts[0].problems[0]
+    assert result.fallback_used and result.decision.action is Action.ASK_OWNER
+
+
+def test_no_reply_is_accepted_where_allowed():
+    brain, _ = make_brain(decision(action="no_reply", reply=None, cited_entries=[]))
+    assert ask(brain).decision.action is Action.NO_REPLY

@@ -62,6 +62,7 @@ uv run python -m brain --kb kb/the-plug.md "how much for 100 b&w pages"
 uv run python -m brain --kb kb/the-plug.md --file thesis.pdf:42 ""
 uv run python -m brain --kb kb/the-plug.md --show-input "hi"      # print what the model is sent
 uv run python -m brain --kb kb/the-plug.md --history chat.json "yes colour pls"   # earlier messages (D-023)
+uv run python -m brain --kb kb/the-plug.md --always-reply --file notes.pdf:10 ""  # as a website chat (D-024)
 
 # Run the whole eval set (dry run by default) and compare runs
 uv run python -m eval.run_eval --kb kb/the-plug.md

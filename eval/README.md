@@ -15,6 +15,7 @@
 | `must_not_contain` | Optional. Case-insensitive substrings that must not appear in the reply (invented prices, leaked internal details, links). Keep them to phrases that never legitimately appear |
 | `history` | Optional. Earlier messages, oldest first, as the customer saw them (D-023): `{"role": "customer", "text": ..., "attachments": [...]}`, `{"role": "bot", "action": "answer", "text": ...}` or `{"role": "staff", "text": ...}`. `message` is always the customer's latest message, and the expected action is for it alone |
 | `question_must_contain` | Optional, `ask_owner` cases only. Case-insensitive substrings the `question_for_owner` must include, such as details collected earlier in the conversation (D-016) |
+| `always_reply` | Optional. Expectations for channels where every message gets a reply, such as a website chat (D-024): an object overriding any of `expected_action`, `expected_entries`, `expected_amounts`, `expected_language`, `must_not_contain`, `question_must_contain` and `notes`. Required on every `no_reply` case. Used only by `--always-reply` runs |
 | `notes` | Why the case is labelled this way |
 | `source` | Always `synthetic` in this file |
 
@@ -28,6 +29,7 @@
 uv run python -m eval.run_eval --kb kb/the-plug.md                    # all cases, dry run (free)
 uv run python -m eval.run_eval --kb kb/the-plug.md --ids q001,q067    # selected cases
 uv run python -m eval.run_eval --kb kb/the-plug.md --category no_reply
+uv run python -m eval.run_eval --kb kb/the-plug.md --always-reply     # as a website chat: no no_reply (D-024)
 uv run --env-file .env python -m eval.run_eval --kb kb/the-plug.md --model claude-sonnet-5-5 --effort low
 uv run python -m eval.compare eval/results/A.json eval/results/B.json # side by side; first file is the baseline
 ```

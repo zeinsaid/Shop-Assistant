@@ -35,6 +35,8 @@ def main() -> None:
                         help="an attachment (metadata only); repeat for several")
     parser.add_argument("--history", type=Path, metavar="FILE",
                         help="earlier messages: a JSON list of turns, as in eval cases (D-023)")
+    parser.add_argument("--always-reply", action="store_true",
+                        help="a channel where every message gets a reply, e.g. a website chat (D-024)")
     parser.add_argument("--live", action="store_true", help="call the real model (costs money, needs a key)")
     parser.add_argument("--model", default="claude-sonnet-5-5")
     parser.add_argument("--effort", default="low", help="model effort: low, medium, high, xhigh or max")
@@ -45,7 +47,7 @@ def main() -> None:
     history = [Turn(**t) for t in json.loads(args.history.read_text(encoding="utf-8"))] if args.history else []
     message = IncomingMessage(text=args.text, attachments=[parse_file(f) for f in args.file], history=history)
     client = make_client(args.model, args.effort) if args.live else DryRunClient()
-    brain = Brain(load_kb(args.kb), client)
+    brain = Brain(load_kb(args.kb), client, allow_no_reply=not args.always_reply)
 
     if args.show_input:
         print(f"--- system prompt ({len(brain.system):,} characters) ---\n{brain.system}")

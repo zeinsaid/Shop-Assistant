@@ -15,7 +15,7 @@ from pydantic import ValidationError
 
 from brain.kb import KnowledgeBase
 from brain.llm import Completion, LLMClient, Message
-from brain.schema import Action, BrainDecision, IncomingMessage, Role, Turn
+from brain.schema import Action, BrainDecision, IncomingMessage, Role, Turn, decision_schema
 
 PROMPT_PATH = Path(__file__).resolve().parent.parent / "prompts" / "brain.md"
 
@@ -72,13 +72,21 @@ class BrainResult:
 
 
 class Brain:
-    def __init__(self, kb: KnowledgeBase, client: LLMClient, prompt: str | None = None):
+    """One brain per knowledge base and channel setup.
+
+    `allow_no_reply=False` is for channels where every message must get a reply, such as a website
+    chat (D-024): the model never sees `no_reply` in its prompt or schema, and code rejects it.
+    """
+
+    def __init__(self, kb: KnowledgeBase, client: LLMClient, prompt: str | None = None,
+                 allow_no_reply: bool = True):
         self.kb = kb
         self.client = client
+        self.allow_no_reply = allow_no_reply
         self.fallback_reply = kb.metadata.get("fallback_reply") or FALLBACK_REPLY
         instructions = prompt if prompt is not None else PROMPT_PATH.read_text(encoding="utf-8")
-        self.system = build_system_prompt(instructions, kb)
-        self.schema = BrainDecision.model_json_schema()
+        self.system = build_system_prompt(render_prompt(instructions, allow_no_reply), kb)
+        self.schema = decision_schema(allow_no_reply)
 
     def decide(self, message: IncomingMessage) -> BrainResult:
         messages: list[Message] = [{"role": "user", "content": format_message(message)}]
@@ -109,6 +117,9 @@ class Brain:
             return None, [_describe(error) for error in e.errors()]
 
         problems = []
+        if decision.action is Action.NO_REPLY and not self.allow_no_reply:
+            # The schema already excludes it; this catches a provider that doesn't enforce enums.
+            return decision, ["'no_reply' isn't available here: every message must get a reply"]
         if decision.action is Action.ANSWER:
             unknown = [c for c in decision.cited_entries if c not in self.kb.entries]
             if unknown:
@@ -137,6 +148,19 @@ class Brain:
                 + (f"\nEarlier in the conversation:\n{format_history(message.history)}" if message.history else "")
             ),
         )
+
+
+PROMPT_BLOCK = re.compile(r"<!-- if no_reply -->\n(.*?)(?:<!-- else -->\n(.*?))?<!-- end -->\n", re.DOTALL)
+
+
+def render_prompt(instructions: str, allow_no_reply: bool = True) -> str:
+    """Resolve the prompt's channel blocks (D-024):
+
+        <!-- if no_reply -->        kept where no_reply is allowed
+        <!-- else -->               (optional) kept where every message gets a reply
+        <!-- end -->
+    """
+    return PROMPT_BLOCK.sub(lambda m: m.group(1) if allow_no_reply else (m.group(2) or ""), instructions)
 
 
 def build_system_prompt(instructions: str, kb: KnowledgeBase) -> str:
