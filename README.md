@@ -2,9 +2,9 @@
 
 An AI receptionist for small businesses. It answers customer questions from a knowledge base the owner maintains, asks the owner when it doesn't know something, and learns from the owner's answers so it doesn't have to ask twice.
 
-The first deployment is The Plug Business Center, a print shop next to the University of Nicosia, Cyprus. Most of its customers are students asking about small print jobs over chat. The core is business-agnostic: everything print-specific lives in the knowledge base and config, not in code.
+The first deployment is The Plug Mini Market and Print Shop, a print shop next to the University of Nicosia, Cyprus. Most of its customers are students asking about small print jobs over chat. The core is business-agnostic: everything print-specific lives in the knowledge base and config, not in code.
 
-> **Status:** Phase 2 code-complete. Knowledge base, evaluation set, output schema, prompt, brain, eval runner and clients for Claude, GPT and Gemini are built and tested without a model. Next: live eval runs to pick a model. No backend, database or UI yet.
+> **Status:** Phase 2 done. Knowledge base (with the shop's real prices), evaluation set, output schema, prompt, brain, eval runner and clients for Claude, GPT and Gemini are built; live eval runs picked GPT-6 Luna as the working model. Now: an onboarding interview that drafts a knowledge base from a conversation with the owner. No backend, database or UI yet.
 
 ---
 
@@ -28,7 +28,7 @@ Three rules keep this reliable:
 ## Roadmap
 
 1. **Evaluation set (done):** about 100 labelled synthetic customer messages, including hard cases (typos, Greek and Greeklish, pasted text, discount manipulation). No real messages are used: most of the shop's real chat traffic is files to print, and the rest is covered by the synthetic cases.
-2. **The brain (in progress):** knowledge base + prompt + structured output, then an eval runner that compares models from several providers on price and performance. No UI.
+2. **The brain (done):** knowledge base + prompt + structured output, then an eval runner that compares models from several providers on price and performance. No UI. Now: an owner interview that drafts a knowledge base (D-030).
 3. **The loop:** backend, database, conversation states, and the owner channel (Telegram), including approve-and-save learning.
 4. **Ship it:** web chat widget live on The Plug's website.
 5. **Grow it:** knowledge-base admin page, WhatsApp / Viber / email, support for other businesses.
@@ -45,6 +45,7 @@ Python · FastAPI · Postgres · Telegram Bot API (owner channel) · web chat wi
 ├── prompts/          # LLM prompts, kept as files so changes show up in diffs
 ├── brain/            # Schema, KB loader, model clients and decision logic (python -m brain)
 ├── eval/             # Eval cases, runner, scoring and run comparison (see eval/README.md)
+├── onboarding/       # Owner interview and KB drafting (python -m onboarding)
 ├── tests/            # pytest tests
 ├── pyproject.toml    # Dependencies, managed with uv
 └── app/              # Backend (planned, phase 3)
@@ -67,6 +68,10 @@ uv run python -m eval.compare eval/results/A.json eval/results/B.json
 
 # With a real model (needs a key in .env)
 uv run --env-file .env python -m brain --kb kb/the-plug.md --live "are you open now?"
+
+# Interview an owner, then draft a KB from the transcript (both call a real model)
+uv run --env-file .env python -m onboarding --session my-shop
+uv run --env-file .env python -m onboarding.draft --session my-shop
 ```
 
 Copy `.env.example` to `.env` and fill in the key for each provider you want to run (`ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `GEMINI_API_KEY`). The model name picks the provider: `claude-*`, `gpt-*` or `gemini-*`.

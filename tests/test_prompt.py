@@ -29,7 +29,7 @@ def test_prompt_is_business_agnostic():
     # D-001: the business's name and details belong in the KB, not the prompt.
     kb = (ROOT / "kb" / "the-plug.md").read_text(encoding="utf-8")
     business = re.search(r"^business:\s*(.+)$", kb, re.M).group(1).strip()
-    generic = {"the", "business", "center", "centre", "shop", "store", "company", "ltd"}
+    generic = {"the", "business", "center", "centre", "shop", "store", "company", "ltd", "and", "of", "&"}
     distinctive = [w for w in business.lower().split() if w not in generic]
     assert distinctive, "no distinctive word in the business name to check"
     for word in distinctive:

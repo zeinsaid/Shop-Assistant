@@ -4,14 +4,14 @@ Context for Claude Code when working in this repository.
 
 ## Project
 
-An AI receptionist for small businesses. It answers customer questions from an owner-maintained knowledge base, asks the owner when it doesn't know, and learns from approved owner answers. First deployment: The Plug Business Center, a print shop in Nicosia, Cyprus, serving mostly university students.
+An AI receptionist for small businesses. It answers customer questions from an owner-maintained knowledge base, asks the owner when it doesn't know, and learns from approved owner answers. First deployment: The Plug Mini Market and Print Shop, a print shop in Nicosia, Cyprus, serving mostly university students.
 
 - `README.md`: overview
 - `DECISIONS.md`: every architectural choice and the reasoning behind it. Read it before proposing anything that changes the architecture, and don't contradict an `Accepted` decision without flagging it.
 
 ## Current phase
 
-**Phase 1 (done):** knowledge base (`kb/the-plug.md`), labelled eval set (`eval/questions.jsonl`, 112 cases), decisions log.
+**Phase 1 (done):** knowledge base (`kb/the-plug.md`), labelled eval set (`eval/questions.jsonl`, 114 cases), decisions log.
 
 **Phase 2 (now): the brain.** In order:
 1. Output schema (`brain/schema.py`): a Pydantic `BrainDecision` (see D-019, D-020). **Done.**
@@ -21,7 +21,7 @@ An AI receptionist for small businesses. It answers customer questions from an o
 
 No backend, database or UI yet. Don't scaffold them unless asked.
 
-**Now:** the KB onboarding interview (D-030). Steps 1-3 are done (`prompts/interview.md`, `onboarding/` with the interview loop and drafting step, `prompts/draft.md`, `prompts/translate_kb.md`). **Next session:** the owner runs the real interview in a terminal (`uv run --env-file .env python -m onboarding --session the-plug`, Claude Sonnet 5.5 by default), describing prices in words, not pasting files, to get a baseline. Then, with the owner's OK, run `python -m onboarding.draft --session the-plug` (about $0.20) and compare the draft with `kb/the-plug.md` entry by entry (missing facts, wrong visibility, missing rules) to improve the prompts. After that: file uploads for the interview (price spreadsheets and photos, D-030 later option; cost/supplier columns must never reach public entries), then multi-turn (D-023), per-channel `no_reply` (D-024) and the file-drop skip (D-029). The KB has the shop's real prices (2026-10-05); the working model is GPT-6 Luna at effort `medium` (D-022).
+**Now:** the KB onboarding interview (D-030). Steps 1-3 are done (`prompts/interview.md`, `onboarding/` with the interview loop and drafting step, `prompts/draft.md`, `prompts/translate_kb.md`). **Baseline done (2026-10-08):** the owner ran the real interview (59 turns, all topics) and two drafts were compared with `kb/the-plug.md`. Fixes went into both prompts: public vs internal (answers need a public entry), `ask_owner` vs `handoff` chosen by what it takes rather than who receives it, keeping tier boundaries, one place per fact, no invented rules or recaps, and closing questions about forgotten services. The last three draft-prompt fixes haven't been checked with a redraft yet; the owner chose not to, since it doesn't have to be perfect. Session and drafts are in `onboarding/sessions/` and `onboarding/drafts/` (gitignored). KB answers from the comparison were applied (name, same-day printing, polite no to discount requests, unusual requests → `handoff`). Not yet in the KB, from the interview: shirt quantity discounts, stamps (€35), sticker prices include printing, annoyed-at-large-format-price → `handoff`. **Priorities (owner, 2026-10-08):** the main bot matters most. It may go live only at The Plug, otherwise it's a portfolio project. For now the owner builds the KBs by hand (doing the interview with any new business personally), so the interview is a nice-to-have and is parked. **Next:** multi-turn (D-023), then per-channel `no_reply` (D-024) and the file-drop skip (D-029). The KB has the shop's real prices (2026-10-05); the working model is GPT-6 Luna at effort `medium` (D-022).
 
 ## Product direction (owner, 2026-10-05)
 
@@ -88,7 +88,7 @@ Things agreed but deliberately not done yet. Check this list before starting a n
 - **Final model pick** (D-022): GPT-6 Luna at `medium` is the working choice. Before going live, read a sample of replies by hand (tone, Greek). Check Gemini's output token count against a real bill only if Gemini comes back into consideration.
 - **Data protection check** (GDPR, EU data residency, DPA) for the chosen provider, before going live on the website.
 - **Go-live KB check:** before going live, add the shop's public WhatsApp/Viber number (one number) and email to `shop-sending-files` (the owner will provide them), and do a final pass over the KB.
-- **Deals the owner always refuses** (D-028): let the owner list deal requests that are always a no (e.g. free binding), so the bot can decline them itself instead of escalating each time.
 - **More `no_reply` variety in the eval**, since most real WhatsApp traffic is file drops (see D-011 update).
 - **Business-agnostic review, part 2** (D-026): once there's a working prototype, or a second business in view, revisit whether the actions, the `no_reply` idea, the owner/staff model and the KB format fit other kinds of business.
+- **Interview file uploads** (D-030 later option): price spreadsheets and photos in the interview; cost/supplier columns must never reach public entries. Also: check the last three draft-prompt fixes with a redraft.
 - **Rename** the local folder and GitHub repo from `Project` to `shop-assistant` (owner does it after ending a session).

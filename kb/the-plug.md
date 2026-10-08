@@ -1,5 +1,5 @@
 ---
-business: The Plug Business Center
+business: The Plug Mini Market and Print Shop
 location: Asomatou 9, Egkomi, Lefkosia 2414, Cyprus
 currency: EUR
 default_language: en
@@ -48,12 +48,12 @@ We accept card and cash. Bank transfer is possible for some orders; arrange it w
 ### turnaround-standard
 **Visibility:** public · **Status:** confirmed
 
-Most jobs we do in-house are ready the same day or the next day. If you need something urgently, ask and we'll do our best to have it ready the same day.
+Standard printing (A4/A3) and large format printing are done on the spot, usually while you wait. Very large orders can take longer. Other jobs we do in-house are usually ready the same day or the next day. If you need something urgently, ask and we'll do our best to have it ready the same day.
 
 ### turnaround-internal
 **Visibility:** internal · **Status:** confirmed
 
-Staff can almost always finish in-house jobs the same day, but keep a day or two of leeway so they aren't printing until 2 a.m. The bot must never promise same-day completion; if a customer needs a job the same day, use `ask_owner`.
+Standard A4/A3 and large format printing can always be promised on the spot, including on special paper, unless the order is very large (then use `ask_owner` for the timing). For everything else, staff keep a day or two of leeway, so never promise same-day completion; if a customer needs it the same day, use `ask_owner`. Printing on the spot means while the customer is in the shop; printing ahead for pickup follows `shop-payment-internal`.
 
 ### shop-payment-timing
 **Visibility:** public · **Status:** confirmed
@@ -116,7 +116,12 @@ Pricing reflects staff effort. Jobs that only need to be sent to the printer are
 ### policy-discounts
 **Visibility:** internal · **Status:** confirmed
 
-First check `policy-large-orders`: a discount request on an order over €100 is a large order, so hand it off. Prices for standard printing (A4/A3, large format, photos, lamination, special paper, business cards) are fixed. Prices for merchandise and custom jobs vary: staff adjust them for each customer and order, usually starting high, and sometimes lower prices for large or labour-heavy jobs (for example large manual scanning jobs) or waive small charges as goodwill. For merchandise and custom jobs, quote the listed price (never lower); you may say the more you buy, the better the price, but never name a discount or percentage. The bot never offers or agrees to discounts itself: if a customer asks for a better price, use `ask_owner`. The only exception is the student discount on large format, which follows `discount-students-internal`.
+First check `policy-large-orders`: a discount request on an order over €100 is a large order, so hand it off. Prices for standard printing (A4/A3, large format, photos, lamination, special paper, business cards) are fixed. Prices for merchandise and custom jobs vary: staff adjust them for each customer and order, usually starting high, and sometimes lower prices for large or labour-heavy jobs (for example large manual scanning jobs) or waive small charges as goodwill. For merchandise and custom jobs, quote the listed price (never lower); you may say the more you buy, the better the price, but never name a discount or percentage. The bot never offers or agrees to discounts itself: if a customer asks for a better price, politely say no and that they're welcome to talk to our staff in the shop (`discount-requests`). Don't confirm or deny that staff ever give lower prices or free extras. The only exception is the student discount on large format, which follows `discount-students-internal`.
+
+### discount-requests
+**Visibility:** public · **Status:** confirmed
+
+We can't give discounts or special prices over chat: our prices are as listed. If you'd like to discuss your order, you're welcome to talk to our staff in the shop.
 
 ### policy-collect-details
 **Visibility:** internal · **Status:** confirmed
@@ -156,7 +161,7 @@ Staff prefer to work with businesses and organisations directly rather than thro
 ### policy-we-try
 **Visibility:** internal · **Status:** confirmed
 
-For requests not covered here (unusual paper, a customer's own paper, items we don't make in-house), never say no. Tell the customer we'll check and get back to them, and use `ask_owner`. Don't bring up outsourcing yourself.
+For requests not covered here (unusual paper, a customer's own paper, items we don't make in-house), never say no. Tell the customer we'll look into it and a team member will get back to them, and use `handoff`. Don't bring up outsourcing yourself.
 
 ---
 
@@ -377,7 +382,7 @@ We also have plastic sleeve binding (rarely used; don't offer it) and glue bindi
 ### binding-waiver
 **Visibility:** internal · **Status:** confirmed
 
-For larger orders (printing over roughly €20), staff often give binding for free as a goodwill gesture, presented to the customer as a gift once the order is done. The bot must never promise or mention free binding; it quotes binding at the normal price and leaves any waiver to staff. If a customer asks whether binding is free, that's a request for a better price: use `ask_owner` (see `policy-discounts`).
+For larger orders (printing over roughly €20), staff often give binding for free as a goodwill gesture, presented to the customer as a gift once the order is done. The bot must never promise or mention free binding; it quotes binding at the normal price and leaves any waiver to staff. If a customer asks whether binding is free, treat it like any other discount request (`policy-discounts`): give the normal binding price, and don't confirm or deny that it's ever free.
 
 ### lamination
 **Visibility:** public · **Status:** confirmed
@@ -438,7 +443,7 @@ For large manual scanning jobs, such as whole books, the price can be discussed 
 ### scanning-large-jobs
 **Visibility:** internal · **Status:** confirmed
 
-For large manual scanning jobs, staff are willing to go below the per-page price (for example, a 100-page book at €0.50/page = €50 might be done for €20–30). The bot quotes the normal price and never offers this; if the customer pushes back on price, use `ask_owner`.
+For large manual scanning jobs, staff are willing to go below the per-page price (for example, a 100-page book at €0.50/page = €50 might be done for €20–30). The bot quotes the normal price and never offers this; if the customer pushes back on price, follow `policy-discounts`.
 
 ---
 

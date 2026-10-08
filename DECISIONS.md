@@ -9,7 +9,7 @@ A running record of the significant choices made on this project: what was decid
 ## D-001 — Pilot on The Plug, generic under the hood
 **Date:** 2026-09-28 · **Status:** Accepted
 
-**Decision:** Build the assistant for The Plug Business Center (print shop, Nicosia) first, but keep the core business-agnostic so it can later serve any business.
+**Decision:** Build the assistant for The Plug Mini Market and Print Shop (print shop, Nicosia) first, but keep the core business-agnostic so it can later serve any business.
 
 **Why:** A real shop with real customer messages gives honest test data and a live demo. The Plug's traffic is mostly students with small, repeatable jobs, which suits a bot better than large negotiated orders.
 
@@ -119,7 +119,7 @@ A running record of the significant choices made on this project: what was decid
 ## D-011 — Evaluation set before code
 **Date:** 2026-09-28 · **Status:** Accepted
 
-**Decision:** Build `eval/questions.jsonl` (started at ~50 cases, now 100, each labelled with `expected_action`) before writing the bot. Sources: real messages from The Plug's WhatsApp (anonymized: names, phone numbers and emails removed) plus deliberately difficult synthetic cases (typos, Greek/English mix, pasted text containing questions, discount manipulation), tagged `"source": "synthetic"`.
+**Decision:** Build `eval/questions.jsonl` (started at ~50 cases, now 114, each labelled with `expected_action`) before writing the bot. Sources: real messages from The Plug's WhatsApp (anonymized: names, phone numbers and emails removed) plus deliberately difficult synthetic cases (typos, Greek/English mix, pasted text containing questions, discount manipulation), tagged `"source": "synthetic"`.
 
 **Why:** The eval set is the project's test suite; every prompt change is re-run against it. Key metric: invented answers (should be zero), followed by correct action choice.
 
