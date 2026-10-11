@@ -105,6 +105,8 @@ A running record of the significant choices made on this project: what was decid
 
 **Update:** the brain doesn't care about the channel, but its behaviour can differ per channel; see D-024.
 
+**Update (2026-10-11):** for the portfolio demo (D-031) only the web chat is built. The Telegram owner channel and the WhatsApp, Viber and email adapters are deferred. The pieces already built for them stay, since they cost nothing on the web: the internal message format, attachment metadata (D-010) and per-channel `no_reply` (D-024).
+
 ---
 
 ## D-010 — File contents never go to the LLM
@@ -119,7 +121,7 @@ A running record of the significant choices made on this project: what was decid
 ## D-011 — Evaluation set before code
 **Date:** 2026-09-28 · **Status:** Accepted
 
-**Decision:** Build `eval/questions.jsonl` (started at ~50 cases, now 128, each labelled with `expected_action`) before writing the bot. Sources: real messages from The Plug's WhatsApp (anonymized: names, phone numbers and emails removed) plus deliberately difficult synthetic cases (typos, Greek/English mix, pasted text containing questions, discount manipulation), tagged `"source": "synthetic"`.
+**Decision:** Build `eval/questions.jsonl` (started at ~50 cases, now 130, each labelled with `expected_action`) before writing the bot. Sources: real messages from The Plug's WhatsApp (anonymized: names, phone numbers and emails removed) plus deliberately difficult synthetic cases (typos, Greek/English mix, pasted text containing questions, discount manipulation), tagged `"source": "synthetic"`.
 
 **Why:** The eval set is the project's test suite; every prompt change is re-run against it. Key metric: invented answers (should be zero), followed by correct action choice.
 
@@ -388,13 +390,15 @@ How it's built:
 ---
 
 ## D-029 — Plain file drops skip the model
-**Date:** 2026-10-05 · **Status:** Proposed
+**Date:** 2026-10-05 · **Status:** Deferred (see D-031)
 
 **Decision:** On channels where `no_reply` is allowed (D-024), a message with at least one attachment and no text gets `no_reply` from code, without calling the model. Text with no letters or digits (only emoji or spaces) counts as no text. Two exceptions send it to the model as usual: the channel doesn't allow `no_reply` (the website chat), or the customer is in an active conversation with the bot (defined with multi-turn, D-023; for example, the bot's last message asked them to send a file). A file with any text ("how much is this?", "2 copies colour pls") always goes to the model.
 
 **Why:** Most WhatsApp traffic is customers in the shop sending files to print. Each model call costs money even when the answer is silence (about $0.0002 with GPT-6 Luna, more with pricier models). Deciding these in code also removes a failure mode (a model replying to a file drop, as Gemini did in the bake-off), adds no delay, and keeps working when the provider is down. Telling a question from an instruction for staff needs the model, so only text-free messages are skipped.
 
 **Consequences:** Built together with D-023 and D-024, since the exception needs conversation history and the switch is a per-channel setting. The skip is recorded in the brain's result (no model attempts, a `skipped` flag) so logs and eval runs show it; the file-only eval cases (q062, q064) then test the code path.
+
+**Update (2026-10-11):** deferred, not built. The project is now a portfolio demo on a website chat (D-031), which always replies and takes no attachments, so the skip would never run. Build it only if a channel with `no_reply` (such as WhatsApp) goes live.
 
 ---
 
@@ -415,11 +419,25 @@ How it's built:
 
 ---
 
+## D-031 — Portfolio demo first
+**Date:** 2026-10-11 · **Status:** Accepted
+
+**Decision:** The project is a portfolio piece: a demo inside the developer's personal portfolio website, where visitors chat with the bot on The Plug's KB. Going live at The Plug is possible later but not planned. Scope follows from that:
+- **Build:** the brain and its eval (finish and recheck), then a simple web demo: a chat page, a panel showing each decision (action, cited entries, reasoning), a demo `ask_owner` flow where the visitor can play the owner, and limits that protect the API credit.
+- **Defer:** everything only a live deployment or another channel needs: the file-drop skip (D-029), the Telegram owner channel and WhatsApp/Viber/email adapters (D-009), go-live KB details (public phone number and email), the data protection check, and more `no_reply` eval variety.
+- **Keep:** what's already built for other channels (per-channel `no_reply`, attachment metadata), because it doesn't get in the way of the web demo.
+
+**Why:** Few visitors will dig deep, so effort goes where a visitor sees it: a working bot, cheap to run, whose engineering (actions, citations, eval, this log) is visible. Production-only features would cost sessions without showing up in the demo.
+
+**Consequences:** The next phase after the brain is the web demo, not channel connectors. D-012's "no admin dashboard" stands for now; the onboarding interview (D-030) may become a second demo later. If the bot ever goes live, start from the deferred list above.
+
+---
+
 ## Template
 
 ```
 ## D-XXX — Title
-**Date:** YYYY-MM-DD · **Status:** Proposed | Accepted | Superseded by D-XXX
+**Date:** YYYY-MM-DD · **Status:** Proposed | Accepted | Deferred | Superseded by D-XXX
 
 **Decision:** What we're doing.
 

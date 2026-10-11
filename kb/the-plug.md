@@ -4,7 +4,7 @@ location: Asomatou 9, Egkomi, Lefkosia 2414, Cyprus
 currency: EUR
 default_language: en
 fallback_reply: Let me check with the team and get back to you. / Θα ελέγξω με την ομάδα και θα σας απαντήσω.
-last_reviewed: 2026-10-05
+last_reviewed: 2026-10-11
 ---
 
 # The Plug: Knowledge Base
@@ -33,7 +33,7 @@ The shop may occasionally close for holidays. If a customer asks whether we're o
 
 Address: Asomatou 9, Egkomi, Lefkosia 2414, Cyprus.
 
-We're in Engomi, next to the University of Nicosia, right behind the Mall of Engomi, just off October 30th Street. We're next to the Sirius Black coffee shop, which is also a barber shop called WizArt. Look for the shop with tables outside and a large LED screen out front.
+We're in Engomi, next to the University of Nicosia, right behind the Mall of Engomi, just off October 30th Street. We're next to the Serious Black coffee shop, which is also a barber shop called WizArt. Look for the shop with tables outside and a large LED screen out front.
 
 ### shop-sending-files
 **Visibility:** public · **Status:** placeholder
@@ -116,12 +116,12 @@ Pricing reflects staff effort. Jobs that only need to be sent to the printer are
 ### policy-discounts
 **Visibility:** internal · **Status:** confirmed
 
-First check `policy-large-orders`: a discount request on an order over €100 is a large order, so hand it off. If the customer is disputing a price rather than asking for a better one, follow `policy-disputes-and-rudeness`. Prices for standard printing (A4/A3, large format, photos, lamination, special paper, business cards) are fixed. Prices for merchandise and custom jobs vary: staff adjust them for each customer and order, usually starting high, and sometimes lower prices for large or labour-heavy jobs (for example large manual scanning jobs) or waive small charges as goodwill. For merchandise and custom jobs, quote the listed price (never lower); you may say the more you buy, the better the price, but never name a discount or percentage. The bot never offers or agrees to discounts itself: if a customer asks for a better price, politely say no and that they're welcome to talk to our staff in the shop (`discount-requests`). Don't confirm or deny that staff ever give lower prices or free extras. The only exception is the student discount on large format, which follows `discount-students-internal`.
+First check `policy-large-orders`: a discount request on an order over €100 is a large order, so hand it off. If the customer is disputing a price rather than asking for a better one, follow `policy-disputes-and-rudeness`. Prices for standard printing (A4/A3, large format, photos, lamination, special paper, business cards) are fixed. Prices for merchandise and custom jobs vary: staff adjust them for each customer and order, usually starting high, and sometimes lower prices for large or labour-heavy jobs (for example large manual scanning jobs) or waive small charges as goodwill. For merchandise and custom jobs, quote the listed price (never lower), including any quantity discount a public entry lists (such as for shirts); otherwise you may say the more you buy, the better the price, but never name a discount or percentage. The bot never offers or agrees to discounts itself: if a customer asks for a better price, politely say no and that they're welcome to talk to our staff in the shop (`discount-requests`). Don't confirm or deny that staff ever give lower prices or free extras. The only exception is the student discount on large format, which follows `discount-students-internal`.
 
 ### policy-disputes-and-rudeness
 **Visibility:** internal · **Status:** confirmed
 
-Use `handoff` when a customer is rude, sarcastic or hostile, complains, or disputes a price or charge: refuses to pay the listed price, says they were promised a different price, or argues about what they were charged (for example, calls a price a rip-off). Keep the reply short and polite, and don't argue or defend the price. A plain request for a better price, without a dispute, is a discount request: follow `policy-discounts`.
+Use `handoff` when a customer is rude, sarcastic or hostile, complains, or disputes a price or charge: refuses to pay the listed price, says they were promised a different price, or argues about what they were charged (for example, calls a price a rip-off). Keep the reply polite and understanding: acknowledge how they feel, and don't argue or defend the price. A plain request for a better price, without a dispute, is a discount request: follow `policy-discounts`.
 
 ### discount-requests
 **Visibility:** public · **Status:** confirmed
@@ -335,7 +335,7 @@ Students get 30% off large format prints that cost more than €5 per print.
 ### discount-students-internal
 **Visibility:** internal · **Status:** confirmed
 
-Never mention the student discount unless the customer asks whether there's a discount. When they ask: if they haven't said they're a student, ask; if they are, take 30% off every large format print whose listed price per print is over €5 (prints at €5 or less get no student discount; canvas isn't included). Check the €100 limit in `policy-large-orders` against the price before the discount.
+Never mention the student discount unless the customer asks whether there's a discount or for a cheaper price. When they ask: if they haven't said they're a student, ask; if they are, take 30% off every large format print whose listed price per print is over €5 (prints at €5 or less get no student discount; canvas isn't included). Check the €100 limit in `policy-large-orders` against the price before the discount. If a student asks for a cheaper price without naming the job, tell them about the student discount on large format, and that our other prices are as listed.
 
 ---
 
@@ -344,7 +344,7 @@ Never mention the student discount unless the customer asks whether there's a di
 ### business-cards
 **Visibility:** public · **Status:** confirmed
 
-Business cards, printed on 350g card: 100 for €25, 200 for €45, 300 for €55, 400 for €65, 500 for €75, 1000 for €110. Double-sided cards are priced as double the quantity (100 double-sided cards are priced as 200). Staff confirm prices for other quantities. You can send a ready design, or give us your details and we design the card for you; design work costs extra and staff quote it.
+Business cards, printed on 350g card: 100 for €25, 200 for €45, 300 for €55, 400 for €65, 500 for €75, 1000 for €110. Double-sided cards are priced as double the quantity (100 double-sided cards are priced as 200). For a quantity between two listed ones, the price falls between those two prices, and staff confirm it. You can send a ready design, or give us your details and we design the card for you; design work costs extra and staff quote it.
 
 ### passport-photos
 **Visibility:** public · **Status:** confirmed
@@ -363,7 +363,7 @@ Sticker paper, price per sheet:
 - A3 whole sticker sheet without cuts (no pre-cut A3): €5.
 - Custom-cut stickers (any shape, cut on our cutting machine): €4 per A4 sheet, €6 per A3 sheet.
 
-These are prices for one sheet; prices for more sheets are discussed with our staff.
+Prices include printing, in colour or black and white (same price). These are prices for one sheet; prices for more sheets are discussed with our staff.
 
 ### stickers-internal
 **Visibility:** internal · **Status:** confirmed
@@ -500,17 +500,29 @@ Custom t-shirts, price per shirt. We prefer to supply the shirts, but you can br
 | Vinyl | €17 | €22 | €12 | €17 |
 | Sublimation | €20 | €25 | €15 | €20 |
 
-DTF prints take at least 3 working days. The more shirts you order, the better the price.
+Quantity discounts on these prices: 15% off for 2–5 shirts, 30% off for 6–10 shirts. For more than 10 shirts, staff give the price.
+
+DTF prints take at least 3 working days.
 
 ### merch-shirts-bulk
 **Visibility:** public · **Status:** confirmed
 
-For shirt orders, we'll need a few details before giving a quote: how many shirts, whether they all have the same design, the design size and number of colours, front only or front and back, shirt colours and sizes, and when you need them. Staff then confirm the price.
+For a shirt quote, send or bring us your design: our staff choose the best print method for it. We also need to know how many shirts, whether we supply them or you bring your own, and front only or front and back. Staff then confirm the price.
+
+### merch-shirts-internal
+**Visibility:** internal · **Status:** confirmed
+
+Customers don't know print methods (DTF, vinyl, sublimation): never ask them to choose one, since staff pick it from the design. For a general shirt price question, give only the overall price range per shirt from `merch-shirts` (it depends on the print method, whether they bring their own shirt, and one or both sides) and invite them to send their design. Don't list each method's prices or ask for more details unless they ask. Quote a specific method's price only if the customer names that method. For the €100 limit in `policy-large-orders`, use prices before the quantity discount: 9 or more shirts are always over €100 (even at the cheapest €12 each), so hand them off without quoting or naming a discount.
 
 ### merch-shirts-sourcing
 **Visibility:** internal · **Status:** confirmed
 
 DTF prints are outsourced and then heat-pressed in the shop. Don't bring outsourcing up yourself. If the customer asks who makes them, or why they take longer or can't be done the same day, you may say the print is made with an external partner and finished in the shop (see `outsourcing`). Our partner needs at least 3 working days, so DTF prints can't be done sooner; explain that rather than escalating. Never give partner names, links or prices, and never claim they're made in-house.
+
+### stamps
+**Visibility:** public · **Status:** confirmed
+
+We make custom stamps: €35 each, ready in one working day.
 
 ---
 

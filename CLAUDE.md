@@ -11,7 +11,7 @@ An AI receptionist for small businesses. It answers customer questions from an o
 
 ## Current phase
 
-**Phase 1 (done):** knowledge base (`kb/the-plug.md`), labelled eval set (`eval/questions.jsonl`, 128 cases), decisions log.
+**Phase 1 (done):** knowledge base (`kb/the-plug.md`), labelled eval set (`eval/questions.jsonl`, 130 cases), decisions log.
 
 **Phase 2 (now): the brain.** In order:
 1. Output schema (`brain/schema.py`): a Pydantic `BrainDecision` (see D-019, D-020). **Done.**
@@ -21,18 +21,21 @@ An AI receptionist for small businesses. It answers customer questions from an o
 
 No backend, database or UI yet. Don't scaffold them unless asked.
 
-**Priorities (owner, 2026-10-08):** the main bot matters most. It may go live only at The Plug; otherwise it's a portfolio project. For now the owner builds KBs by hand (and would run the interview with any new business personally), so the interview is a nice-to-have and is parked.
+**Priorities (owner, 2026-10-11, D-031):** this is a portfolio project. The bot will be a demo inside the owner's personal portfolio website (CV and other projects alongside it), where visitors click in and chat with it. Keep the demo simple; few visitors will dig deep. Going live at The Plug is possible someday but not planned. Order: finish the bot, then the demo. The interview is parked (maybe a second demo later).
 
-**Multi-turn (D-023), built 2026-10-08:** `history` on `IncomingMessage`, transcript formatting with a 10-turn cap, a prompt section, eval support (`history`, `question_must_contain`) and cases q115-q127. GPT-6 Luna (`medium`) passes them after fixing three labels and one prompt conflict (2026-10-08). Also added: `policy-disputes-and-rudeness` (rude customers, price disputes and complaints → `handoff`). **Per-channel `no_reply` (D-024), built 2026-10-08:** `Brain(allow_no_reply=False)` for channels that always reply; prompt blocks resolved by `render_prompt()`, `no_reply` removed from the schema, `always_reply` overrides on the eval cases and `run_eval --always-reply`. GPT-6 Luna passes the website-mode cases (pasted text gets "here's how to send it", never an answer to its questions). The Plug's website chat won't accept attachments (owner, 2026-10-08). **Next session:** the file-drop skip (D-029), then a full Luna run over all 128 cases in both modes (about $0.10 total, with the owner's OK) to check nothing regressed after today's prompt and KB changes. A full Luna run over all 128 cases (about $0.05) is worth doing before the final model pick. The KB has the shop's real prices (2026-10-05); the working model is GPT-6 Luna at effort `medium` (D-022).
+**Multi-turn (D-023), built 2026-10-08:** `history` on `IncomingMessage`, transcript formatting with a 10-turn cap, a prompt section, eval support (`history`, `question_must_contain`) and cases q115-q127. GPT-6 Luna (`medium`) passes them after fixing three labels and one prompt conflict (2026-10-08). Also added: `policy-disputes-and-rudeness` (rude customers, price disputes and complaints → `handoff`). **Per-channel `no_reply` (D-024), built 2026-10-08:** `Brain(allow_no_reply=False)` for channels that always reply; prompt blocks resolved by `render_prompt()`, `no_reply` removed from the schema, `always_reply` overrides on the eval cases and `run_eval --always-reply`. GPT-6 Luna passes the website-mode cases (pasted text gets "here's how to send it", never an answer to its questions). The Plug's website chat won't accept attachments (owner, 2026-10-08). **Finishing the bot (2026-10-11):** D-029 deferred (D-031); the three interview facts added to the KB (shirt quantity discounts, stamps, sticker prices include printing) with eval cases q129-q130; full Luna regression runs in both modes (2026-10-11, about $0.15 in all). After the owner's feedback on hand-picked replies: shirt quotes give only the range and never ask for a print method (`merch-shirts-internal`, `merch-shirts-bulk`), 9+ shirts hand off, listed shirt discounts allowed by `policy-discounts`, students asking for cheaper get told about the large-format discount, in-between business-card quantities get the two neighbouring prices, warmer handoff replies for complaints and price disputes, tier tables summarised instead of listed (prompt). Last run: 127/130 WhatsApp mode, 125/130 website mode; q104 then fixed (4/4 on recheck). Remaining misses look random (q074, q121) or are set aside (q069). The KB has the shop's real prices (2026-10-05); the working model is GPT-6 Luna at effort `medium` (D-022).
 
-**KB onboarding interview (D-030), parked:** steps 1-3 built (`prompts/interview.md`, `prompts/draft.md`, `prompts/translate_kb.md`, `onboarding/`). Baseline done 2026-10-08: the owner ran the real interview (59 turns, all topics), two drafts were compared with `kb/the-plug.md`, and both prompts were fixed (public vs internal, `ask_owner` vs `handoff` by what it takes, tier boundaries, one place per fact, no invented rules or recaps, closing questions about forgotten services). The last three draft-prompt fixes are unchecked by a redraft. Sessions and drafts are in `onboarding/sessions/` and `onboarding/drafts/` (gitignored). Interview facts not yet in the KB: shirt quantity discounts, stamps (€35), sticker prices include printing.
+**KB onboarding interview (D-030), parked:** steps 1-3 built (`prompts/interview.md`, `prompts/draft.md`, `prompts/translate_kb.md`, `onboarding/`). Baseline done 2026-10-08: the owner ran the real interview (59 turns, all topics), two drafts were compared with `kb/the-plug.md`, and both prompts were fixed (public vs internal, `ask_owner` vs `handoff` by what it takes, tier boundaries, one place per fact, no invented rules or recaps, closing questions about forgotten services). The last three draft-prompt fixes are unchecked by a redraft. Sessions and drafts are in `onboarding/sessions/` and `onboarding/drafts/` (gitignored).
 
-## Product direction (owner, 2026-10-05)
+## Demo direction (owner, 2026-10-11, D-031)
 
-Possibly a product for other small businesses, not only The Plug. Keep design choices compatible with that:
-- **Customer side:** an embeddable chat widget or a hosted page per business; channel connectors (WhatsApp, Viber, Telegram) as adapters (D-009).
-- **Owner side:** no command lines. A simple backend/dashboard for the KB, the onboarding interview and connectors. CLIs are dev harnesses only, so keep logic in UI-agnostic classes (e.g. `Interview`). This changes D-012 ("no admin dashboard in v1"): propose an update when the backend is designed.
-- **Owner and staff notifications:** `ask_owner` and `handoff` don't reach anyone yet. To decide with the backend: likely the owner gets questions on an app they already use (D-009 proposes Telegram) and can reply there, with the dashboard as home base; handoffs land in a shared inbox for staff.
+After the bot is finished, the next phase is a web demo for the portfolio site, kept simple:
+- A chat page on The Plug's KB (always-reply, no attachments).
+- A side panel explaining each decision: action, cited KB entries, reasoning.
+- A demo `ask_owner` flow: the visitor can play the owner and answer, instead of only being told the question went to the owner.
+- Limits that protect the API credit: per-visitor message caps, a provider spending cap, the key kept on the server.
+
+Earlier product ideas (embeddable widget for many businesses, owner dashboard, channel connectors, owner/staff notifications) are deferred. Still keep logic in UI-agnostic classes and nothing business-specific in code, so they stay possible.
 
 ## Core rules (don't break these)
 
@@ -85,12 +88,10 @@ I don't write the code myself; you do. But I want to understand every concept an
 
 Things agreed but deliberately not done yet. Check this list before starting a new phase.
 
-- **File-drop skip** (D-029, Proposed): D-023 and D-024 are built, so it's next.
-- **Price calculator** (D-014): if wrong totals or missed €100 limits keep showing up in the eval (`wrong_amounts`), move price lookup and arithmetic into code as a tool.
-- **Final model pick** (D-022): GPT-6 Luna at `medium` is the working choice. Before going live, read a sample of replies by hand (tone, Greek). Check Gemini's output token count against a real bill only if Gemini comes back into consideration.
-- **Data protection check** (GDPR, EU data residency, DPA) for the chosen provider, before going live on the website.
-- **Go-live KB check:** before going live, add the shop's public WhatsApp/Viber number (one number) and email to `shop-sending-files` (the owner will provide them), and do a final pass over the KB.
-- **More `no_reply` variety in the eval**, since most real WhatsApp traffic is file drops (see D-011 update).
-- **Business-agnostic review, part 2** (D-026): once there's a working prototype, or a second business in view, revisit whether the actions, the `no_reply` idea, the owner/staff model and the KB format fit other kinds of business.
-- **Interview file uploads** (D-030 later option): price spreadsheets and photos in the interview; cost/supplier columns must never reach public entries. Also: check the last three draft-prompt fixes with a redraft.
+- **Price calculator** (D-014): if wrong totals or missed €100 limits keep showing up in the eval (`wrong_amounts`), move price lookup and arithmetic into code as a tool. The errors seen are picking the wrong quantity tier, not arithmetic (q126: 50 pages priced at the 51-100 rate). Not needed for the demo; a go-live check.
+- **q069** ("can this be ready by 3pm?" with a 20-page PDF), set aside by the owner: small standard jobs are printed on the spot when the customer arrives, so "yes" is true, but staff must know about the promise. Revisit when owner/staff notifications exist; until then the bot may ask for details or `ask_owner`.
+- **Final model pick** (D-022): GPT-6 Luna at `medium` is the working choice. Check Gemini's output token count against a real bill only if Gemini comes back into consideration.
+- **Second demo: the interview** (D-030): a short mode (fewer topics, 5-10 minutes) on a cheap model. Also: interview file uploads (price spreadsheets, photos; cost/supplier columns must never reach public entries) and a redraft to check the last three draft-prompt fixes.
+- **Business-agnostic review, part 2** (D-026): revisit whether the actions, the `no_reply` idea, the owner/staff model and the KB format fit other kinds of business, if a second business comes into view.
+- **Only if it goes live** (D-031): file-drop skip (D-029); Telegram owner channel and WhatsApp/Viber/email adapters (D-009); the shop's public WhatsApp/Viber number and email in `shop-sending-files`; a data protection check (GDPR, EU data residency, DPA) for the chosen provider; more `no_reply` variety in the eval.
 - **Rename** the local folder and GitHub repo from `Project` to `shop-assistant` (owner does it after ending a session).
