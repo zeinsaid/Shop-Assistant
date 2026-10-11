@@ -13,13 +13,13 @@ An AI receptionist for small businesses. It answers customer questions from an o
 
 **Phase 1 (done):** knowledge base (`kb/the-plug.md`), labelled eval set (`eval/questions.jsonl`, 130 cases), decisions log.
 
-**Phase 2 (now): the brain.** In order:
+**Phase 2 (done 2026-10-11): the brain.** In order:
 1. Output schema (`brain/schema.py`): a Pydantic `BrainDecision` (see D-019, D-020). **Done.**
 2. Prompt (`prompts/brain.md`). **Done.**
 3. Brain (`brain/brain.py`, `kb.py`, `llm.py`): loads the KB, calls the model, parses the decision, enforces KB-dependent rules in code (D-025). **Done.** Try it with `uv run python -m brain --kb kb/the-plug.md "..."` (dry run by default).
 4. Eval runner (`eval/run_eval.py`, `scoring.py`, `compare.py`, `prices.json`): runs every case, scores it (D-027), saves timestamped results; `eval.compare` puts runs side by side. See `eval/README.md`. Clients for Claude, GPT and Gemini are in `brain/llm.py`. **Done.** First live runs on 2026-10-01 (results in D-022).
 
-No backend, database or UI yet. Don't scaffold them unless asked.
+**Phase 3 (next): the portfolio demo** (D-031, see "Demo direction" below). Start with a short plan for the owner to approve: server, chat page, decision panel, the demo `ask_owner` flow, spending limits, hosting. No backend, database or UI exists yet; don't scaffold anything before the plan is agreed.
 
 **Priorities (owner, 2026-10-11, D-031):** this is a portfolio project. The bot will be a demo inside the owner's personal portfolio website (CV and other projects alongside it), where visitors click in and chat with it. Keep the demo simple; few visitors will dig deep. Going live at The Plug is possible someday but not planned. Order: finish the bot, then the demo. The interview is parked (maybe a second demo later).
 
