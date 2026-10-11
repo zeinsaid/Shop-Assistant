@@ -429,7 +429,7 @@ How it's built:
 
 **Why:** Few visitors will dig deep, so effort goes where a visitor sees it: a working bot, cheap to run, whose engineering (actions, citations, eval, this log) is visible. Production-only features would cost sessions without showing up in the demo.
 
-**Consequences:** The next phase after the brain is the web demo, not channel connectors. D-012's "no admin dashboard" stands for now; the onboarding interview (D-030) may become a second demo later. If the bot ever goes live, start from the deferred list above.
+**Consequences:** The next phase after the brain is the web demo, not channel connectors. Constraint from the owner: nothing paid except the model API, so hosting must fit free tiers; the brain is already stateless per message (the history comes in with each message, D-023), which suits free serverless hosting. The portfolio site is a separate repo that links to the demo (2026-10-11). D-012's "no admin dashboard" stands for now; the onboarding interview (D-030) may become a second demo later. If the bot ever goes live, start from the deferred list above.
 
 ---
 

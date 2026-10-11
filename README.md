@@ -4,7 +4,7 @@ An AI receptionist for small businesses. It answers customer questions from a kn
 
 The first deployment is The Plug Mini Market and Print Shop, a print shop next to the University of Nicosia, Cyprus. Most of its customers are students asking about small print jobs over chat. The core is business-agnostic: everything print-specific lives in the knowledge base and config, not in code.
 
-> **Status:** Phase 2 done. Knowledge base (with the shop's real prices), evaluation set, output schema, prompt, brain, eval runner and clients for Claude, GPT and Gemini are built; live eval runs picked GPT-6 Luna as the working model. Now: an onboarding interview that drafts a knowledge base from a conversation with the owner. No backend, database or UI yet.
+> **Status:** the bot is done (2026-10-11). Knowledge base (with the shop's real prices), 130-case evaluation set, output schema, prompt, brain, eval runner and clients for Claude, GPT and Gemini are built; live eval runs picked GPT-6 Luna, which passes 125-127 of the 130 cases. A first version of an owner interview that drafts a knowledge base is built too. This is a portfolio project: next is a public web demo, linked from the developer's portfolio site (D-031). No backend or UI yet.
 
 ---
 
@@ -27,15 +27,14 @@ Three rules keep this reliable:
 
 ## Roadmap
 
-1. **Evaluation set (done):** about 100 labelled synthetic customer messages, including hard cases (typos, Greek and Greeklish, pasted text, discount manipulation). No real messages are used: most of the shop's real chat traffic is files to print, and the rest is covered by the synthetic cases.
-2. **The brain (done):** knowledge base + prompt + structured output, then an eval runner that compares models from several providers on price and performance. No UI. Now: an owner interview that drafts a knowledge base (D-030).
-3. **The loop:** backend, database, conversation states, and the owner channel (Telegram), including approve-and-save learning.
-4. **Ship it:** web chat widget live on The Plug's website.
-5. **Grow it:** knowledge-base admin page, WhatsApp / Viber / email, support for other businesses.
+1. **Evaluation set (done):** 130 labelled synthetic customer messages, including hard cases (typos, Greek and Greeklish, pasted text, discount manipulation, multi-turn conversations). No real messages are used: most of the shop's real chat traffic is files to print, and the rest is covered by the synthetic cases.
+2. **The brain (done):** knowledge base + prompt + structured output, then an eval runner that compares models from several providers on price and performance. Also a first owner interview that drafts a knowledge base (D-030, parked).
+3. **Web demo (next):** a public chat page on The Plug's knowledge base, with a panel showing why the bot chose each action, a mode where the visitor plays the owner for `ask_owner`, and limits that protect the API credit. Free hosting (D-031).
+4. **Later, only if it goes live:** owner channel (Telegram) with approve-and-save learning, WhatsApp / Viber / email, the file-drop skip, a knowledge-base admin page, support for other businesses.
 
 ## Planned stack
 
-Python · FastAPI · Postgres · Telegram Bot API (owner channel) · web chat widget (customer channel) · Railway or Render for hosting
+Python · Pydantic · OpenAI, Anthropic and Google SDKs behind one interface · pytest. For the demo: a small stateless API and a static chat page on free hosting (to be planned, D-031).
 
 ## Repository layout
 
@@ -48,7 +47,7 @@ Python · FastAPI · Postgres · Telegram Bot API (owner channel) · web chat wi
 ├── onboarding/       # Owner interview and KB drafting (python -m onboarding)
 ├── tests/            # pytest tests
 ├── pyproject.toml    # Dependencies, managed with uv
-└── app/              # Backend (planned, phase 3)
+└── app/              # Demo API and chat page (planned)
 ```
 
 ## Development
