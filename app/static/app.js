@@ -140,7 +140,7 @@ function renderPanel(entry) {
     for (const source of data.sources) {
       parts.push(el("details", { className: "source" },
         el("summary", { textContent: source.id }),
-        el("pre", { textContent: source.text })));
+        renderEntry(source.text)));
     }
   } else {
     parts.push(el("p", { className: "muted", textContent: "No public knowledge-base entries." }));
@@ -155,7 +155,48 @@ function renderPanel(entry) {
   panelBody.replaceChildren(...parts);
 }
 
-// "Play the owner": the visitor answers the bot's question, and the answer appears in the chat as a
+// Knowledge-base entries use a little markdown: paragraphs, "- " lists, tables and **bold**.
+// Turn it into elements line by line. Still only text nodes, so nothing in an entry runs as HTML.
+function lineKind(line) {
+  line = line.trim();
+  if (!line) return "blank";
+  if (line.startsWith("|")) return "table";
+  return /^[-*] /.test(line) ? "list" : "text";
+}
+
+function renderEntry(text) {
+  const box = el("div", { className: "entry" });
+  const lines = text.split("\n");
+  for (let i = 0; i < lines.length;) {
+    const kind = lineKind(lines[i]);
+    const group = [];
+    while (i < lines.length && lineKind(lines[i]) === kind) group.push(lines[i++].trim());
+    if (kind === "table") box.append(renderTable(group));
+    else if (kind === "list") box.append(el("ul", {}, ...group.map((l) => el("li", {}, ...inline(l.slice(2))))));
+    else if (kind === "text") box.append(el("p", {}, ...inline(group.join(" "))));
+  }
+  return box;
+}
+
+function renderTable(lines) {
+  let rows = lines
+    .filter((l) => !/^\|[\s:|-]+\|?$/.test(l)) // drop the |---|---| line under the header
+    .map((l) => l.replace(/^\||\|$/g, "").split("|").map((cell) => cell.trim()));
+  // Price ladders are one or two long rows (Pages | 1–10 | 11–20 | ...). Turned on their side
+  // they fit the narrow panel: one row per quantity.
+  if (rows.length <= 3 && rows[0].length > 4) rows = rows[0].map((_, c) => rows.map((row) => row[c] ?? ""));
+  const [head, ...body] = rows;
+  return el("div", { className: "table-wrap" }, el("table", {},
+    el("thead", {}, el("tr", {}, ...head.map((cell) => el("th", { textContent: cell })))),
+    el("tbody", {}, ...body.map((row) => el("tr", {}, ...row.map((cell) => el("td", { textContent: cell })))))));
+}
+
+// "**bold**" -> <strong>; backticks dropped. split() with a capture group puts the bold parts at odd indexes.
+function inline(text) {
+  return text.replaceAll("`", "").split(/\*\*(.+?)\*\*/).map((part, i) => (i % 2 ? el("strong", { textContent: part }) : part));
+}
+
+// "Play the owner":the visitor answers the bot's question, and the answer appears in the chat as a
 // message from the team. It joins the history as a staff turn, so the bot knows it from then on.
 function ownerSection(entry) {
   const section = el("section", { className: "owner" },
