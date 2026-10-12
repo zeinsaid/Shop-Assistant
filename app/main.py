@@ -13,6 +13,7 @@ import os
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, ConfigDict, Field
 
 from brain.brain import Brain
@@ -21,6 +22,7 @@ from brain.llm import make_client
 from brain.schema import Action, IncomingMessage, Turn
 
 ROOT = Path(__file__).resolve().parent.parent
+STATIC = Path(__file__).resolve().parent / "static"  # the chat page
 
 MAX_MESSAGE_CHARS = 500  # longer messages cost more and aren't needed to try the bot
 MAX_HISTORY_TURNS = 40  # the brain only reads the last 10 (D-023); this just bounds the request size
@@ -66,6 +68,14 @@ def create_app(brain: Brain) -> FastAPI:
             log.exception("brain.decide failed")
             raise HTTPException(503, "The assistant is unavailable right now. Please try again in a minute.")
         return to_response(result.decision, brain.kb)
+
+    # The page calls this on load: on free hosting that sleeps, it's what wakes the server up.
+    @app.get("/api/health")
+    def health() -> dict:
+        return {"ok": True}
+
+    # Everything else is the chat page and its files. Mounted last, so the /api routes above win.
+    app.mount("/", StaticFiles(directory=STATIC, html=True), name="page")
 
     return app
 

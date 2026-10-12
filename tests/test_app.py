@@ -115,3 +115,12 @@ def test_provider_failure_gives_a_plain_503():
     response = api.post("/api/chat", json={"message": "hi"})
     assert response.status_code == 503
     assert "provider down" not in response.text
+
+
+def test_health_and_the_chat_page_are_served():
+    api, client = make_app()
+    assert api.get("/api/health").json() == {"ok": True}
+    page = api.get("/")
+    assert page.status_code == 200 and "<title>Shop Assistant demo</title>" in page.text
+    assert api.get("/app.js").status_code == 200
+    assert client.calls == []

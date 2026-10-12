@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Shop Assistant demo</title>
+  <meta name="description" content="An AI receptionist for a real print shop in Nicosia. Ask it what a customer would.">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="layout">
+    <section class="chat" aria-label="Chat with the shop assistant">
+      <header class="chat-header">
+        <div>
+          <h1>The Plug <span class="muted">· AI receptionist</span></h1>
+          <p class="intro">
+            A demo of an AI receptionist for a real print shop in Nicosia, Cyprus. Ask it what a
+            customer would: prices, opening hours, discounts, in English or Greek.
+          </p>
+        </div>
+        <span id="status" class="status status-waiting" role="status">Connecting…</span>
+      </header>
+
+      <ol id="messages" class="messages" aria-live="polite">
+        <li class="message bot">Hi! I'm The Plug's assistant. Ask me anything about printing, prices or opening hours.</li>
+      </ol>
+
+      <div class="suggestions" aria-label="Suggested questions">
+        <button type="button" class="chip">How much for 100 black &amp; white pages?</button>
+        <button type="button" class="chip">Are you open on Christmas Day?</button>
+        <button type="button" class="chip">My prints came out in the wrong order!</button>
+        <button type="button" class="chip">I'm a student, can I get a discount?</button>
+        <button type="button" class="chip" lang="el">Πόσο κάνει η έγχρωμη εκτύπωση;</button>
+      </div>
+
+      <form id="composer" class="composer">
+        <input id="input" type="text" maxlength="500" autocomplete="off"
+               placeholder="Type a message…" aria-label="Your message">
+        <button id="send" type="submit">Send</button>
+      </form>
+
+      <footer class="footer muted">
+        A portfolio demo: prices are real, but no orders are taken.
+        <a href="https://github.com/Zein2002/Project" target="_blank" rel="noopener">How it works</a>
+      </footer>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

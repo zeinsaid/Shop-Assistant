@@ -1,0 +1,208 @@
+/* Colours live in variables so dark mode only has to swap them. */
+:root {
+  --bg: #f4f4f1;
+  --surface: #ffffff;
+  --text: #1d1d1b;
+  --muted: #6b6b66;
+  --border: #e2e2dc;
+  --accent: #1f6f5c;
+  --accent-text: #ffffff;
+  --bot-bubble: #f0f0eb;
+  --error: #b3261e;
+  --radius: 14px;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #151514;
+    --surface: #1e1e1c;
+    --text: #ecece6;
+    --muted: #9a9a92;
+    --border: #2f2f2c;
+    --accent: #3fa58a;
+    --accent-text: #0d1f1a;
+    --bot-bubble: #2a2a27;
+    --error: #f2847b;
+    color-scheme: dark;
+  }
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+.muted { color: var(--muted); font-weight: normal; }
+
+/* One column for now; the decision panel joins it in step 3. */
+.layout {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 16px;
+  height: 100dvh;
+}
+
+.chat {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.chat-header {
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+h1 { font-size: 1.15rem; margin: 0 0 4px; }
+.intro { margin: 0; font-size: 0.9rem; color: var(--muted); }
+
+.status {
+  flex-shrink: 0;
+  font-size: 0.8rem;
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  white-space: nowrap;
+}
+.status-ready::before, .status-waiting::before, .status-down::before {
+  content: "●";
+  margin-right: 6px;
+}
+.status-ready::before { color: var(--accent); }
+.status-waiting::before { color: #d9a520; }
+.status-down::before { color: var(--error); }
+
+/* Messages */
+.messages {
+  flex: 1;
+  overflow-y: auto;
+  list-style: none;
+  margin: 0;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.message {
+  max-width: 80%;
+  padding: 9px 14px;
+  border-radius: var(--radius);
+  white-space: pre-wrap;   /* keep the line breaks the bot writes */
+  overflow-wrap: anywhere; /* long words or links never widen the page */
+}
+.message.bot {
+  align-self: flex-start;
+  background: var(--bot-bubble);
+  border-bottom-left-radius: 4px;
+}
+.message.customer {
+  align-self: flex-end;
+  background: var(--accent);
+  color: var(--accent-text);
+  border-bottom-right-radius: 4px;
+}
+.message.note {
+  align-self: center;
+  max-width: 100%;
+  font-size: 0.85rem;
+  color: var(--muted);
+  text-align: center;
+}
+.message.note.error { color: var(--error); }
+
+/* Three bouncing dots while the bot is thinking */
+.typing span {
+  display: inline-block;
+  width: 6px; height: 6px;
+  margin: 0 2px;
+  border-radius: 50%;
+  background: var(--muted);
+  animation: bounce 1.2s infinite;
+}
+.typing span:nth-child(2) { animation-delay: 0.15s; }
+.typing span:nth-child(3) { animation-delay: 0.3s; }
+@keyframes bounce {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.5; }
+  30% { transform: translateY(-4px); opacity: 1; }
+}
+
+/* Suggested questions: one row that scrolls sideways on narrow screens */
+.suggestions {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 10px 20px 0;
+  scrollbar-width: none;
+}
+.chip {
+  flex-shrink: 0;
+  font: inherit;
+  font-size: 0.85rem;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+}
+.chip:hover { border-color: var(--accent); }
+
+/* Input row */
+.composer {
+  display: flex;
+  gap: 8px;
+  padding: 12px 20px;
+}
+.composer input {
+  flex: 1;
+  min-width: 0;
+  font: inherit;
+  padding: 10px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+}
+.composer input:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+.composer button {
+  font: inherit;
+  padding: 10px 18px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--accent-text);
+  cursor: pointer;
+}
+button:disabled, input:disabled { opacity: 0.5; cursor: default; }
+
+.footer {
+  padding: 0 20px 12px;
+  font-size: 0.8rem;
+}
+.footer a { color: var(--accent); }
+
+/* Phones: edge to edge, no rounded card */
+@media (max-width: 600px) {
+  .layout { padding: 0; }
+  .chat { border: 0; border-radius: 0; }
+  .chat-header { padding: 12px 16px; }
+  .messages { padding: 16px; }
+  .message { max-width: 88%; }
+  .suggestions { padding: 10px 16px 0; }
+  .composer { padding: 12px 16px; }
+  .footer { padding: 0 16px 12px; }
+}
