@@ -116,7 +116,7 @@ Pricing reflects staff effort. Jobs that only need to be sent to the printer are
 ### policy-discounts
 **Visibility:** internal · **Status:** confirmed
 
-First check `policy-large-orders`: a discount request on an order over €100 is a large order, so hand it off. If the customer is disputing a price rather than asking for a better one, follow `policy-disputes-and-rudeness`. Prices for standard printing (A4/A3, large format, photos, lamination, special paper, business cards) are fixed. Prices for merchandise and custom jobs vary: staff adjust them for each customer and order, usually starting high, and sometimes lower prices for large or labour-heavy jobs (for example large manual scanning jobs) or waive small charges as goodwill. For merchandise and custom jobs, quote the listed price (never lower), including any quantity discount a public entry lists (such as for shirts); otherwise you may say the more you buy, the better the price, but never name a discount or percentage. The bot never offers or agrees to discounts itself: if a customer asks for a better price, politely say no and that they're welcome to talk to our staff in the shop (`discount-requests`). Don't confirm or deny that staff ever give lower prices or free extras. The only exception is the student discount on large format, which follows `discount-students-internal`.
+First check `policy-large-orders`: a discount request on an order over €100 is a large order, so hand it off. If the customer is disputing a price rather than asking for a better one, follow `policy-disputes-and-rudeness`. Prices for standard printing (A4/A3, large format, photos, lamination, special paper, business cards) are fixed. Prices for merchandise and custom jobs vary: staff set the final price for each order. For merchandise and custom jobs, quote the listed price (never lower), including any quantity discount a public entry lists (such as for shirts); otherwise you may say the more you buy, the better the price, but never name a discount or percentage. The bot never offers or agrees to discounts itself: if a customer asks for a better price, politely say no and that they're welcome to talk to our staff in the shop (`discount-requests`). Don't confirm or deny that staff ever give lower prices or free extras. The only exception is the student discount on large format, which follows `discount-students-internal`.
 
 ### policy-disputes-and-rudeness
 **Visibility:** internal · **Status:** confirmed
@@ -387,7 +387,7 @@ We also have plastic sleeve binding (rarely used; don't offer it) and glue bindi
 ### binding-waiver
 **Visibility:** internal · **Status:** confirmed
 
-For larger orders (printing over roughly €20), staff often give binding for free as a goodwill gesture, presented to the customer as a gift once the order is done. The bot must never promise or mention free binding; it quotes binding at the normal price and leaves any waiver to staff. If a customer asks whether binding is free, treat it like any other discount request (`policy-discounts`): give the normal binding price, and don't confirm or deny that it's ever free.
+Staff sometimes include binding as a goodwill gesture. The bot must never promise or mention free binding; it quotes binding at the normal price and leaves any waiver to staff. If a customer asks whether binding is free, treat it like any other discount request (`policy-discounts`): give the normal binding price, and don't confirm or deny that it's ever free.
 
 ### lamination
 **Visibility:** public · **Status:** confirmed
@@ -448,7 +448,7 @@ For large manual scanning jobs, such as whole books, the price can be discussed 
 ### scanning-large-jobs
 **Visibility:** internal · **Status:** confirmed
 
-For large manual scanning jobs, staff are willing to go below the per-page price (for example, a 100-page book at €0.50/page = €50 might be done for €20–30). The bot quotes the normal price and never offers this; if the customer pushes back on price, follow `policy-discounts`.
+Staff sometimes adjust the price of large manual scanning jobs. The bot quotes the normal price and never offers a lower one; if the customer pushes back on price, follow `policy-discounts`.
 
 ---
 
