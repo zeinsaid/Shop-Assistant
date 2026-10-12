@@ -12,10 +12,11 @@ import logging
 import os
 from pathlib import Path
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, ConfigDict, Field
 
+from app.limits import RateLimiter
 from brain.brain import Brain
 from brain.kb import KnowledgeBase, load_kb
 from brain.llm import make_client
@@ -52,15 +53,22 @@ class ChatResponse(BaseModel):
     internal_rules_used: int  # how many internal entries were cited; their IDs and text stay hidden
 
 
-def create_app(brain: Brain) -> FastAPI:
-    """Build the app around a brain. Tests pass one with a ScriptedClient; production uses from_env()."""
+def create_app(brain: Brain, limiter: RateLimiter | None = None) -> FastAPI:
+    """Build the app around a brain. Tests pass one with a ScriptedClient; production uses from_env().
+
+    Without a limiter nothing is limited (tests); from_env() always sets one.
+    """
     app = FastAPI(title="Shop Assistant demo", docs_url=None, redoc_url=None)
 
     # A plain `def` (not `async def`): brain.decide() waits on the model's API, and FastAPI runs
     # plain functions in a thread pool, so one slow call doesn't block other visitors.
     @app.post("/api/chat")
-    def chat(request: ChatRequest) -> ChatResponse:
-        message = IncomingMessage(text=request.message, history=request.history)
+    def chat(body: ChatRequest, request: Request) -> ChatResponse:
+        # Checked after FastAPI has validated the body, so only messages that would reach the model
+        # count. Behind a host's proxy, the real visitor's address needs uvicorn's --proxy-headers.
+        if limiter and (refusal := limiter.check(request.client.host if request.client else "unknown")):
+            raise HTTPException(429, refusal)
+        message = IncomingMessage(text=body.message, history=body.history)
         try:
             result = brain.decide(message)
         except Exception:
@@ -99,8 +107,12 @@ def from_env() -> FastAPI:
     """
     kb = load_kb(os.environ.get("DEMO_KB", ROOT / "kb" / "the-plug.md"))
     client = make_client(os.environ.get("DEMO_MODEL", "dry-run"), effort=os.environ.get("DEMO_EFFORT", "medium"))
+    limiter = RateLimiter(
+        per_visitor=int(os.environ.get("DEMO_LIMIT_PER_HOUR", 30)),
+        per_day=int(os.environ.get("DEMO_LIMIT_PER_DAY", 1000)),
+    )
     # A website chat: every message gets a reply (D-024).
-    return create_app(Brain(kb, client, allow_no_reply=False))
+    return create_app(Brain(kb, client, allow_no_reply=False), limiter)
 
 
 app = from_env()

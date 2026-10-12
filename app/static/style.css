@@ -9,6 +9,10 @@
   --accent-text: #ffffff;
   --bot-bubble: #f0f0eb;
   --error: #b3261e;
+  --staff-bubble: #e4ecf7;
+  --answer: #1f6f5c;
+  --ask_owner: #a86b00;
+  --handoff: #7a4fb3;
   --radius: 14px;
   color-scheme: light;
 }
@@ -24,6 +28,10 @@
     --accent-text: #0d1f1a;
     --bot-bubble: #2a2a27;
     --error: #f2847b;
+    --staff-bubble: #23303f;
+    --answer: #3fa58a;
+    --ask_owner: #e0a63a;
+    --handoff: #a885d8;
     color-scheme: dark;
   }
 }
@@ -39,9 +47,12 @@ body {
 
 .muted { color: var(--muted); font-weight: normal; }
 
-/* One column for now; the decision panel joins it in step 3. */
+/* Chat and decision panel side by side; on phones the panel becomes a sheet (see the end). */
 .layout {
-  max-width: 760px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 16px;
+  max-width: 1120px;
   margin: 0 auto;
   padding: 16px;
   height: 100dvh;
@@ -124,6 +135,27 @@ h1 { font-size: 1.15rem; margin: 0 0 4px; }
 }
 .message.note.error { color: var(--error); }
 
+.message .text { display: block; }
+.message.bot.selected { outline: 2px solid var(--accent); outline-offset: 2px; }
+.message.staff {
+  align-self: flex-start;
+  background: var(--staff-bubble);
+  border-bottom-left-radius: 4px;
+}
+.sender { display: block; font-size: 0.75rem; font-weight: 600; color: var(--muted); }
+
+.why, .link-button {
+  font: inherit;
+  font-size: 0.8rem;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--accent);
+  text-decoration: underline;
+  cursor: pointer;
+}
+.why { display: block; margin-top: 4px; }
+
 /* Three bouncing dots while the bot is thinking */
 .typing span {
   display: inline-block;
@@ -194,6 +226,91 @@ button:disabled, input:disabled { opacity: 0.5; cursor: default; }
   font-size: 0.8rem;
 }
 .footer a { color: var(--accent); }
+
+/* Decision panel */
+.panel {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+}
+h2 { font-size: 1rem; margin: 0; }
+h3 { font-size: 0.85rem; margin: 18px 0 6px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); }
+.panel-close { display: none; font-size: 1.5rem; line-height: 1; border: 0; background: none; color: var(--text); cursor: pointer; }
+.panel-body { flex: 1; overflow-y: auto; padding: 4px 20px 20px; font-size: 0.9rem; }
+
+.badge {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #fff;
+}
+.badge-answer { background: var(--answer); }
+.badge-ask_owner { background: var(--ask_owner); }
+.badge-handoff { background: var(--handoff); }
+.actions-legend { padding-left: 0; list-style: none; display: grid; gap: 8px; }
+
+.source { border: 1px solid var(--border); border-radius: 8px; padding: 6px 10px; margin-bottom: 6px; }
+.source summary { cursor: pointer; font-family: ui-monospace, Consolas, monospace; font-size: 0.85rem; }
+.source pre { white-space: pre-wrap; font-size: 0.8rem; margin: 8px 0 2px; font-family: inherit; }
+
+.owner blockquote {
+  margin: 0 0 10px;
+  padding: 8px 12px;
+  border-left: 3px solid var(--ask_owner);
+  background: var(--bg);
+  border-radius: 4px;
+}
+.owner-form { display: grid; gap: 6px; }
+.owner-form label { font-weight: 600; }
+.owner-form textarea {
+  font: inherit;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  resize: vertical;
+}
+.owner-form button {
+  justify-self: start;
+  font: inherit;
+  padding: 8px 16px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--ask_owner);
+  color: #fff;
+  cursor: pointer;
+}
+
+/* Narrower screens: the panel becomes a sheet that slides up when "Why this reply?" is tapped. */
+@media (max-width: 900px) {
+  .layout { grid-template-columns: minmax(0, 1fr); max-width: 760px; }
+  .panel {
+    position: fixed;
+    left: 0; right: 0; bottom: 0;
+    max-height: 75dvh;
+    border-radius: var(--radius) var(--radius) 0 0;
+    box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.25);
+    transform: translateY(100%);
+    transition: transform 0.25s ease;
+    z-index: 10;
+  }
+  .panel.open { transform: translateY(0); }
+  .panel-close { display: block; }
+}
 
 /* Phones: edge to edge, no rounded card */
 @media (max-width: 600px) {

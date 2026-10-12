@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Shop Assistant demo</title>
-  <meta name="description" content="An AI receptionist for a real print shop in Nicosia. Ask it what a customer would.">
+  <meta name="description" content="An AI receptionist for a real print shop in Nicosia. Ask it what a customer would, and see why it replied the way it did.">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -22,7 +22,7 @@
       </header>
 
       <ol id="messages" class="messages" aria-live="polite">
-        <li class="message bot">Hi! I'm The Plug's assistant. Ask me anything about printing, prices or opening hours.</li>
+        <li class="message bot"><span class="text">Hi! I'm The Plug's assistant. Ask me anything about printing, prices or opening hours.</span></li>
       </ol>
 
       <div class="suggestions" aria-label="Suggested questions">
@@ -44,6 +44,23 @@
         <a href="https://github.com/Zein2002/Project" target="_blank" rel="noopener">How it works</a>
       </footer>
     </section>
+
+    <!-- The decision panel: a column on wide screens, a sheet that slides up on phones. -->
+    <aside id="panel" class="panel" aria-label="Behind the reply">
+      <div class="panel-header">
+        <h2>Behind the reply</h2>
+        <button id="panel-close" type="button" class="panel-close" aria-label="Close">×</button>
+      </div>
+      <div id="panel-body" class="panel-body">
+        <p>Every message gets exactly one action:</p>
+        <ul class="actions-legend">
+          <li><span class="badge badge-answer">Answer</span> from the shop's knowledge base, citing what it used.</li>
+          <li><span class="badge badge-ask_owner">Ask owner</span> when the knowledge base doesn't cover it. It asks instead of guessing.</li>
+          <li><span class="badge badge-handoff">Hand off</span> to a person for complaints, refunds and negotiations.</li>
+        </ul>
+        <p class="muted">Send a message, then see here why the bot replied the way it did.</p>
+      </div>
+    </aside>
   </main>
 
   <script src="app.js"></script>
