@@ -433,6 +433,23 @@ How it's built:
 
 ---
 
+## D-032 — Web demo: stateless API, static page, free hosting
+**Date:** 2026-10-12 · **Status:** Accepted
+
+**Decision:** The portfolio demo (D-031) is a small FastAPI server plus a static chat page, both on Render's free plan.
+- **Server** (`app/main.py`): `POST /api/chat` runs the brain as a website chat, where every message gets a reply (D-024); `GET /api/health` lets the page check whether the server is awake. It's stateless: the page sends the conversation so far with each message, and the server stores nothing.
+- **What visitors see:** the reply, the action, the question for the owner, and the full text of the cited public entries. For internal entries they see only a count. The model's reasoning and the internal entries never leave the server; the owner chose this over showing everything, as less risky.
+- **Play the owner:** when the bot chooses `ask_owner`, the visitor can answer. The answer appears in the chat as a message from the team and joins the history as a `staff` turn, with no extra model call. Saving owner answers to the knowledge base isn't built; the panel explains that the real product would do it.
+- **Spending protection:** the key exists only on the server. It's a separate key restricted to `/v1/responses`, drawing on prepaid credit with auto-recharge off. Messages are capped at 500 characters. Each visitor (IP) gets 30 messages an hour, and all visitors together get 1,000 a day; the counters live in memory.
+- **Hosting** (`render.yaml`): the page is a static site, which never sleeps. The API is a free web service that sleeps after 15 idle minutes and takes about a minute to wake; meanwhile the page shows a project description and a progress bar. The portfolio site pings `/api/health` when it loads, so the API is usually awake by the time a visitor reaches the demo.
+- **Public repo:** `CLAUDE.md` is no longer tracked. Three internal KB entries no longer spell out where staff go below the listed prices; the bot behaves the same.
+
+**Why:** Hosting alternatives: Vercel's separate server copies would each keep their own counters, so in-memory limits wouldn't work; Hugging Face Spaces sleeps after 48 hours, then rebuilds slowly; Koyeb may need a card, and its future is uncertain after its acquisition. The page is a separate static site because a page served by the sleeping server couldn't show anything while it wakes. A keep-awake pinger was rejected: the owner didn't want to risk the account or use up the free hours other projects may need, and an occasional one-minute wait, handled gracefully, is acceptable.
+
+**Consequences:** A visitor could fake the history (for example by inventing a staff message); that only affects their own chat, and a live deployment would keep the history on the server. The rate-limit counters reset whenever the API sleeps, and they assume a single server process. The page's API address and the API's allowed page address are fixed to the two Render addresses; if either changes, update `app/static/app.js` and `render.yaml`.
+
+---
+
 ## Template
 
 ```

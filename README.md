@@ -1,86 +1,97 @@
 # Shop Assistant
 
-An AI receptionist for small businesses. It answers customer questions from a knowledge base the owner maintains, asks the owner when it doesn't know something, and learns from the owner's answers so it doesn't have to ask twice.
+An AI receptionist for small businesses, built for **The Plug**, a print shop next to the University of Nicosia, Cyprus. It answers customers from a knowledge base the owner maintains, asks the owner when it doesn't know, and hands complaints and negotiations to staff. It never guesses.
 
-The first deployment is The Plug Mini Market and Print Shop, a print shop next to the University of Nicosia, Cyprus. Most of its customers are students asking about small print jobs over chat. The core is business-agnostic: everything print-specific lives in the knowledge base and config, not in code.
+**[Try the live demo →](https://shop-assistant-ss1r.onrender.com)** Ask it what a customer would (prices, opening hours, discounts, in English or Greek) and see why it replied the way it did. When it asks the owner, you get to answer as the owner.
 
-> **Status:** the bot is done (2026-10-11). Knowledge base (with the shop's real prices), 130-case evaluation set, output schema, prompt, brain, eval runner and clients for Claude, GPT and Gemini are built; live eval runs picked GPT-6 Luna, which passes 125-127 of the 130 cases. A first version of an owner interview that drafts a knowledge base is built too. This is a portfolio project: next is a public web demo, linked from the developer's portfolio site (D-031). No backend or UI yet.
+<sub>The demo runs on free hosting that sleeps when nobody's using it, so the first visit can take about a minute to wake up.</sub>
+
+![The demo: a chat with the bot, and the decision panel explaining a question it sent to the owner](docs/demo.png)
 
 ---
 
 ## How it works
 
-Every incoming customer message gets exactly one of four actions:
+Every customer message gets exactly one action:
 
 | Action | When | What happens |
 |---|---|---|
 | `answer` | The knowledge base covers it | The bot replies, citing the knowledge entries it used |
-| `ask_owner` | The bot doesn't know, but the owner would | The owner is asked, the answer is relayed to the customer, and the owner can save it as new knowledge |
-| `handoff` | Needs a human (complaints, refunds, negotiation) | The conversation is transferred to staff and the bot stays silent |
-| `no_reply` | The message is a print submission (a file or pasted text), not a question | Logged for staff; the bot doesn't respond |
+| `ask_owner` | The bot doesn't know, but the owner would | The owner is asked, and their answer goes to the customer |
+| `handoff` | Needs a person (complaints, refunds, negotiations, large orders) | A staff member takes over the chat |
+| `no_reply` | A file or pasted text sent to print, not a question (chat apps only) | Left for staff; the bot stays quiet |
 
-Three rules keep this reliable:
+A few rules keep it trustworthy:
 
-- **Answers must cite the knowledge base.** If the model can't point to an entry supporting its answer, the code forces `ask_owner` instead. The bot is never trusted to judge its own confidence.
-- **Learning requires owner approval.** After answering an escalated question, the owner chooses to save it as a general entry, edit it first, or treat it as a one-off. This keeps one-off quotes out of the knowledge base.
-- **File contents never reach the model.** For attachments the bot sees only metadata (type, filename, page count). Customers send private documents; the bot doesn't need to read them to decide what to do.
+- **Answers must cite the knowledge base.** If the model can't point to a public entry that supports its answer, code turns the answer into a question for the owner. The model's own confidence is never trusted.
+- **Public and internal knowledge.** Internal entries (the shop's private rules: when to escalate, what never to promise) guide the bot but never appear in a reply. The demo hides them from the decision panel too.
+- **Business-agnostic.** Everything about the print shop lives in one markdown knowledge base (`kb/the-plug.md`); the code and prompts contain nothing shop-specific, and a test checks the prompt.
+- **One bad response doesn't reach the customer.** The model's output is validated against a schema and the knowledge base; on a problem it gets one corrective retry, then a safe fallback.
+- **The customer's language.** Replies come in English, Greek or Greeklish, while the knowledge base stays in English.
 
-## Roadmap
+```
+browser (chat page)  ──message + conversation so far──►  API (FastAPI)
+                                                          ├─ rate limits
+                                                          └─ brain: prompt + knowledge base ──► LLM
+                     ◄──reply, action, public sources────    validate, check citations, retry once
+```
 
-1. **Evaluation set (done):** 130 labelled synthetic customer messages, including hard cases (typos, Greek and Greeklish, pasted text, discount manipulation, multi-turn conversations). No real messages are used: most of the shop's real chat traffic is files to print, and the rest is covered by the synthetic cases.
-2. **The brain (done):** knowledge base + prompt + structured output, then an eval runner that compares models from several providers on price and performance. Also a first owner interview that drafts a knowledge base (D-030, parked).
-3. **Web demo (next):** a public chat page on The Plug's knowledge base, with a panel showing why the bot chose each action, a mode where the visitor plays the owner for `ask_owner`, and limits that protect the API credit. Free hosting (D-031).
-4. **Later, only if it goes live:** owner channel (Telegram) with approve-and-save learning, WhatsApp / Viber / email, the file-drop skip, a knowledge-base admin page, support for other businesses.
+## How the model was chosen
 
-## Planned stack
+Before writing the bot, I built an evaluation set: now **130 labelled customer messages**, including the hard ones (typos, Greek and Greeklish, pasted homework that must not be answered, discount tricks, rude customers, multi-turn conversations). A runner scores every run by code: wrong actions, invented answers, internal leaks, wrong totals, language.
 
-Python · Pydantic · OpenAI, Anthropic and Google SDKs behind one interface · pytest. For the demo: a small stateless API and a static chat page on free hosting (to be planned, D-031).
+The brain talks to models through one thin interface, so the same eval ran on models from Anthropic, OpenAI and Google. All were safe (no invented prices, no leaked internal rules); **GPT-6 Luna** matched the best at a fraction of the cost and is the one in use:
+
+- passes 125-127 of 130 cases, with the remaining misses judged acceptable by the shop owner
+- about **$0.0003 per message**
+
+Every significant design choice, and why it was made, is in **[DECISIONS.md](DECISIONS.md)**: 32 decisions, from the four actions to the model bake-off and the demo's scope.
+
+## How it was built
+
+I designed this project and made its decisions (the action model, the knowledge-base format, what the eval measures, every label and trade-off). The code was written with [Claude Code](https://claude.com/claude-code), one reviewed step at a time.
 
 ## Repository layout
 
 ```
-├── DECISIONS.md      # Log of architecture decisions and the reasoning behind them
-├── kb/               # Business knowledge bases (markdown)
+├── DECISIONS.md      # Every architecture decision and its reasoning
+├── kb/               # The print shop's knowledge base (markdown)
 ├── prompts/          # LLM prompts, kept as files so changes show up in diffs
-├── brain/            # Schema, KB loader, model clients and decision logic (python -m brain)
-├── eval/             # Eval cases, runner, scoring and run comparison (see eval/README.md)
-├── onboarding/       # Owner interview and KB drafting (python -m onboarding)
-├── tests/            # pytest tests
-├── pyproject.toml    # Dependencies, managed with uv
-└── app/              # Demo API and chat page (planned)
+├── brain/            # Schema, KB parser, model clients and the decision flow
+├── eval/             # 130 eval cases, runner, scoring and run comparison (see eval/README.md)
+├── app/              # The demo: FastAPI server, chat page, rate limits
+├── onboarding/       # An interview that drafts a knowledge base from a conversation with the owner
+├── tests/            # pytest tests (no API key needed)
+└── render.yaml       # Hosting setup for the demo (Render, free plan)
 ```
 
-## Development
+## Running it locally
+
+Needs Python 3.12+ and [uv](https://docs.astral.sh/uv/).
 
 ```
 uv sync          # install dependencies
 uv run pytest    # run the tests (no API key needed)
 
-# Try the brain on one message. Without --live no model is called and nothing is paid.
+# The demo, at http://localhost:8000. Without DEMO_MODEL it calls no model and costs nothing.
+uv run uvicorn app.main:app --reload
+DEMO_MODEL=gpt-6-luna uv run --env-file .env uvicorn app.main:app
+
+# The brain on one message (dry run unless --live)
 uv run python -m brain --kb kb/the-plug.md "how much for 100 b&w pages"
-uv run python -m brain --kb kb/the-plug.md --file thesis.pdf:42 ""
-uv run python -m brain --kb kb/the-plug.md --show-input "hi"      # print what the model is sent
-uv run python -m brain --kb kb/the-plug.md --history chat.json "yes colour pls"   # earlier messages (D-023)
-uv run python -m brain --kb kb/the-plug.md --always-reply --file notes.pdf:10 ""  # as a website chat (D-024)
+uv run --env-file .env python -m brain --kb kb/the-plug.md --live --model gpt-6-luna "are you open now?"
 
-# Run the whole eval set (dry run by default) and compare runs
-uv run python -m eval.run_eval --kb kb/the-plug.md
+# The eval (dry run by default) and run comparison
+uv run --env-file .env python -m eval.run_eval --kb kb/the-plug.md --model gpt-6-luna --effort medium
 uv run python -m eval.compare eval/results/A.json eval/results/B.json
-
-# With a real model (needs a key in .env)
-uv run --env-file .env python -m brain --kb kb/the-plug.md --live "are you open now?"
-
-# Interview an owner, then draft a KB from the transcript (both call a real model)
-uv run --env-file .env python -m onboarding --session my-shop
-uv run --env-file .env python -m onboarding.draft --session my-shop
 ```
 
-Copy `.env.example` to `.env` and fill in the key for each provider you want to run (`ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `GEMINI_API_KEY`). The model name picks the provider: `claude-*`, `gpt-*` or `gemini-*`.
+Copy `.env.example` to `.env` and fill in a key for each provider you want to run (`ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `GEMINI_API_KEY`). The model name picks the provider: `claude-*`, `gpt-*` or `gemini-*`.
 
-## Design decisions
+## Status
 
-Every significant choice, and why it was made, is recorded in [DECISIONS.md](DECISIONS.md).
+A portfolio project, not a live product. The bot and its eval are finished; the demo is live. Things a real deployment would add are listed in DECISIONS.md (D-031): WhatsApp/Viber channels, owner notifications on their phone, saving owner answers to the knowledge base, and a data-protection review.
 
 ## Data and privacy
 
-The committed evaluation set is fully synthetic. If real customer messages are ever used, they stay local in the gitignored `eval/real/` folder, anonymized (names, phone numbers and emails removed), and are never committed.
+The evaluation set is fully synthetic. Real customer messages were never committed. The demo stores nothing: the conversation lives in the visitor's browser, and the model provider is called with storage turned off.
