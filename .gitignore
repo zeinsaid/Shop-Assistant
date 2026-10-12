@@ -19,8 +19,9 @@ eval/real/
 # Eval run outputs (they echo message text)
 eval/results/
 
-# Claude Code local settings
+# Claude Code: local settings and the working notes for Claude (kept locally, not published)
 .claude/settings.local.json
+CLAUDE.md
 
 # Editors / OS
 .vscode/
