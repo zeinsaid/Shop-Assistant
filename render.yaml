@@ -25,7 +25,7 @@ services:
       - key: DEMO_EFFORT
         value: medium
       - key: DEMO_ALLOWED_ORIGINS
-        value: https://shop-assistant.onrender.com
+        value: https://shop-assistant-ss1r.onrender.com
       - key: DEMO_LIMIT_PER_HOUR
         value: "30"
       - key: DEMO_LIMIT_PER_DAY
