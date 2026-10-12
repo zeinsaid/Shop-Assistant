@@ -1,9 +1,14 @@
 // The chat page. It keeps the conversation in `history` and sends it with every message,
 // because the server stores nothing (stateless, D-031).
 
-// Where the API lives. Empty means "the same server as this page". If the page is ever hosted
-// separately (e.g. GitHub Pages), set this to the API's address.
-const API_BASE = "";
+// Where the API lives. Online, the page is a static site and the API a separate server, so requests
+// go to API_URL. Locally (or if the API server serves the page itself) they go to the same server.
+const API_URL = "https://shop-assistant-api.onrender.com";
+const API_BASE = ["localhost", "127.0.0.1"].includes(location.hostname) || location.origin === API_URL ? "" : API_URL;
+
+const WAKE_SHOW_AFTER = 1500; // ms: only show the wake-up screen if the API doesn't answer quickly
+const WAKE_EXPECTED = 60000; // ms: Render's free servers take about a minute to wake up
+const WAKE_GIVE_UP = 150000; // ms
 
 const MAX_HISTORY = 40; // the server rejects more (it only reads the last 10 anyway)
 const MAX_CHARS = 500;
@@ -15,12 +20,16 @@ const sendButton = document.getElementById("send");
 const statusEl = document.getElementById("status");
 const panel = document.getElementById("panel");
 const panelBody = document.getElementById("panel-body");
+const wakeEl = document.getElementById("wake");
+const wakeText = document.getElementById("wake-text");
+const progressBar = document.getElementById("progress-bar");
 
 // Earlier messages, in the shape the API expects: {role, text} or {role: "bot", action, text}.
 const history = [];
 // One entry per bot reply: {data (the API's response), bubble, ownerAnswer}.
 const decisions = [];
 let busy = false;
+let ready = false; // true once the API has answered its health check
 
 const ACTIONS = {
   answer: {
@@ -197,15 +206,16 @@ function setStatus(state, text) {
 
 function setBusy(value) {
   busy = value;
-  input.disabled = value;
-  sendButton.disabled = value;
-  document.querySelectorAll(".chip").forEach((chip) => (chip.disabled = value));
-  if (!value) input.focus();
+  const off = busy || !ready;
+  input.disabled = off;
+  sendButton.disabled = off;
+  document.querySelectorAll(".chip").forEach((chip) => (chip.disabled = off));
+  if (!off) input.focus();
 }
 
 async function send(text) {
   text = text.trim();
-  if (!text || busy) return;
+  if (!text || busy || !ready) return;
 
   addMessage("customer", text);
   input.value = "";
@@ -239,17 +249,46 @@ async function send(text) {
   }
 }
 
-// Free hosting sleeps when nobody visits; the first request wakes it up, which can take a while.
-async function checkHealth() {
-  const slow = setTimeout(() => setStatus("waiting", "Waking up… (up to a minute)"), 3000);
+// The free API server sleeps when nobody visits, and the first request wakes it up (about a minute).
+// Until it answers, ask again every few seconds. While it's waking, Render may answer with its own
+// loading page or not at all; anything other than our {"ok": true} counts as "not yet".
+async function apiIsUp() {
   try {
-    const response = await fetch(`${API_BASE}/api/health`);
-    setStatus(response.ok ? "ready" : "down", response.ok ? "Online" : "Unavailable");
+    const response = await fetch(`${API_BASE}/api/health`, { signal: AbortSignal.timeout(15000) });
+    return response.ok && (await response.json()).ok === true;
   } catch {
-    setStatus("down", "Unavailable");
-  } finally {
-    clearTimeout(slow);
+    return false;
   }
+}
+
+async function waitForApi() {
+  const start = Date.now();
+  setBusy(false); // applies `ready = false`: input disabled
+  const showWake = setTimeout(() => {
+    wakeEl.hidden = false;
+    setStatus("waiting", "Waking up…");
+    // The bar fills over the expected wake-up time; it's an estimate, not real progress.
+    progressBar.style.transitionDuration = `${WAKE_EXPECTED / 1000}s`;
+    requestAnimationFrame(() => (progressBar.style.width = "95%"));
+  }, WAKE_SHOW_AFTER);
+
+  while (!(await apiIsUp())) {
+    if (Date.now() - start > WAKE_GIVE_UP) {
+      clearTimeout(showWake);
+      setStatus("down", "Unavailable");
+      wakeText.textContent = "The assistant is taking longer than usual to wake up. Please try refreshing the page.";
+      return;
+    }
+    await new Promise((resolve) => setTimeout(resolve, 3000));
+  }
+
+  clearTimeout(showWake);
+  ready = true;
+  setStatus("ready", "Online");
+  progressBar.style.transitionDuration = "0.3s";
+  progressBar.style.width = "100%";
+  setTimeout(() => (wakeEl.hidden = true), 400);
+  setBusy(false);
 }
 
 // --- Wiring -------------------------------------------------------------------------------------
@@ -263,5 +302,4 @@ document.querySelectorAll(".chip").forEach((chip) => {
   chip.addEventListener("click", () => send(chip.textContent));
 });
 
-checkHealth();
-input.focus();
+waitForApi();

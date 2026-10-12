@@ -1,0 +1,38 @@
+# Render blueprint for the web demo (D-031): New -> Blueprint in the Render dashboard, pick this repo.
+# Two free services: the chat page (a static site, never sleeps) and the API (sleeps after 15 idle
+# minutes; the page shows a wake-up screen meanwhile). Secrets are never in this file: Render asks
+# for OPENAI_API_KEY when the blueprint is first applied (sync: false).
+#
+# If Render gives either service a different address (names are first come, first served), update
+# API_URL in app/static/app.js and DEMO_ALLOWED_ORIGINS below.
+
+services:
+  - type: web
+    name: shop-assistant-api
+    runtime: python
+    plan: free
+    region: frankfurt # closest to Cyprus
+    buildCommand: uv sync --frozen --no-dev
+    # --proxy-headers: visitors reach us through Render's proxy, so take their real address from
+    # the proxy's X-Forwarded-For header; otherwise every visitor shares one rate limit.
+    startCommand: uv run --no-sync uvicorn app.main:app --host 0.0.0.0 --port $PORT --proxy-headers --forwarded-allow-ips "*"
+    healthCheckPath: /api/health
+    envVars:
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: DEMO_MODEL
+        value: gpt-6-luna
+      - key: DEMO_EFFORT
+        value: medium
+      - key: DEMO_ALLOWED_ORIGINS
+        value: https://shop-assistant.onrender.com
+      - key: DEMO_LIMIT_PER_HOUR
+        value: "30"
+      - key: DEMO_LIMIT_PER_DAY
+        value: "1000"
+
+  - type: web
+    name: shop-assistant
+    runtime: static
+    buildCommand: "true" # nothing to build: plain HTML, CSS and JavaScript
+    staticPublishPath: app/static

@@ -13,6 +13,7 @@ import os
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException, Request
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -53,12 +54,17 @@ class ChatResponse(BaseModel):
     internal_rules_used: int  # how many internal entries were cited; their IDs and text stay hidden
 
 
-def create_app(brain: Brain, limiter: RateLimiter | None = None) -> FastAPI:
+def create_app(brain: Brain, limiter: RateLimiter | None = None, allowed_origins: list[str] = ()) -> FastAPI:
     """Build the app around a brain. Tests pass one with a ScriptedClient; production uses from_env().
 
     Without a limiter nothing is limited (tests); from_env() always sets one.
+    `allowed_origins`: other websites whose pages may call this API from the browser (CORS), such as
+    the chat page when it's hosted separately. The page this server serves itself never needs it.
     """
     app = FastAPI(title="Shop Assistant demo", docs_url=None, redoc_url=None)
+    if allowed_origins:
+        app.add_middleware(CORSMiddleware, allow_origins=list(allowed_origins),
+                           allow_methods=["GET", "POST"], allow_headers=["Content-Type"])
 
     # A plain `def` (not `async def`): brain.decide() waits on the model's API, and FastAPI runs
     # plain functions in a thread pool, so one slow call doesn't block other visitors.
@@ -111,8 +117,9 @@ def from_env() -> FastAPI:
         per_visitor=int(os.environ.get("DEMO_LIMIT_PER_HOUR", 30)),
         per_day=int(os.environ.get("DEMO_LIMIT_PER_DAY", 1000)),
     )
+    origins = [o.strip() for o in os.environ.get("DEMO_ALLOWED_ORIGINS", "").split(",") if o.strip()]
     # A website chat: every message gets a reply (D-024).
-    return create_app(Brain(kb, client, allow_no_reply=False), limiter)
+    return create_app(Brain(kb, client, allow_no_reply=False), limiter, origins)
 
 
 app = from_env()

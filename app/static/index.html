@@ -22,6 +22,26 @@
       </header>
 
       <ol id="messages" class="messages" aria-live="polite">
+        <li class="welcome">
+          <h2>Shop Assistant</h2>
+          <p>
+            An AI receptionist built for The Plug, a print shop next to the University of Nicosia.
+            It answers customers from the shop's knowledge base and shows you why it replied the way it did.
+          </p>
+          <ul>
+            <li>It only answers from the shop's knowledge base, and must cite what it used. If it can't, it doesn't answer.</li>
+            <li>When it doesn't know, it asks the owner instead of guessing. Here, you get to play the owner.</li>
+            <li>Complaints, refunds and big orders go to a person.</li>
+            <li>The model was chosen by testing models from Anthropic, OpenAI and Google on 130 tricky customer messages.</li>
+          </ul>
+          <div id="wake" class="wake" hidden>
+            <div class="progress" aria-hidden="true"><div id="progress-bar" class="progress-bar"></div></div>
+            <p id="wake-text" class="muted">
+              Waking up the assistant… This demo runs on free hosting that sleeps when nobody is using it,
+              so the first visit can take about a minute.
+            </p>
+          </div>
+        </li>
         <li class="message bot"><span class="text">Hi! I'm The Plug's assistant. Ask me anything about printing, prices or opening hours.</span></li>
       </ol>
 
@@ -41,7 +61,7 @@
 
       <footer class="footer muted">
         A portfolio demo: prices are real, but no orders are taken.
-        <a href="https://github.com/Zein2002/Project" target="_blank" rel="noopener">How it works</a>
+        <a href="https://github.com/Zein2002/shop-assistant" target="_blank" rel="noopener">How it works</a>
       </footer>
     </section>
 

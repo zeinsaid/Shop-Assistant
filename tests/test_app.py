@@ -124,3 +124,14 @@ def test_health_and_the_chat_page_are_served():
     assert page.status_code == 200 and "<title>Shop Assistant demo</title>" in page.text
     assert api.get("/app.js").status_code == 200
     assert client.calls == []
+
+
+def test_cors_allows_only_the_listed_page():
+    client = ScriptedClient([])
+    brain = Brain(KB, client, prompt="Test.", allow_no_reply=False)
+    api = TestClient(create_app(brain, allowed_origins=["https://page.example"]))
+    preflight = {"Access-Control-Request-Method": "POST", "Access-Control-Request-Headers": "content-type"}
+    allowed = api.options("/api/chat", headers={"Origin": "https://page.example", **preflight})
+    assert allowed.headers.get("access-control-allow-origin") == "https://page.example"
+    other = api.options("/api/chat", headers={"Origin": "https://evil.example", **preflight})
+    assert "access-control-allow-origin" not in other.headers

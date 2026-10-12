@@ -156,6 +156,22 @@ h1 { font-size: 1.15rem; margin: 0 0 4px; }
 }
 .why { display: block; margin-top: 4px; }
 
+/* Project description at the top of the chat, with the wake-up progress bar */
+.welcome {
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 0.9rem;
+}
+.welcome h2 { margin-bottom: 6px; }
+.welcome p { margin: 0 0 8px; }
+.welcome ul { margin: 0; padding-left: 18px; display: grid; gap: 4px; }
+.wake { margin-top: 12px; }
+.wake[hidden] { display: none; }
+.wake p { margin: 8px 0 0; font-size: 0.85rem; }
+.progress { height: 6px; border-radius: 999px; background: var(--bot-bubble); overflow: hidden; }
+.progress-bar { width: 0; height: 100%; background: var(--accent); transition: width linear; }
+
 /* Three bouncing dots while the bot is thinking */
 .typing span {
   display: inline-block;
