@@ -49,7 +49,7 @@ Every significant design choice, and why it was made, is in **[DECISIONS.md](DEC
 
 ## How it was built
 
-I designed this project and made its decisions (the action model, the knowledge-base format, what the eval measures, every label and trade-off). The code was written with [Claude Code](https://claude.com/claude-code), one reviewed step at a time.
+I designed this project and made every decision in it: the action model, the knowledge-base format, what the eval measures, every label and trade-off. I built it using [Claude Code](https://claude.com/claude-code) as my AI coding assistant, reviewing every change step by step.
 
 ## Repository layout
 
