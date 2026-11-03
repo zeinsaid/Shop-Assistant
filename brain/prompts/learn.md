@@ -27,7 +27,7 @@ Owner answers mix two kinds of information:
 - **One-off answers** that only apply to this customer or this order: "€18 for your thesis", "yes, I can have yours ready by 3pm", "tell him to come tomorrow". These must not be saved as rules.
 
 Choose `learn_action`:
-- `add`: a new general fact the knowledge base doesn't cover. Draft a new entry.
+- `add`: a new general fact the knowledge base doesn't cover. Draft a new entry. An exception for particular dates (a holiday closure, special hours on one day) is an `add` too: a new entry, leaving the general entry (such as the usual opening hours) as it is.
 - `update`: the fact belongs inside an existing **public** entry (for example, a new size in an existing price list, or a correction). Give that entry's ID in `target_entry_id` and write its **complete new text** (the existing text with the change made), not just the change. **Never update an internal entry**: internal entries are the owner's private rules, and only the owner edits them by hand.
 - `none`: a one-off answer, or nothing general to learn. Say why in `reasoning`.
 

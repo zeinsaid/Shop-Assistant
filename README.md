@@ -45,7 +45,7 @@ Before writing the bot, I built an evaluation set: now **130 labelled customer m
 
 The brain talks to models through one thin interface, so the same eval ran on models from Anthropic, OpenAI and Google. All were safe (no invented prices, no leaked internal rules); **GPT-6 Luna** matched the best at a fraction of the cost and is the one in use:
 
-- passes 125-127 of 130 cases, with the remaining misses judged acceptable by the shop owner
+- passes 127-129 of 130 cases (rerun on 3 Nov 2026 with the v1.0.0 engine), with the remaining misses judged acceptable by the shop owner
 - about **$0.0003 per message**
 
 Every significant design choice, and why it was made, is in **[DECISIONS.md](DECISIONS.md)**: 33 decisions, from the four actions to the model bake-off, the demo's scope and the split into engine and product.
