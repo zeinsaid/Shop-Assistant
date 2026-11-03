@@ -11,10 +11,17 @@ from pathlib import Path
 
 from pydantic import ValidationError
 
+from brain.brain import render_blocks
 from brain.llm import LLMClient, Message
 from onboarding.schema import InterviewTurn, Topic
 
-PROMPT_PATH = Path(__file__).resolve().parent.parent / "prompts" / "interview.md"
+PROMPT_PATH = Path(__file__).resolve().parent / "prompts" / "interview.md"
+
+
+def interview_prompt(quick: bool = False) -> str:
+    """The interview prompt. `quick=True` keeps the quick-mode block: about eight questions on the
+    essentials, for an owner who wants a working receptionist in minutes and adds detail later."""
+    return render_blocks(PROMPT_PATH.read_text(encoding="utf-8"), {"quick": quick})
 
 # The providers need the conversation to start with a user message, and the owner hasn't said
 # anything yet when the interview opens. This stands in for "the owner opened the tool".
@@ -37,7 +44,7 @@ class Interview:
     covered: set[Topic] = field(default_factory=set)
     done: bool = False
     started_at: str = field(default_factory=lambda: datetime.now().isoformat(timespec="seconds"))
-    prompt: str = field(default_factory=lambda: PROMPT_PATH.read_text(encoding="utf-8"))
+    prompt: str = field(default_factory=interview_prompt)
 
     def start(self) -> str:
         """The interviewer's opening message. On a resumed interview, its last message instead."""

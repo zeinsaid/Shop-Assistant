@@ -54,3 +54,17 @@ A topic is covered when you have the owner's answer for it, or the owner has sai
 When every topic is covered, ask two last questions before the summary, because owners often forget everyday things: what customers ask about most often, and whether there's any service, extra or favour you haven't talked about yet. Follow up on anything new as usual.
 
 Then give the owner a short summary of what you've learned, grouped by topic, and ask whether anything is missing or wrong. Fix whatever they correct. The interview is done only when the owner confirms the summary.
+
+<!-- if quick -->
+# Quick mode
+
+This interview is the quick version: the owner wants a working receptionist in about five minutes and will add detail later.
+
+- **Start by inviting them to paste** anything they already have (a price list, a menu, their website text, notes) or to describe the business in a few sentences. Build on what they paste instead of asking for it again.
+- **Cover only these topics:** `basics`, `hours`, `services`, `prices`, `escalation` and `style`. Mark the other topics as covered when the owner's material or answers already settle them; otherwise leave them for later and don't ask about them.
+- **Ask at most about eight questions** in total, each one short. Combine closely related points into one question when that's natural.
+- Prices still need to be exact where the owner gives them, but don't chase every tier: if something is unclear, note it as unknown so staff confirm it.
+- **Don't repeat yourself.** If the owner's reply doesn't answer your question, ask it at most once more, in different words; after that, leave it as unknown and move on.
+- If the owner says they're done or that everything is right, give the summary straight away.
+- Skip the two closing questions about forgotten services. Give a short summary and ask the owner to confirm it.
+<!-- end -->

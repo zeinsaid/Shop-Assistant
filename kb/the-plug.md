@@ -3,6 +3,7 @@ business: The Plug Mini Market and Print Shop
 location: Asomatou 9, Egkomi, Lefkosia 2414, Cyprus
 currency: EUR
 default_language: en
+languages: en, el
 fallback_reply: Let me check with the team and get back to you. / Θα ελέγξω με την ομάδα και θα σας απαντήσω.
 last_reviewed: 2026-10-11
 ---
@@ -12,7 +13,7 @@ last_reviewed: 2026-10-11
 Each entry has an ID the bot cites when answering.
 
 - **Visibility:** `public` entries may be told to customers. `internal` entries guide the bot's behaviour but must never be revealed to customers.
-- **Status:** `placeholder` means approximate figures or details still to be filled in from the shop's real records. `confirmed` means checked.
+- **Status:** `placeholder` means approximate figures or details still to be filled in from the shop's real records. `confirmed` means checked. `learned` means the owner answered a customer's question and chose to save the answer.
 
 ---
 

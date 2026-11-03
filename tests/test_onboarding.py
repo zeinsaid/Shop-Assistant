@@ -197,3 +197,11 @@ def test_drafting_prompts_are_business_agnostic(name):
     text = (PROMPT_PATH.parent / name).read_text(encoding="utf-8").lower()
     for word in ("plug", "print", "nicosia", "cyprus", "student", "shirt", "€"):
         assert word not in text, word
+
+
+def test_quick_mode_block_only_in_quick_mode():
+    from onboarding.interview import interview_prompt
+
+    assert "# Quick mode" in interview_prompt(quick=True)
+    full = interview_prompt()
+    assert "# Quick mode" not in full and "<!--" not in full

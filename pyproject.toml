@@ -1,20 +1,44 @@
 [project]
 name = "shop-assistant"
-version = "0.1.0"
+version = "1.0.0"
+description = "The engine behind an AI receptionist: a knowledge-base brain that answers, asks the owner or hands off, learns from owner answers, and drafts a knowledge base by interview."
+readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "anthropic>=1.8.0",
-    "fastapi>=0.143.0",
-    "google-genai>=2.25.0",
-    "openai>=3.20.0",
     "pydantic>=2.13.5",
-    "uvicorn>=0.54.0",
 ]
 
+# Each model provider's SDK is optional: install only the ones you use, e.g. shop-assistant[openai].
+[project.optional-dependencies]
+openai = ["openai>=3.20.0"]
+anthropic = ["anthropic>=1.8.0"]
+gemini = ["google-genai>=2.25.0"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+# The installable engine: the brain (decisions, KB parser, model clients, learning) and the
+# onboarding interview. Prompts ship inside each package (brain/prompts, onboarding/prompts).
+[tool.hatch.build.targets.wheel]
+packages = ["brain", "onboarding"]
+exclude = ["onboarding/sessions", "onboarding/drafts"]
+
 [dependency-groups]
+# Everything for working on this repo: every provider for the eval bake-off, plus tests.
 dev = [
+    "anthropic>=1.8.0",
+    "google-genai>=2.25.0",
     "httpx>=0.28.1",
+    "openai>=3.20.0",
     "pytest>=9.1.1",
+    { include-group = "demo" },
+]
+# The old Render demo in app/ (to be retired: Jawab is now the live product).
+demo = [
+    "fastapi>=0.143.0",
+    "openai>=3.20.0",
+    "uvicorn>=0.54.0",
 ]
 
 [tool.pytest.ini_options]

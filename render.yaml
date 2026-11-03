@@ -12,7 +12,7 @@ services:
     runtime: python
     plan: free
     region: frankfurt # closest to Cyprus
-    buildCommand: uv sync --frozen --no-dev
+    buildCommand: uv sync --frozen --no-dev --group demo
     # --proxy-headers: visitors reach us through Render's proxy, so take their real address from
     # the proxy's X-Forwarded-For header; otherwise every visitor shares one rate limit.
     startCommand: uv run --no-sync uvicorn app.main:app --host 0.0.0.0 --port $PORT --proxy-headers --forwarded-allow-ips "*"

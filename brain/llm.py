@@ -9,8 +9,6 @@ import json
 from dataclasses import dataclass
 from typing import Protocol
 
-import anthropic
-
 
 @dataclass(frozen=True)
 class Completion:
@@ -61,12 +59,16 @@ class AnthropicClient:
         model: str = "claude-sonnet-5-5",
         max_tokens: int = 16000,
         effort: str | None = "low",  # "low" ... "max"; None uses the model's default
-        client: anthropic.Anthropic | None = None,
+        client=None,  # an anthropic.Anthropic; the SDK is imported lazily so it's optional
     ):
         self.model = model
         self.max_tokens = max_tokens
         self.effort = effort
-        self._client = client or anthropic.Anthropic()  # reads ANTHROPIC_API_KEY from the environment
+        if client is None:
+            import anthropic  # imported here so the brain doesn't load every provider's SDK
+
+            client = anthropic.Anthropic()  # reads ANTHROPIC_API_KEY from the environment
+        self._client = client
 
     def complete(self, system: str, messages: list[Message], schema: dict) -> Completion:
         output_config: dict = {"format": {"type": "json_schema", "schema": strip_unsupported(schema)}}
@@ -134,13 +136,15 @@ class OpenAIClient:
     OpenAI caches long repeated prefixes automatically; the instructions and KB come first.
     """
 
-    def __init__(self, model: str = "gpt-6.1-sol", max_tokens: int = 16000, effort: str | None = "low", client=None):
+    def __init__(self, model: str = "gpt-6.1-sol", max_tokens: int = 16000, effort: str | None = "low", client=None,
+                 api_key: str | None = None, base_url: str | None = None):
         import openai  # imported here so the brain doesn't load every provider's SDK
 
         self.model = model
         self.max_tokens = max_tokens
         self.effort = effort
-        self._client = client or openai.OpenAI()  # reads OPENAI_API_KEY from the environment
+        # api_key/base_url left as None fall back to OPENAI_API_KEY / OPENAI_BASE_URL in the environment.
+        self._client = client or openai.OpenAI(api_key=api_key, base_url=base_url)
 
     def complete(self, system: str, messages: list[Message], schema: dict) -> Completion:
         extra = {"reasoning": {"effort": self.effort}} if self.effort else {}
@@ -267,14 +271,18 @@ class ScriptedClient:
 # --- Choosing a client -------------------------------------------------------------------------
 
 
-def make_client(model: str, effort: str | None = "low", max_tokens: int = 16000) -> LLMClient:
-    """Pick the client for a model name. New providers are added here (D-022)."""
+def make_client(model: str, effort: str | None = "low", max_tokens: int = 16000,
+                api_key: str | None = None, base_url: str | None = None) -> LLMClient:
+    """Pick the client for a model name. New providers are added here (D-022).
+
+    `api_key` and `base_url` are for OpenAI-compatible gateways (an app's own key or proxy); left as
+    None, each SDK reads its usual environment variables."""
     if model == "dry-run":
         return DryRunClient()
     if model.startswith("claude-"):
         return AnthropicClient(model=model, effort=effort, max_tokens=max_tokens)
     if model.startswith("gpt-"):
-        return OpenAIClient(model=model, effort=effort, max_tokens=max_tokens)
+        return OpenAIClient(model=model, effort=effort, max_tokens=max_tokens, api_key=api_key, base_url=base_url)
     if model.startswith("gemini-"):
         return GeminiClient(model=model, effort=effort, max_tokens=max_tokens)
     raise ValueError(f"no client for model '{model}' (supported: dry-run, claude-*, gpt-*, gemini-*)")

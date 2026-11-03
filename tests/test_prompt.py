@@ -1,4 +1,4 @@
-"""Checks on prompts/brain.md that don't need a model: it stays in sync with the schema and generic."""
+"""Checks on brain/prompts/brain.md that don't need a model: it stays in sync with the schema and generic."""
 
 import re
 from pathlib import Path
@@ -6,7 +6,7 @@ from pathlib import Path
 from brain.schema import Action, BrainDecision
 
 ROOT = Path(__file__).resolve().parent.parent
-PROMPT = (ROOT / "prompts" / "brain.md").read_text(encoding="utf-8")
+PROMPT = (ROOT / "brain" / "prompts" / "brain.md").read_text(encoding="utf-8")
 
 
 def test_prompt_mentions_every_action():
@@ -38,9 +38,12 @@ def test_prompt_is_business_agnostic():
 
 def test_always_reply_rendering_never_mentions_no_reply():
     # D-024: on channels that always reply, the model never sees the option.
-    from brain.brain import render_prompt
+    from brain.brain import language_flags, render_blocks, render_prompt
 
     for allow in (True, False):
         rendered = render_prompt(PROMPT, allow)
-        assert "<!--" not in rendered, "a channel block wasn't resolved"
+        rendered = render_blocks(rendered, language_flags(rendered, ["en"]))
+        assert "<!--" not in rendered, "a prompt block wasn't resolved"
         assert ("`no_reply`" in rendered) is allow
+
+

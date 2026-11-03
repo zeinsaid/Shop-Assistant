@@ -20,7 +20,7 @@ from brain.kb import KBError, parse_kb
 from brain.llm import LLMClient, make_client
 from onboarding.interview import Interview
 
-PROMPTS = Path(__file__).resolve().parent.parent / "prompts"
+PROMPTS = Path(__file__).resolve().parent / "prompts"
 SESSIONS = Path(__file__).resolve().parent / "sessions"
 DRAFTS = Path(__file__).resolve().parent / "drafts"
 

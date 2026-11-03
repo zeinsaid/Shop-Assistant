@@ -17,7 +17,7 @@ from brain.kb import KnowledgeBase
 from brain.llm import Completion, LLMClient, Message
 from brain.schema import Action, BrainDecision, IncomingMessage, Role, Turn, decision_schema
 
-PROMPT_PATH = Path(__file__).resolve().parent.parent / "prompts" / "brain.md"
+PROMPT_PATH = Path(__file__).resolve().parent / "prompts" / "brain.md"
 
 MAX_ATTEMPTS = 2  # the first try plus one corrective retry
 
@@ -85,7 +85,9 @@ class Brain:
         self.allow_no_reply = allow_no_reply
         self.fallback_reply = kb.metadata.get("fallback_reply") or FALLBACK_REPLY
         instructions = prompt if prompt is not None else PROMPT_PATH.read_text(encoding="utf-8")
-        self.system = build_system_prompt(render_prompt(instructions, allow_no_reply), kb)
+        instructions = render_prompt(instructions, allow_no_reply)
+        instructions = render_blocks(instructions, language_flags(instructions, kb.languages))
+        self.system = build_system_prompt(instructions, kb)
         self.schema = decision_schema(allow_no_reply)
 
     def decide(self, message: IncomingMessage) -> BrainResult:
@@ -161,6 +163,35 @@ def render_prompt(instructions: str, allow_no_reply: bool = True) -> str:
         <!-- end -->
     """
     return PROMPT_BLOCK.sub(lambda m: m.group(1) if allow_no_reply else (m.group(2) or ""), instructions)
+
+
+# Optional blocks for everything else, e.g. language notes that only some businesses need:
+#     <!-- if lang_ar -->
+#     ...kept when the flag is true, dropped when it's false...
+#     <!-- end -->
+BLOCK = re.compile(r"<!-- if (\w+) -->\n?(.*?)<!-- end -->\n?", re.DOTALL)
+
+
+def render_blocks(text: str, flags: dict[str, bool]) -> str:
+    """Resolve every `if NAME` block. A block whose flag isn't given is a mistake: KeyError.
+
+    Run `render_prompt` first on prompts that have `no_reply` blocks (they also use `else`)."""
+    def resolve(match: re.Match) -> str:
+        name = match.group(1)
+        if name not in flags:
+            raise KeyError(f"no flag given for the prompt block '{name}'")
+        return match.group(2) if flags[name] else ""
+
+    return BLOCK.sub(resolve, text)
+
+
+def language_flags(text: str, languages: list[str]) -> dict[str, bool]:
+    """A flag for every `lang_XX` block in the text: true when the business serves language XX.
+
+    Language-specific notes (dialects, other-alphabet spellings) live in these blocks, so a prompt
+    only carries the notes for the languages its knowledge base lists in `languages:`."""
+    names = {m.group(1) for m in BLOCK.finditer(text) if m.group(1).startswith("lang_")}
+    return {name: name.removeprefix("lang_") in languages for name in names}
 
 
 def build_system_prompt(instructions: str, kb: KnowledgeBase) -> str:

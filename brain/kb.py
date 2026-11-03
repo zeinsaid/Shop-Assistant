@@ -38,6 +38,12 @@ class KnowledgeBase:
     metadata: dict[str, str]  # front matter (business name, currency, ...)
     entries: dict[str, KBEntry]  # by ID, in file order
 
+    @property
+    def languages(self) -> list[str]:
+        """Language codes from the front matter's `languages: en, ar` line, else `default_language`."""
+        raw = self.metadata.get("languages") or self.metadata.get("default_language") or ""
+        return [code.strip().lower() for code in raw.split(",") if code.strip()]
+
     def is_public(self, entry_id: str) -> bool:
         entry = self.entries.get(entry_id)
         return entry is not None and entry.visibility is Visibility.PUBLIC

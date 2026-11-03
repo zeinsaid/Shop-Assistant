@@ -1,6 +1,6 @@
 """What the interviewer returns each turn (D-030).
 
-The topic IDs must match the ones listed in prompts/interview.md; a test checks they do.
+The topic IDs must match the ones listed in onboarding/prompts/interview.md; a test checks they do.
 """
 
 from enum import StrEnum
