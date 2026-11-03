@@ -29,16 +29,8 @@ exclude = ["onboarding/sessions", "onboarding/drafts"]
 dev = [
     "anthropic>=1.8.0",
     "google-genai>=2.25.0",
-    "httpx>=0.28.1",
     "openai>=3.20.0",
     "pytest>=9.1.1",
-    { include-group = "demo" },
-]
-# The old Render demo in app/ (to be retired: Jawab is now the live product).
-demo = [
-    "fastapi>=0.143.0",
-    "openai>=3.20.0",
-    "uvicorn>=0.54.0",
 ]
 
 [tool.pytest.ini_options]

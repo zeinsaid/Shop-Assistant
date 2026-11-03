@@ -434,7 +434,7 @@ How it's built:
 ---
 
 ## D-032 — Web demo: stateless API, static page, free hosting
-**Date:** 2026-10-12 · **Status:** Accepted
+**Date:** 2026-10-12 · **Status:** Superseded by D-033 (retired 2026-11-03; the code is in the git history)
 
 **Decision:** The portfolio demo (D-031) is a small FastAPI server plus a static chat page, both on Render's free plan.
 - **Server** (`app/main.py`): `POST /api/chat` runs the brain as a website chat, where every message gets a reply (D-024); `GET /api/health` lets the page check whether the server is awake. It's stateless: the page sends the conversation so far with each message, and the server stores nothing.
@@ -451,13 +451,13 @@ How it's built:
 ## D-033 — The engine becomes a package; Jawab is the product on top
 **Date:** 2026-11-03 · **Status:** Accepted
 
-**Decision:** This repo is now the **engine**: an installable Python package (`shop-assistant`, v1.0.0) with two import packages, `brain` and `onboarding`, and their prompts inside them (`brain/prompts/`, `onboarding/prompts/`). [Jawab](https://github.com/zeinsaid/jawab), built at the Founding MENA x Replit Hackathon on 31 Oct 2026 from a copy of this code, installs it from GitHub, pinned to a release tag, instead of keeping its own copy. Jawab's engine improvements came back here:
+**Decision:** This repo is now the **engine**: an installable Python package (`shop-assistant`, v1.0.0) with two import packages, `brain` and `onboarding`, and their prompts inside them (`brain/prompts/`, `onboarding/prompts/`). [Jawab](https://github.com/zeinsaid/Jawab), built at the Founding MENA x Replit Hackathon on 31 Oct 2026 from a copy of this code, installs it from GitHub, pinned to a release tag, instead of keeping its own copy. Jawab's engine improvements came back here:
 - **Learning (D-004, built):** `brain/learn.py` and `brain/prompts/learn.md`. After the owner answers an `ask_owner`, one model call writes the reply for the customer in their language and drafts a KB entry (`add`, `update` or `none`) for the owner to Save / Edit / Just this once. Code checks it like the brain's decisions: IDs, never updating internal entries, one corrective retry, then a fallback. Storing the approved entry is the app's job. A new KB status, `learned`.
 - **Prompt:** learned entries win over internal "ask the owner" rules on the same topic, never over `handoff` rules. Language-specific notes move into `<!-- if lang_XX -->` blocks, kept only when the KB's new `languages:` front matter lists that language (`render_blocks`, `language_flags`): Greeklish for The Plug here (`en, el`), Arabic and Arabizi for Jawab's businesses.
 - **Interview:** a quick mode (`interview_prompt(quick=True)`): about eight questions on the essentials, starting from whatever the owner pastes.
 - **Clients:** every provider SDK is optional (`shop-assistant[openai]`, `[anthropic]`, `[gemini]`) and imported lazily; `OpenAIClient` and `make_client` take `api_key` and `base_url` for an app's own key or an OpenAI-compatible gateway.
 
-Jawab's live demo replaces this repo's Render demo (D-032), which is retired once Jawab is live.
+Jawab's live demo replaces this repo's Render demo (D-032), retired on 2026-11-03: `app/` and `render.yaml` are removed (they remain in the git history).
 
 **Why:** Two copies of the brain would drift apart, and the 130-case eval only protects the copy it runs on. A package keeps one source of truth with its eval; pinning a tag means an engine change can't break the live app until Jawab chooses to upgrade. Rejected: a monorepo (the two have different audiences and histories) and a git submodule (harder to install on a host than a package).
 

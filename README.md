@@ -2,13 +2,13 @@
 
 The engine of an AI receptionist for small businesses, first built for **The Plug**, a print shop next to the University of Nicosia, Cyprus. It answers customers from a knowledge base the owner maintains, asks the owner when it doesn't know, learns from the owner's approved answers, and hands complaints and negotiations to staff. It never guesses.
 
-**Used by [Jawab](https://github.com/zeinsaid/jawab)**, the product built on it: a multi-business AI receptionist in Arabic and English, with an owner inbox, one-tap learning and self-serve onboarding. Jawab installs this repo as a Python package.
+**Used by [Jawab](https://github.com/zeinsaid/Jawab)**, the product built on it: a multi-business, multilingual AI receptionist (English, Greek, Arabic and more), with an owner inbox, one-tap learning and self-serve onboarding. Jawab installs this repo as a Python package.
 
-**[Try it live in Jawab →](https://jawab.onrender.com/try)** You get a private copy of The Plug: chat as a customer, answer as the owner, and watch it learn.
+**[Try it live in Jawab →](https://jawab-fb4z.onrender.com/try)** You get a private copy of The Plug: chat as a customer, answer as the owner, and watch it learn.
 
 <sub>The demo runs on free hosting that sleeps when nobody's using it, so the first visit can take about a minute to wake up.</sub>
 
-![The original demo: a chat with the bot, and the decision panel explaining a question it sent to the owner](docs/demo.png)
+![Jawab running on this engine: a customer asks in Arabic, the owner answers, and the engine drafts a knowledge entry to save](docs/demo.png)
 
 ---
 
@@ -26,17 +26,18 @@ Every customer message gets exactly one action:
 A few rules keep it trustworthy:
 
 - **Answers must cite the knowledge base.** If the model can't point to a public entry that supports its answer, code turns the answer into a question for the owner. The model's own confidence is never trusted.
-- **Public and internal knowledge.** Internal entries (the shop's private rules: when to escalate, what never to promise) guide the bot but never appear in a reply. The demo hides them from the decision panel too.
+- **Public and internal knowledge.** Internal entries (the shop's private rules: when to escalate, what never to promise) guide the bot but never appear in a reply, and apps never show them to customers.
 - **Business-agnostic.** Everything about the print shop lives in one markdown knowledge base (`kb/the-plug.md`); the code and prompts contain nothing shop-specific, and a test checks the prompt.
 - **One bad response doesn't reach the customer.** The model's output is validated against a schema and the knowledge base; on a problem it gets one corrective retry, then a safe fallback.
 - **The customer's language.** Replies come in the customer's language (English, Greek or Greeklish for The Plug; Arabic and Arabizi in Jawab), while the knowledge base stays in English. Notes for a specific language switch on only for businesses that list it.
 - **Learning with approval.** After the owner answers, one more model call writes the reply for the customer and drafts a knowledge entry; the owner chooses Save, Edit or Just this once, and nothing is saved without them.
 
 ```
-browser (chat page)  ──message + conversation so far──►  API (FastAPI)
-                                                          ├─ rate limits
-                                                          └─ brain: prompt + knowledge base ──► LLM
-                     ◄──reply, action, public sources────    validate, check citations, retry once
+app (e.g. Jawab) ──customer message + conversation so far──► Brain: prompt + knowledge base ──► LLM
+                 ◄──one action, reply, cited entries────────  validate, check citations, retry once
+
+owner answers    ──question + owner's answer──────────────► Learner ──► LLM
+                 ◄──reply for the customer + draft entry───   checked the same way; the owner approves
 ```
 
 ## How the model was chosen
@@ -81,7 +82,7 @@ The engine has no database and no web pages; storing conversations, the owner's 
 
 I designed and built this project, and made every decision in it: the action model, the knowledge-base format, what the eval measures, every label and trade-off. I worked with [Claude Code](https://claude.com/claude-code) as my AI pair programmer, reviewing every change step by step.
 
-Then, at the Founding MENA x Replit Hackathon (Dubai, 31 Oct 2026), I built [Jawab](https://github.com/zeinsaid/jawab) on top of it in a day. The improvements that needed (Arabic, learning, a quick interview) came back into this repo, which became the installable engine ([D-033](DECISIONS.md)).
+Then, at the Founding MENA x Replit Hackathon (Dubai, 31 Oct 2026), I built [Jawab](https://github.com/zeinsaid/Jawab) on top of it in a day. The improvements that needed (Arabic, learning, a quick interview) came back into this repo, which became the installable engine ([D-033](DECISIONS.md)).
 
 ## Repository layout
 
@@ -93,9 +94,7 @@ Then, at the Founding MENA x Replit Hackathon (Dubai, 31 Oct 2026), I built [Jaw
 ├── onboarding/       # An interview that drafts a knowledge base from a conversation with the owner
 │   └── prompts/
 ├── eval/             # 130 eval cases, runner, scoring and run comparison (see eval/README.md)
-├── app/              # The original web demo (retired: Jawab is the live demo now)
-├── tests/            # pytest tests (no API key needed)
-└── render.yaml       # Hosting setup for the demo (Render, free plan)
+└── tests/            # pytest tests (no API key needed)
 ```
 
 ## Running it locally
@@ -119,7 +118,7 @@ Copy `.env.example` to `.env` and fill in a key for each provider you want to ru
 
 ## Status
 
-The engine is finished and released as **v1.0.0**; [Jawab](https://github.com/zeinsaid/jawab) uses it. Saving owner answers to the knowledge base is built (the learning call here, the inbox in Jawab). Things a real deployment would still add are listed in DECISIONS.md (D-031): WhatsApp/Viber channels, owner notifications on their phone, and a data-protection review.
+The engine is finished and released as **v1.0.0**; [Jawab](https://github.com/zeinsaid/Jawab) uses it. Saving owner answers to the knowledge base is built (the learning call here, the inbox in Jawab). Things a real deployment would still add are listed in DECISIONS.md (D-031): WhatsApp/Viber channels, owner notifications on their phone, and a data-protection review.
 
 ## Data and privacy
 
