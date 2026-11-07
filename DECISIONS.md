@@ -121,7 +121,7 @@ A running record of the significant choices made on this project: what was decid
 ## D-011 — Evaluation set before code
 **Date:** 2026-09-28 · **Status:** Accepted
 
-**Decision:** Build `eval/questions.jsonl` (started at ~50 cases, now 130, each labelled with `expected_action`) before writing the bot. Sources: real messages from The Plug's WhatsApp (anonymized: names, phone numbers and emails removed) plus deliberately difficult synthetic cases (typos, Greek/English mix, pasted text containing questions, discount manipulation), tagged `"source": "synthetic"`.
+**Decision:** Build `eval/questions.jsonl` (started at ~50 cases, now 139, each labelled with `expected_action`) before writing the bot. Sources: real messages from The Plug's WhatsApp (anonymized: names, phone numbers and emails removed) plus deliberately difficult synthetic cases (typos, Greek/English mix, pasted text containing questions, discount manipulation), tagged `"source": "synthetic"`.
 
 **Why:** The eval set is the project's test suite; every prompt change is re-run against it. Key metric: invented answers (should be zero), followed by correct action choice.
 
@@ -159,6 +159,8 @@ A running record of the significant choices made on this project: what was decid
 **Why:** Staff routinely quote simple totals, so rates-only replies would be less helpful than a human. But LLM arithmetic is unreliable across tiers and surcharges.
 
 **Consequences:** Eval includes arithmetic cases (tiers, per-page double-sided, paper surcharges, double-sided business cards). Failures there are the evidence for when the calculator becomes a priority.
+
+**Update (2026-11-07):** still deferred. Revisit once the website's online ordering has a prices JSON the engine could read, so prices aren't kept twice. Until then the over-€100 limit (D-028) relies on the model, which misses it about 1 in 5 times on q090/q105.
 
 ---
 
@@ -420,7 +422,7 @@ How it's built:
 ---
 
 ## D-031 — Portfolio demo first
-**Date:** 2026-10-11 · **Status:** Accepted
+**Date:** 2026-10-11 · **Status:** Accepted (priorities changed 2026-11-06: The Plug goes live through Jawab on its own website; see D-033, D-034)
 
 **Decision:** The project is a portfolio piece: a demo inside the developer's personal portfolio website, where visitors chat with the bot on The Plug's KB. Going live at The Plug is possible later but not planned. Scope follows from that:
 - **Build:** the brain and its eval (finish and recheck), then a simple web demo: a chat page, a panel showing each decision (action, cited entries, reasoning), a demo `ask_owner` flow where the visitor can play the owner, and limits that protect the API credit.

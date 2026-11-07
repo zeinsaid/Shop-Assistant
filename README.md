@@ -119,7 +119,7 @@ Copy `.env.example` to `.env` and fill in a key for each provider you want to ru
 
 ## Status
 
-The engine is finished and released as **v1.1.0**; [Jawab](https://github.com/zeinsaid/Jawab) uses it. Saving owner answers to the knowledge base is built (the learning call here, the inbox in Jawab). Things a real deployment would still add are listed in DECISIONS.md (D-031): WhatsApp/Viber channels, owner notifications on their phone, and a data-protection review.
+The engine is finished and released as **v1.1.0**. [Jawab](https://github.com/zeinsaid/Jawab) uses it, including for the chat on The Plug's own website ([theplug.cy](https://theplug.cy)). Saving owner answers to the knowledge base is built (the learning call here, the inbox in Jawab). Everything a deployment needs beyond the decision itself (storage, alerts to the shop, the website embed) lives in Jawab; the engine only decides.
 
 ## Data and privacy
 
