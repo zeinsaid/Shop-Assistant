@@ -20,7 +20,7 @@ Every customer message gets exactly one action:
 |---|---|---|
 | `answer` | The knowledge base covers it | The bot replies, citing the knowledge entries it used |
 | `ask_owner` | The bot doesn't know, but the owner would | The owner is asked, and their answer goes to the customer |
-| `handoff` | Needs a person (complaints, refunds, negotiations, large orders) | A staff member takes over the chat |
+| `handoff` | Needs a person (complaints, refunds, negotiations, large orders) | A staff member takes over the chat. A reason (`abuse`, `complaint`, `lead` or `other`) tells the app whom to alert, if anyone |
 | `no_reply` | A file or pasted text sent to print, not a question (chat apps only) | Left for staff; the bot stays quiet |
 
 A few rules keep it trustworthy:
@@ -42,14 +42,14 @@ owner answers    ──question + owner's answer──────────�
 
 ## How the model was chosen
 
-Before writing the bot, I built an evaluation set: now **130 labelled customer messages**, including the hard ones (typos, Greek and Greeklish, pasted homework that must not be answered, discount tricks, rude customers, multi-turn conversations). A runner scores every run by code: wrong actions, invented answers, internal leaks, wrong totals, language.
+Before writing the bot, I built an evaluation set: now **139 labelled customer messages**, including the hard ones (typos, Greek and Greeklish, pasted homework that must not be answered, discount tricks, rude customers versus abusive ones, multi-turn conversations). A runner scores every run by code: wrong actions, invented answers, internal leaks, wrong totals, language.
 
 The brain talks to models through one thin interface, so the same eval ran on models from Anthropic, OpenAI and Google. All were safe (no invented prices, no leaked internal rules); **GPT-6 Luna** matched the best at a fraction of the cost and is the one in use:
 
-- passes 127-129 of 130 cases (rerun on 3 Nov 2026 with the v1.0.0 engine), with the remaining misses judged acceptable by the shop owner
+- passes 137 of 139 cases in both chat-app and website mode (rerun on 7 Nov 2026 with the v1.1.0 engine), with the remaining misses judged acceptable by the shop owner
 - about **$0.0003 per message**
 
-Every significant design choice, and why it was made, is in **[DECISIONS.md](DECISIONS.md)**: 33 decisions, from the four actions to the model bake-off, the demo's scope and the split into engine and product.
+Every significant design choice, and why it was made, is in **[DECISIONS.md](DECISIONS.md)**: 34 decisions, from the four actions to the model bake-off, the demo's scope and the split into engine and product.
 
 ## Using the engine
 
@@ -58,7 +58,7 @@ Every significant design choice, and why it was made, is in **[DECISIONS.md](DEC
 dependencies = ["shop-assistant[openai]"]     # or [anthropic], [gemini]
 
 [tool.uv.sources]
-shop-assistant = { git = "https://github.com/zeinsaid/Shop-Assistant", tag = "v1.0.0" }
+shop-assistant = { git = "https://github.com/zeinsaid/Shop-Assistant", tag = "v1.1.0" }
 ```
 
 ```python
@@ -70,6 +70,7 @@ from brain.schema import IncomingMessage
 brain = Brain(load_kb("kb/the-plug.md"), make_client("gpt-6-luna", effort="medium"), allow_no_reply=False)
 result = brain.decide(IncomingMessage(text="are you open on christmas?"))
 result.decision.action             # answer, ask_owner or handoff
+result.decision.handoff_reason     # when it's handoff: abuse, complaint, lead or other
 result.decision.question_for_owner # when it's ask_owner
 
 from brain.learn import Learner    # the owner's answer -> a reply for the customer + a draft KB entry
@@ -93,7 +94,7 @@ Then, at the Founding MENA x Replit Hackathon (Dubai, 31 Oct 2026), I built [Jaw
 │   └── prompts/      # Their prompts, kept as files so changes show up in diffs
 ├── onboarding/       # An interview that drafts a knowledge base from a conversation with the owner
 │   └── prompts/
-├── eval/             # 130 eval cases, runner, scoring and run comparison (see eval/README.md)
+├── eval/             # 139 eval cases, runner, scoring and run comparison (see eval/README.md)
 └── tests/            # pytest tests (no API key needed)
 ```
 
@@ -118,7 +119,7 @@ Copy `.env.example` to `.env` and fill in a key for each provider you want to ru
 
 ## Status
 
-The engine is finished and released as **v1.0.0**; [Jawab](https://github.com/zeinsaid/Jawab) uses it. Saving owner answers to the knowledge base is built (the learning call here, the inbox in Jawab). Things a real deployment would still add are listed in DECISIONS.md (D-031): WhatsApp/Viber channels, owner notifications on their phone, and a data-protection review.
+The engine is finished and released as **v1.1.0**; [Jawab](https://github.com/zeinsaid/Jawab) uses it. Saving owner answers to the knowledge base is built (the learning call here, the inbox in Jawab). Things a real deployment would still add are listed in DECISIONS.md (D-031): WhatsApp/Viber channels, owner notifications on their phone, and a data-protection review.
 
 ## Data and privacy
 

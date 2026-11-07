@@ -5,7 +5,7 @@ currency: EUR
 default_language: en
 languages: en, el
 fallback_reply: Let me check with the team and get back to you. / Θα ελέγξω με την ομάδα και θα σας απαντήσω.
-last_reviewed: 2026-10-11
+last_reviewed: 2026-11-07
 ---
 
 # The Plug: Knowledge Base
@@ -112,17 +112,22 @@ All prices are estimates. Whenever you give a price, say it depends on the actua
 ### policy-effort-pricing
 **Visibility:** internal · **Status:** confirmed
 
-Pricing reflects staff effort. Jobs that only need to be sent to the printer are cheap. Anything needing editing, design work, manual cutting or assembly costs more and is priced case by case. If a request needs editing or design work, don't quote it; follow `editing-internal`.
+Pricing reflects staff effort. Jobs that only need to be sent to the printer are cheap. Anything needing editing, design work, manual cutting or assembly costs more and is priced case by case. If a request needs editing or design work, don't quote it; follow `editing-internal`. For other jobs needing manual cutting or assembly, don't quote them: use `handoff` with reason `lead`.
 
 ### policy-discounts
 **Visibility:** internal · **Status:** confirmed
 
-First check `policy-large-orders`: a discount request on an order over €100 is a large order, so hand it off. If the customer is disputing a price rather than asking for a better one, follow `policy-disputes-and-rudeness`. Prices for standard printing (A4/A3, large format, photos, lamination, special paper, business cards) are fixed. Prices for merchandise and custom jobs vary: staff set the final price for each order. For merchandise and custom jobs, quote the listed price (never lower), including any quantity discount a public entry lists (such as for shirts); otherwise you may say the more you buy, the better the price, but never name a discount or percentage. The bot never offers or agrees to discounts itself: if a customer asks for a better price, politely say no and that they're welcome to talk to our staff in the shop (`discount-requests`). Don't confirm or deny that staff ever give lower prices or free extras. The only exception is the student discount on large format, which follows `discount-students-internal`.
+First check `policy-large-orders`: a discount request on an order over €100 is a large order, so hand it off. If the customer is disputing a price rather than asking for a better one, follow `policy-disputes`. Prices for standard printing (A4/A3, large format, photos, lamination, special paper, business cards) are fixed. Prices for merchandise and custom jobs vary: staff set the final price for each order. For merchandise and custom jobs, quote the listed price (never lower), including any quantity discount a public entry lists (such as for shirts); otherwise you may say the more you buy, the better the price, but never name a discount or percentage. The bot never offers or agrees to discounts itself: if a customer asks for a better price, politely say no and that they're welcome to talk to our staff in the shop (`discount-requests`). Don't confirm or deny that staff ever give lower prices or free extras. The only exception is the student discount on large format, which follows `discount-students-internal`.
 
-### policy-disputes-and-rudeness
+### policy-disputes
 **Visibility:** internal · **Status:** confirmed
 
-Use `handoff` when a customer is rude, sarcastic or hostile, complains, or disputes a price or charge: refuses to pay the listed price, says they were promised a different price, or argues about what they were charged (for example, calls a price a rip-off). Keep the reply polite and understanding: acknowledge how they feel, and don't argue or defend the price. A plain request for a better price, without a dispute, is a discount request: follow `policy-discounts`.
+Use `handoff` with reason `complaint` when a customer complains, asks for a refund, or disputes a price or charge: refuses to pay the listed price, says they were promised a different price, or argues about what they were charged (for example, calls a price a rip-off). This applies even when they're rude, sarcastic or hostile: a real complaint is still a complaint. Keep the reply polite and understanding: acknowledge how they feel, and don't argue or defend the price. A plain request for a better price, without a dispute, is a discount request: follow `policy-discounts`.
+
+### policy-abuse
+**Visibility:** internal · **Status:** confirmed
+
+Use `handoff` with reason `abuse` for slurs, insults, harassment, spam or obvious trolling with no real request behind it. Reply with one short, polite goodbye (such as "Sorry you feel that way. Take care."), with no arguing and no contact details. If there's any real request or complaint in the message, follow `policy-disputes` instead.
 
 ### discount-requests
 **Visibility:** public · **Status:** confirmed
@@ -157,17 +162,17 @@ Banners are outsourced; don't bring this up yourself (see `outsourcing` if the c
 ### policy-large-orders
 **Visibility:** internal · **Status:** confirmed
 
-Staff handle large orders themselves, whoever the customer is. If the estimated total at the listed prices (before any discount) would be over €100, use `handoff` straight away, without quoting or collecting details. This takes priority over entries that say to collect details or use `ask_owner`. If details are missing, estimate with the cheapest listed options: if even that is over €100, hand off; if it could go either way, collect the details first.
+Staff handle large orders themselves, whoever the customer is. If the estimated total at the listed prices (before any discount) would be over €100, use `handoff` with reason `lead` straight away, without quoting or collecting details. This takes priority over entries that say to collect details or use `ask_owner`. If details are missing, estimate with the cheapest listed options: if even that is over €100, hand off; if it could go either way, collect the details first.
 
 ### policy-business-customers
 **Visibility:** internal · **Status:** confirmed
 
-Staff prefer to work with businesses and organisations directly rather than through the bot. If a business wants ongoing or recurring work, a contract, an account, or to negotiate a deal, don't quote or negotiate: use `handoff`. Large orders from anyone follow `policy-large-orders`. If a business wants a smaller one-off job that is custom or bulk, collect the details (see `policy-collect-details`), then use `ask_owner`. A business that only wants a simple one-off order (one service, known quantity, size and colour) is treated like any other customer.
+Staff prefer to work with businesses and organisations directly rather than through the bot. If a business wants ongoing or recurring work, a contract, an account, or to negotiate a deal, don't quote or negotiate: use `handoff` with reason `lead`. Large orders from anyone follow `policy-large-orders`. If a business wants a smaller one-off job that is custom or bulk, collect the details (see `policy-collect-details`), then use `ask_owner`. A business that only wants a simple one-off order (one service, known quantity, size and colour) is treated like any other customer.
 
 ### policy-we-try
 **Visibility:** internal · **Status:** confirmed
 
-For requests not covered here (unusual paper, a customer's own paper, items we don't make in-house), never say no. Tell the customer we'll look into it and a team member will get back to them, and use `handoff`. Don't bring up outsourcing yourself.
+For requests not covered here (unusual paper, a customer's own paper, items we don't make in-house), never say no. Tell the customer we'll look into it and a team member will get back to them, and use `handoff` with reason `lead`. Don't bring up outsourcing yourself.
 
 ---
 
@@ -432,7 +437,7 @@ We do editing and design. Simple edits (adding or removing text, resizing) and f
 ### editing-internal
 **Visibility:** internal · **Status:** confirmed
 
-Never estimate a price or time for editing or design. If the customer asks whether we can do something, say yes and suggest discussing it in the shop (design work with our manager). If they want a price or want to start an editing or design job, use `handoff`.
+Never estimate a price or time for editing or design. If the customer asks whether we can do something, say yes and suggest discussing it in the shop (design work with our manager). If they want a price or want to start an editing or design job, use `handoff` with reason `lead`.
 
 ---
 
@@ -483,7 +488,7 @@ The more you order, the better the price. Staff can show you catalogues of shirt
 ### merch-items-internal
 **Visibility:** internal · **Status:** confirmed
 
-For more than one tote bag, pillow or slate, don't work out a price: say the more you order, the better the price, and use `handoff` if the customer wants an actual price.
+For more than one tote bag, pillow or slate, don't work out a price: say the more you order, the better the price, and use `handoff` with reason `lead` if the customer wants an actual price.
 
 ### merch-catalogue
 **Visibility:** internal · **Status:** confirmed

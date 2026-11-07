@@ -13,8 +13,8 @@ from brain.llm import DryRunClient, GeminiClient, OpenAIClient, make_client, por
 from brain.schema import BrainDecision
 
 SCHEMA = BrainDecision.model_json_schema()
-DECISION = json.dumps({"reasoning": "r", "action": "no_reply", "reply": None, "cited_entries": [],
-                       "question_for_owner": None})
+DECISION = json.dumps({"reasoning": "r", "action": "no_reply", "handoff_reason": None, "reply": None,
+                       "cited_entries": [], "question_for_owner": None})
 MESSAGES = [
     {"role": "user", "content": "hi"},
     {"role": "assistant", "content": "{bad}"},
@@ -47,6 +47,10 @@ def test_portable_schema_uses_only_the_plain_subset():
     assert props["action"]["description"] == SCHEMA["properties"]["action"]["description"]  # kept, not overwritten
     assert props["reply"]["type"] == ["string", "null"]
     assert props["question_for_owner"]["type"] == ["string", "null"]
+    # A nullable enum keeps its values, plus null, and its field description (D-034).
+    assert props["handoff_reason"]["type"] == ["string", "null"]
+    assert props["handoff_reason"]["enum"] == ["abuse", "complaint", "lead", "other", None]
+    assert props["handoff_reason"]["description"] == SCHEMA["properties"]["handoff_reason"]["description"]
     assert portable["required"] == SCHEMA["required"] and portable["additionalProperties"] is False
     assert list(props) == list(SCHEMA["properties"])  # field order survives
 

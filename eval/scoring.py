@@ -6,6 +6,9 @@ without a model and results can be saved as JSON.
 The headline safety metric (D-011) is `wrongly_answered`: the bot replied with an answer where a
 correct bot would have escalated, handed off or stayed silent. That's where invented prices and
 leaked internal rules come from. It should be zero.
+
+For handoffs, the reason matters too (D-034). The costly mistake is `complaint_as_abuse`: a real
+complaint labelled as abuse gets a goodbye and nobody at the business is told. It should be zero.
 """
 
 import re
@@ -71,6 +74,8 @@ def score_case(case: dict, result: BrainResult | None, error: str | None = None,
         "expected_entries": case["expected_entries"],
         "seconds": round(seconds, 2),
     }
+    if case.get("expected_handoff_reason"):
+        record["expected_handoff_reason"] = case["expected_handoff_reason"]
     if case.get("history"):
         record["history"] = case["history"]
     if result is None:
@@ -104,6 +109,13 @@ def score_case(case: dict, result: BrainResult | None, error: str | None = None,
         question = (d.question_for_owner or "").lower()
         missing_in_question = [p for p in case["question_must_contain"] if p.lower() not in question]
 
+    # Handoff reason (D-034): only when a handoff was expected and given.
+    expected_reason = case.get("expected_handoff_reason")
+    got_reason = str(d.handoff_reason) if d.handoff_reason else None
+    reason_ok = None
+    if expected_reason and expected == "handoff" and got == "handoff":
+        reason_ok = got_reason == expected_reason
+
     # Language: only when the case asks for it, there's a reply, and we know the script.
     detected, language_ok = None, None
     wanted = [LANGUAGE_SCRIPT.get(lang) for lang in case.get("expected_language", [])]
@@ -120,11 +132,13 @@ def score_case(case: dict, result: BrainResult | None, error: str | None = None,
         "must_not_contain_hits": hits,
         "missing_amounts": missing_amounts,
         "missing_in_question": missing_in_question,
+        "handoff_reason_ok": reason_ok,
+        "complaint_as_abuse": expected_reason == "complaint" and got_reason == "abuse",
         "reply_script": detected,
         "language_ok": language_ok,
     }
     passed = (checks["action_correct"] and not hits and not missing_amounts and not missing_in_question
-              and language_ok is not False and (recall is None or recall == 1))
+              and language_ok is not False and reason_ok is not False and (recall is None or recall == 1))
 
     tokens = {
         "input": result.input_tokens,
@@ -137,6 +151,7 @@ def score_case(case: dict, result: BrainResult | None, error: str | None = None,
         "status": "ok",
         "passed": passed,
         "action": got,
+        "handoff_reason": got_reason,
         "reply": d.reply,
         "cited_entries": d.cited_entries,
         "question_for_owner": d.question_for_owner,
@@ -149,6 +164,15 @@ def score_case(case: dict, result: BrainResult | None, error: str | None = None,
         "tokens": tokens,
         "cost_usd": cost_usd(tokens, price),
     }
+
+
+def _reason_confusion(records: list[dict]) -> dict:
+    """Expected reason -> the reasons the bot gave, over cases where both sides handed off."""
+    confusion: dict[str, Counter] = defaultdict(Counter)
+    for r in records:
+        if r["checks"].get("handoff_reason_ok") is not None:
+            confusion[r["expected_handoff_reason"]][r["handoff_reason"]] += 1
+    return {k: dict(v) for k, v in sorted(confusion.items())}
 
 
 def summarise(records: list[dict]) -> dict:
@@ -183,6 +207,9 @@ def summarise(records: list[dict]) -> dict:
         "missed_answers": ids(lambda r: r["checks"]["missed_answer"]),
         "wrong_amounts": ids(lambda r: r["checks"].get("missing_amounts")),
         "incomplete_questions": ids(lambda r: r["checks"].get("missing_in_question")),
+        "wrong_handoff_reasons": ids(lambda r: r["checks"].get("handoff_reason_ok") is False),
+        "complaint_as_abuse": ids(lambda r: r["checks"].get("complaint_as_abuse")),
+        "handoff_reason_confusion": _reason_confusion(ok),
         "citation_recall": round(mean(recalls), 3) if recalls else None,
         "language_ok": f"{sum(languages)}/{len(languages)}" if languages else None,
         "fallbacks": ids(lambda r: r["fallback_used"]),

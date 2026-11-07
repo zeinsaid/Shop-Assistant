@@ -19,6 +19,17 @@ class Action(StrEnum):
     NO_REPLY = "no_reply"
 
 
+# The engine only labels the reason; the product built on it decides what each one triggers, such
+# as who gets alerted and what the customer sees next (D-034). The docstring is shown to the model.
+class HandoffReason(StrEnum):
+    """Why a person needs to take over."""
+
+    ABUSE = "abuse"          # insults, slurs, harassment, spam or trolling with no real request
+    COMPLAINT = "complaint"  # complaints, refunds, price or charge disputes, even when rude
+    LEAD = "lead"            # real business for staff: large, recurring or custom work to price
+    OTHER = "other"          # anything else that needs a person
+
+
 class Attachment(BaseModel):
     """Metadata about a file the customer sent. There is deliberately no content field (D-010)."""
 
@@ -90,7 +101,7 @@ class BrainDecision(BaseModel):
     """The brain's decision for one incoming customer message.
 
     Field order matters: the model writes them top to bottom, so `reasoning` comes first (D-019).
-    Every field is required: the model always writes all five keys, using null or [] when a field
+    Every field is required: the model always writes all six keys, using null or [] when a field
     doesn't apply (D-020).
     """
 
@@ -114,6 +125,18 @@ class BrainDecision(BaseModel):
             "'handoff': a person must take over or physically do something (complaint, refund, "
             "negotiation, checking an order or a lost item). "
             f"{NO_REPLY_ACTION_DOC}"
+        ),
+    )
+    handoff_reason: HandoffReason | None = Field(
+        description=(
+            "Required for 'handoff', null otherwise. "
+            "'abuse': insults, slurs, harassment, spam or trolling with no real request behind it. "
+            "'complaint': a complaint, refund request, or dispute about a price or charge, even "
+            "when the customer is rude. "
+            "'lead': real business for staff to take on, such as a large order, ongoing or "
+            "business work, or a custom job staff must price or look into. "
+            "'other': anything else that needs a person. "
+            "If unsure between 'abuse' and 'complaint', choose 'complaint'."
         ),
     )
     reply: str | None = Field(
@@ -152,6 +175,7 @@ class BrainDecision(BaseModel):
     def check_action_consistency(self) -> "BrainDecision":
         needs_reply = self.action is not Action.NO_REPLY
         needs_question = self.action is Action.ASK_OWNER
+        needs_reason = self.action is Action.HANDOFF
 
         if needs_reply and self.reply is None:
             raise ValueError(f"action '{self.action}' requires a reply")
@@ -163,6 +187,10 @@ class BrainDecision(BaseModel):
             raise ValueError(
                 f"question_for_owner is only allowed with 'ask_owner', not '{self.action}'"
             )
+        if needs_reason and self.handoff_reason is None:
+            raise ValueError("action 'handoff' requires handoff_reason")
+        if not needs_reason and self.handoff_reason is not None:
+            raise ValueError(f"handoff_reason is only allowed with 'handoff', not '{self.action}'")
         return self
 
 

@@ -1,7 +1,7 @@
 import pytest
 from pydantic import ValidationError
 
-from brain.schema import Action, Attachment, BrainDecision, IncomingMessage, Role, Turn
+from brain.schema import Action, Attachment, BrainDecision, HandoffReason, IncomingMessage, Role, Turn
 
 
 def decision(**overrides) -> dict:
@@ -9,6 +9,7 @@ def decision(**overrides) -> dict:
     base = {
         "reasoning": "The KB covers this.",
         "action": "answer",
+        "handoff_reason": None,
         "reply": "We're open 24/7.",
         "cited_entries": ["shop-hours"],
         "question_for_owner": None,
@@ -38,11 +39,19 @@ def test_valid_ask_owner_has_holding_reply_and_question():
     assert d.action is Action.ASK_OWNER
 
 
-def test_valid_handoff_has_reply_but_no_question():
+def test_valid_handoff_has_reply_and_reason_but_no_question():
     d = BrainDecision(
-        **decision(action="handoff", reply="A team member will take over.", cited_entries=[])
+        **decision(action="handoff", handoff_reason="complaint", reply="A team member will take over.",
+                   cited_entries=[])
     )
     assert d.question_for_owner is None
+    assert d.handoff_reason is HandoffReason.COMPLAINT
+
+
+@pytest.mark.parametrize("reason", ["abuse", "complaint", "lead", "other"])
+def test_every_handoff_reason_is_accepted(reason):
+    d = BrainDecision(**decision(action="handoff", handoff_reason=reason, reply="Bye.", cited_entries=[]))
+    assert d.handoff_reason == reason
 
 
 def test_valid_no_reply_has_nothing_to_send():
@@ -50,9 +59,9 @@ def test_valid_no_reply_has_nothing_to_send():
     assert d.reply is None and d.question_for_owner is None and d.cited_entries == []
 
 
-@pytest.mark.parametrize("missing", ["reply", "cited_entries", "question_for_owner"])
+@pytest.mark.parametrize("missing", ["handoff_reason", "reply", "cited_entries", "question_for_owner"])
 def test_every_field_must_be_present_even_when_empty(missing):
-    # D-020: the model always writes all five keys, using null or [] when a field doesn't apply.
+    # D-020: the model always writes all six keys, using null or [] when a field doesn't apply.
     fields = decision(action="no_reply", reply=None, cited_entries=[])
     del fields[missing]
     with pytest.raises(ValidationError):
@@ -68,8 +77,13 @@ def test_every_field_must_be_present_even_when_empty(missing):
         {"action": "answer", "reply": None},  # answer needs a reply
         {"action": "ask_owner", "reply": "Checking.", "question_for_owner": None},  # needs question
         {"action": "ask_owner", "reply": None, "question_for_owner": "Q?"},  # needs holding reply
-        {"action": "handoff", "reply": None},  # handoff needs a hand-over message
-        {"action": "handoff", "reply": "Passing you on.", "question_for_owner": "Q?"},  # no question
+        {"action": "handoff", "handoff_reason": "other", "reply": None},  # needs a hand-over message
+        {"action": "handoff", "handoff_reason": "other", "reply": "Passing you on.",
+         "question_for_owner": "Q?"},  # no question
+        {"action": "handoff", "reply": "Passing you on."},  # handoff needs a reason (D-034)
+        {"action": "handoff", "handoff_reason": "angry", "reply": "Passing you on."},  # unknown reason
+        {"action": "answer", "handoff_reason": "lead"},  # a reason only with handoff
+        {"action": "ask_owner", "handoff_reason": "lead", "reply": "Checking.", "question_for_owner": "Q?"},
         {"action": "no_reply", "reply": "Hello", "cited_entries": []},  # no_reply has no reply
         {"action": "no_reply", "reply": None, "question_for_owner": "Q?"},  # ...or question
         {"action": "answer", "question_for_owner": "Q?"},  # question only with ask_owner
@@ -112,6 +126,7 @@ def test_cited_entries_are_stripped_and_not_restricted_by_action():
     d = BrainDecision(
         reasoning="Internal rule applies.",
         action="ask_owner",
+        handoff_reason=None,
         reply="Checking.",
         question_for_owner="Q?",
         cited_entries=[" policy-discounts "],
@@ -140,7 +155,8 @@ def test_json_schema_keeps_field_order_and_describes_every_field():
     # The order is what makes "reasoning first" work (D-019); descriptions are prompt content.
     schema = BrainDecision.model_json_schema()
     properties = schema["properties"]
-    assert list(properties) == ["reasoning", "action", "reply", "cited_entries", "question_for_owner"]
+    assert list(properties) == ["reasoning", "action", "handoff_reason", "reply", "cited_entries",
+                                "question_for_owner"]
     assert all(p.get("description") for p in properties.values())
     assert schema["required"] == list(properties)  # every field required (D-020)
 

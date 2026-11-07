@@ -23,9 +23,11 @@ def case(**overrides) -> dict:
 
 
 def result(action="answer", reply="Hello", cited=("a", "b"), question=None, tokens=(100, 50, 7000, 0),
-           attempts=1, fallback=False) -> BrainResult:
-    decision = BrainDecision(reasoning="r", action=action, reply=reply, cited_entries=list(cited),
-                             question_for_owner=question)
+           attempts=1, fallback=False, reason=None) -> BrainResult:
+    if action == "handoff" and reason is None:
+        reason = "other"
+    decision = BrainDecision(reasoning="r", action=action, handoff_reason=reason, reply=reply,
+                             cited_entries=list(cited), question_for_owner=question)
     # Token usage sits on the first attempt; every attempt but the last had a problem.
     runs = [
         Attempt(Completion("{}", "end_turn", *tokens) if i == 0 else Completion("{}"), ["x"] if i < attempts - 1 else [])
@@ -53,6 +55,32 @@ def test_alternative_citations_accept_either_entry():
     either = case(expected_entries=["a|b"])
     assert score_case(either, result(cited=["b"]))["passed"]
     assert score_case(either, result(cited=["c"]))["checks"]["missing_citations"] == ["a|b"]
+
+
+def handoff_case(reason: str) -> dict:
+    return case(expected_action="handoff", expected_entries=[], expected_handoff_reason=reason)
+
+
+def test_handoff_reason_must_match():
+    good = score_case(handoff_case("lead"), result(action="handoff", cited=(), reason="lead"))
+    assert good["passed"] and good["checks"]["handoff_reason_ok"] and good["handoff_reason"] == "lead"
+    wrong = score_case(handoff_case("lead"), result(action="handoff", cited=(), reason="other"))
+    assert not wrong["passed"] and wrong["checks"]["handoff_reason_ok"] is False
+    assert not wrong["checks"]["complaint_as_abuse"]
+
+
+def test_complaint_labelled_as_abuse_is_flagged_separately():
+    r = score_case(handoff_case("complaint"), result(action="handoff", cited=(), reason="abuse"))
+    assert not r["passed"] and r["checks"]["complaint_as_abuse"]
+    s = summarise([r, score_case(handoff_case("abuse"), result(action="handoff", cited=(), reason="complaint"))])
+    assert s["wrong_handoff_reasons"] == ["t1", "t1"] and s["complaint_as_abuse"] == ["t1"]
+    assert s["handoff_reason_confusion"] == {"abuse": {"complaint": 1}, "complaint": {"abuse": 1}}
+
+
+def test_handoff_reason_not_checked_when_the_action_was_wrong():
+    r = score_case(handoff_case("lead"), result(action="ask_owner", cited=(), question="Q?"))
+    assert r["checks"]["handoff_reason_ok"] is None and not r["passed"]  # fails on the action alone
+    assert summarise([r])["wrong_handoff_reasons"] == []
 
 
 def test_answering_when_escalation_was_expected_is_flagged():
@@ -244,7 +272,8 @@ def test_owner_question_must_carry_the_collected_details():
 def test_history_reaches_the_brain_and_the_record():
     history = [{"role": "customer", "text": "how much for posters?"},
                {"role": "bot", "action": "answer", "text": "Which size?"}]
-    client = ScriptedClient([json.dumps({"reasoning": "r", "action": "answer", "reply": "A1 is €5.",
+    client = ScriptedClient([json.dumps({"reasoning": "r", "action": "answer", "handoff_reason": None,
+                                         "reply": "A1 is €5.",
                                          "cited_entries": ["a"], "question_for_owner": None})])
     brain = Brain(parse_kb("### a\n**Visibility:** public · **Status:** confirmed\n\nA."), client, prompt="x")
     records, _ = run_eval.run([case(message="A1", expected_entries=["a"], history=history)], brain, None,

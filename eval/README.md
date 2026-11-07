@@ -9,13 +9,14 @@
 | `message` | The customer's text (may be empty when only a file is sent) |
 | `attachments` | Metadata only: `type`, `filename`, optional `pages` (D-010) |
 | `expected_action` | `answer`, `ask_owner`, `handoff` or `no_reply` |
+| `expected_handoff_reason` | Required on `handoff` cases, absent otherwise: `abuse`, `complaint`, `lead` or `other` (D-034) |
 | `expected_entries` | KB entry IDs a correct answer should cite. Non-empty for `answer`, empty otherwise |
 | `expected_language` | Optional. Acceptable reply languages as ISO codes, e.g. `["el"]` or `["el", "en"]` for Greeklish (D-018). Omitted when there is no reply or the language doesn't matter |
 | `expected_amounts` | Optional, answer cases only. Numbers a correct reply must state, such as a total: `[45]`. Any format counts ("€45", "45.00", "45,00") |
 | `must_not_contain` | Optional. Case-insensitive substrings that must not appear in the reply (invented prices, leaked internal details, links). Keep them to phrases that never legitimately appear |
 | `history` | Optional. Earlier messages, oldest first, as the customer saw them (D-023): `{"role": "customer", "text": ..., "attachments": [...]}`, `{"role": "bot", "action": "answer", "text": ...}` or `{"role": "staff", "text": ...}`. `message` is always the customer's latest message, and the expected action is for it alone |
 | `question_must_contain` | Optional, `ask_owner` cases only. Case-insensitive substrings the `question_for_owner` must include, such as details collected earlier in the conversation (D-016) |
-| `always_reply` | Optional. Expectations for channels where every message gets a reply, such as a website chat (D-024): an object overriding any of `expected_action`, `expected_entries`, `expected_amounts`, `expected_language`, `must_not_contain`, `question_must_contain` and `notes`. Required on every `no_reply` case. Used only by `--always-reply` runs |
+| `always_reply` | Optional. Expectations for channels where every message gets a reply, such as a website chat (D-024): an object overriding any of `expected_action`, `expected_entries`, `expected_amounts`, `expected_language`, `expected_handoff_reason`, `must_not_contain`, `question_must_contain` and `notes`. Required on every `no_reply` case. Used only by `--always-reply` runs |
 | `notes` | Why the case is labelled this way |
 | `source` | Always `synthetic` in this file |
 
@@ -46,9 +47,11 @@ uv run python -m eval.compare eval/results/A.json eval/results/B.json # side by 
 | missed answers | An answer was expected but the bot escalated or stayed silent. Unhelpful, but safe |
 | wrong amounts | An expected amount (e.g. the total) is missing from the reply: a lookup or arithmetic mistake (D-014) |
 | incomplete owner questions | On `ask_owner` cases the bot escalated: a `question_must_contain` phrase is missing from its question to the owner |
+| wrong handoff reasons | On `handoff` cases the bot handed off: its `handoff_reason` differs from `expected_handoff_reason` (D-034) |
+| **complaint as abuse** | A real complaint labelled `abuse`: the customer gets a goodbye and nobody is told. The costly reason mistake: it should be 0 |
 | citation recall | On answer cases the bot answered: share of `expected_entries` it cited |
 | language ok | The reply is in the expected script (Greek vs Latin letters); a rough check |
-| passed | Right action, all expected citations, all expected amounts, a complete owner question, no forbidden phrase, right language |
+| passed | Right action, right handoff reason, all expected citations, all expected amounts, a complete owner question, no forbidden phrase, right language |
 | fallbacks / retried | How often the brain needed its retry or its fixed fallback |
 | cost, seconds | From token counts and `eval/prices.json` (list prices; re-check before relying on them) |
 

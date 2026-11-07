@@ -102,7 +102,7 @@ def portable_schema(schema: dict) -> dict:
     """Rewrite a Pydantic JSON schema into the plain subset every provider accepts.
 
     - `$ref`/`$defs` are inlined (the `Action` enum becomes a plain enum on the field),
-    - `anyOf: [X, null]` becomes `type: [X, "null"]`,
+    - `anyOf: [X, null]` becomes `type: [X, "null"]` (for an enum, null is added to the enum too),
     - keywords the APIs reject (`minLength`, ...) are dropped; Pydantic still checks them.
     """
     defs = schema.get("$defs", {})
@@ -118,10 +118,13 @@ def portable_schema(schema: dict) -> dict:
             node = {**target, **node}
         options = node.get("anyOf")
         if options and len(options) == 2 and {"type": "null"} in options:
-            other = next(o for o in options if o != {"type": "null"})
-            if set(other) == {"type"} and isinstance(other["type"], str):
+            other = convert(next(o for o in options if o != {"type": "null"}))
+            if set(other) <= {"type", "enum", "title", "description"} and isinstance(other.get("type"), str):
+                # {"anyOf": [{"$ref": Enum}, null]} -> {"type": ["string", "null"], "enum": [..., None]}
                 del node["anyOf"]
                 node["type"] = [other["type"], "null"]
+                if "enum" in other:
+                    node["enum"] = [*other["enum"], None]
         return {k: convert(v) for k, v in node.items() if k != "$defs" and k not in UNSUPPORTED_SCHEMA_KEYS}
 
     return convert(schema)
@@ -244,6 +247,7 @@ class DryRunClient:
         decision = {
             "reasoning": "Dry run: no model was called.",
             "action": "ask_owner",
+            "handoff_reason": None,
             "reply": "(dry run) Let me check with the team and get back to you.",
             "cited_entries": [],
             "question_for_owner": "(dry run) No model was called for this message.",

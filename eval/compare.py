@@ -15,6 +15,9 @@ ROWS = [  # (label, how to read it from a summary)
     ("wrongly answered", lambda s: len(s["wrongly_answered"])),
     ("must_not_contain", lambda s: len(s["must_not_contain_violations"])),
     ("missed answers", lambda s: len(s["missed_answers"])),
+    # Runs before D-034 have no handoff reasons: shown as "-".
+    ("wrong reasons", lambda s: len(s["wrong_handoff_reasons"]) if "wrong_handoff_reasons" in s else "-"),
+    ("complaint->abuse", lambda s: len(s["complaint_as_abuse"]) if "complaint_as_abuse" in s else "-"),
     ("citation recall", lambda s: s["citation_recall"]),
     ("language ok", lambda s: s["language_ok"]),
     ("fallbacks", lambda s: len(s["fallbacks"])),

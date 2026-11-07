@@ -142,6 +142,7 @@ class Brain:
         return BrainDecision(
             reasoning=f"Fallback after {MAX_ATTEMPTS} invalid attempts. Last problems: {'; '.join(problems)}",
             action=Action.ASK_OWNER,
+            handoff_reason=None,
             reply=self.fallback_reply,
             cited_entries=[],
             question_for_owner=(

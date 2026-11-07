@@ -9,7 +9,7 @@ from pathlib import Path
 import pytest
 
 from brain.kb import load_kb
-from brain.schema import Action, Attachment, Role, Turn
+from brain.schema import Action, Attachment, HandoffReason, Role, Turn
 from eval.run_eval import ALWAYS_REPLY_FIELDS, for_setting
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -55,6 +55,11 @@ def test_case_is_well_formed(case, always_reply):
         assert all(KB.is_public(e) for e in ids), "answers may only rely on public entries (D-020)"
     else:
         assert not entries, "only answer cases expect citations"
+
+    if case["expected_action"] == "handoff":  # D-034: every handoff case says why
+        assert HandoffReason(case.get("expected_handoff_reason"))
+    else:
+        assert "expected_handoff_reason" not in case, "only handoff cases expect a reason"
 
     if "expected_language" in case:
         languages = case["expected_language"]

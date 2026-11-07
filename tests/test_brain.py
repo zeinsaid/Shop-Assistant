@@ -26,6 +26,7 @@ def decision(**overrides) -> str:
     fields = {
         "reasoning": "Covered by the KB.",
         "action": "answer",
+        "handoff_reason": None,
         "reply": "We're open 9 to 5.",
         "cited_entries": ["hours"],
         "question_for_owner": None,
@@ -90,6 +91,8 @@ def test_non_answer_may_cite_internal_entries_and_unknown_ids_are_dropped():
         (decision(cited_entries=[]), "public"),
         (decision(cited_entries=["discounts-internal"]), "public"),  # internal never supports an answer
         (decision(cited_entries=["hours", "made-up"]), "don't exist"),
+        (decision(action="handoff", reply="Passing you on.", cited_entries=[]), "handoff_reason"),
+        (decision(handoff_reason="lead"), "only allowed with 'handoff'"),
     ],
 )
 def test_bad_first_response_gets_one_corrective_retry(bad, expected_problem):
@@ -177,7 +180,8 @@ def test_strip_unsupported_removes_constraints_the_api_rejects():
     schema = strip_unsupported(BrainDecision.model_json_schema())
     assert "minLength" not in json.dumps(schema)
     assert schema["additionalProperties"] is False
-    assert schema["required"] == ["reasoning", "action", "reply", "cited_entries", "question_for_owner"]
+    assert schema["required"] == ["reasoning", "action", "handoff_reason", "reply", "cited_entries",
+                                  "question_for_owner"]
 
 
 def test_anthropic_client_builds_the_request_and_reads_usage():

@@ -1,6 +1,6 @@
 [project]
 name = "shop-assistant"
-version = "1.0.0"
+version = "1.1.0"
 description = "The engine behind an AI receptionist: a knowledge-base brain that answers, asks the owner or hands off, learns from owner answers, and drafts a knowledge base by interview."
 readme = "README.md"
 requires-python = ">=3.12"

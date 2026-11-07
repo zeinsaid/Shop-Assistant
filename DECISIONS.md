@@ -465,6 +465,25 @@ Jawab's live demo replaces this repo's Render demo (D-032), retired on 2026-11-0
 
 ---
 
+## D-034 — A handoff says why
+**Date:** 2026-11-07 · **Status:** Accepted
+
+**Decision:** Every `handoff` decision carries a `handoff_reason`, one of four:
+- `abuse`: insults, slurs, harassment, spam or trolling with no real request behind it. The reply is one short, polite goodbye in the customer's language, with no "a team member will take over".
+- `complaint`: complaints, refunds, problems with a finished order, price or charge disputes, even when the customer is rude.
+- `lead`: real business for staff: large orders, ongoing or business work, custom jobs staff must price or look into.
+- `other`: anything else that needs a person (a lost item, an order's status, "let me talk to a human").
+
+The field sits right after `action` (D-019), is always written and is null for every other action (D-020); `check_action_consistency` rejects a handoff without a reason and a reason without a handoff. The prompt explains the four with examples. The engine only labels: what each reason triggers (alerts, contacts, who is told) is the app's job. In The Plug's KB, `policy-disputes-and-rudeness` splits into `policy-disputes` (→ `complaint`) and `policy-abuse` (→ `abuse`), and the internal entries that hand off real work name `lead`. The eval gains `expected_handoff_reason` on every handoff case, 9 new cases (q131-q139), and two metrics: `wrong_handoff_reasons` and `complaint_as_abuse`.
+
+**Why:** Jawab, going live on The Plug's website, has to route handoffs differently: a troll gets a goodbye and no alert, a complaint or a lead emails the shop with the conversation. Without a reason it can't tell "you're all idiots" from "you ruined my poster, I want a refund". Rude is not abusive: anything with a real request or grievance is never `abuse`. The two mistakes cost different amounts. Abuse labelled as a complaint costs the shop one pointless email; a complaint labelled as abuse brushes off an upset customer and nobody is told. So the prompt says "if unsure, `complaint`", and the eval counts that mistake on its own. The prompt also says a reason never makes something a handoff: the first wording let "anything else that needs a person" pull a one-reply stock question (q042) from `ask_owner` into `handoff`.
+
+Rejected: a fifth action such as `block`. D-002 keeps four actions, and abuse already behaves like a handoff (one last message, then the bot is quiet); only the routing differs, and routing belongs to the app. Also rejected: letting the app guess the reason from the reply or the cited entries. That's fragile, and the model already knows why it handed off.
+
+**Consequences:** Engine v1.1.0. Apps that build decisions themselves (test fixtures, scripted responses) must add `handoff_reason` (null when not a handoff). Results on GPT-6 Luna (`medium`, 2026-11-07): 137/139 in both modes, every handoff reason right (30/30 and 31/31 over two full runs each), no complaint labelled as abuse. The remaining misses are q069 (set aside) and the known over-€100 slip on q090/q105, at about the same rate as before (about 1 in 5 tries); the price calculator stays parked (D-014). Jawab's seed KB needs the same KB edits.
+
+---
+
 ## Template
 
 ```

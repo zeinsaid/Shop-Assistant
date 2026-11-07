@@ -40,7 +40,7 @@ def load_cases(path: Path) -> list[dict]:
 
 # What a case may change about its expectations when every message must get a reply (D-024).
 ALWAYS_REPLY_FIELDS = {"expected_action", "expected_entries", "expected_amounts", "expected_language",
-                       "must_not_contain", "question_must_contain", "notes"}
+                       "expected_handoff_reason", "must_not_contain", "question_must_contain", "notes"}
 
 
 def for_setting(case: dict, always_reply: bool) -> dict:
@@ -128,6 +128,12 @@ def print_summary(s: dict, log=print) -> None:
     log(f"missed answers: {len(s['missed_answers'])} | citation recall {s['citation_recall']} | language {s['language_ok']}")
     log(f"wrong amounts: {len(s['wrong_amounts'])} {s['wrong_amounts'] or ''}"
         f" | incomplete owner questions: {len(s['incomplete_questions'])} {s['incomplete_questions'] or ''}")
+    log(f"wrong handoff reasons: {len(s['wrong_handoff_reasons'])} {s['wrong_handoff_reasons'] or ''}"
+        f" | complaint as abuse: {len(s['complaint_as_abuse'])} {s['complaint_as_abuse'] or ''}")
+    if s["handoff_reason_confusion"]:
+        log("handoff reason, expected -> given: " + "; ".join(
+            f"{exp}: {', '.join(f'{got} {n}' for got, n in given.items())}"
+            for exp, given in s["handoff_reason_confusion"].items()))
     log(f"fallbacks {len(s['fallbacks'])} | retried {len(s['retried'])} | dropped citations {s['dropped_citations']}"
         f" | errors {len(s['errors'])}")
     log(f"cost ${s['cost_usd']} (${s['cost_per_case_usd']}/case) | mean {s['mean_seconds']}s/case | tokens {s['tokens']}")
