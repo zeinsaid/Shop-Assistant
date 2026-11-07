@@ -468,7 +468,9 @@ Photo prints on photo paper, price per print by number of prints in the job:
 | Prints | 1–50 | 51–100 | 101+ |
 |---|---|---|---|
 | 15×10 cm | €0.50 | €0.40 | €0.35 |
-| 15×20 cm | €1.00 | €0.80 | €0.70 |---
+| 15×20 cm | €1.00 | €0.80 | €0.70 |
+
+---
 
 ## Merchandise
 
