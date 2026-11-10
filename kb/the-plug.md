@@ -3,9 +3,10 @@ business: The Plug Mini Market and Print Shop
 location: Asomatou 9, Egkomi, Lefkosia 2414, Cyprus
 currency: EUR
 default_language: en
-languages: en, el
-fallback_reply: Let me check with the team and get back to you. / Θα ελέγξω με την ομάδα και θα σας απαντήσω.
+fallback_reply: Let me check with the team and get back to you. / Θα ελέγξω με την ομάδα και θα σας απαντήσω. / دعني أتحقق من الفريق وأعود إليك.
 last_reviewed: 2026-11-07
+languages: en, el, ar
+ui_languages: en, el
 ---
 
 # The Plug: Knowledge Base
@@ -34,12 +35,25 @@ The shop may occasionally close for holidays. If a customer asks whether we're o
 
 Address: Asomatou 9, Egkomi, Lefkosia 2414, Cyprus.
 
-We're in Engomi, next to the University of Nicosia, right behind the Mall of Engomi, just off October 30th Street. We're next to the Serious Black coffee shop, which is also a barber shop called WizArt. Look for the shop with tables outside and a large LED screen out front.
+We're in Engomi, next to the University of Nicosia, right behind the Mall of Engomi, just off 28th October Avenue. We're next to the Serious Black coffee shop, which is also a barber shop called WizArt. Look for the shop with tables outside and a large LED screen out front.
+
+### shop-contact
+**Visibility:** public · **Status:** confirmed
+
+- Phone (landline): +357 22 542659, answered 24/7.
+- WhatsApp and Viber: +357 94 055151, for messages only (not calls).
+- Email: theplug.cyprus@gmail.com
+- Website: theplug.cy
+
+### shop-business-enquiries
+**Visibility:** public · **Status:** confirmed
+
+Businesses can get in touch through the enquiry form on the For Businesses page of our website (theplug.cy), or by calling the shop on +357 22 542659.
 
 ### shop-sending-files
-**Visibility:** public · **Status:** placeholder
+**Visibility:** public · **Status:** confirmed
 
-You can send files to print by WhatsApp, Viber or email. (Contact details to be added; until then, don't give out numbers or addresses.)
+You can send files to print by WhatsApp or Viber on +357 94 055151, or by email to theplug.cyprus@gmail.com. You can also bring them on a USB stick.
 
 ### shop-payment
 **Visibility:** public · **Status:** confirmed
@@ -79,7 +93,7 @@ We have free Wi-Fi in the shop. Ask staff for the password when you're here.
 ### shop-delivery
 **Visibility:** public · **Status:** confirmed
 
-We don't deliver printing or stationery; orders are collected from the shop. (Mini-market items are available for delivery on Wolt and other delivery platforms.)
+We don't deliver printing or stationery; orders are collected from the shop. (Mini-market items are available for delivery on Wolt and Foody: see `scope-mini-market`.)
 
 ### shop-invoices
 **Visibility:** public · **Status:** confirmed
@@ -94,7 +108,7 @@ For greetings and small talk ("hi", "hello", "good evening"), greet the customer
 ### scope-general
 **Visibility:** public · **Status:** confirmed
 
-This chat handles The Plug's printing, scanning, finishing, merchandise and stationery. For anything else, politely say it's outside what we can help with here.
+This chat handles The Plug's printing, scanning, finishing, merchandise and stationery, and basic questions about what our mini market sells (`scope-mini-market`). For anything else, politely say it's outside what we can help with here.
 
 ---
 
@@ -560,7 +574,21 @@ Stock changes daily. For a general question about an item in these categories ("
 ### scope-mini-market
 **Visibility:** public · **Status:** confirmed
 
-For snacks, drinks and other mini-market items, check our store on Wolt or other delivery platforms, where you can see what we have in stock. (Stationery questions are answered here.)
+The Plug is also a 24/7 mini market. We usually have:
+- Drinks: soft drinks, juices, water, energy drinks, iced teas and iced coffees.
+- Beer, wine and spirits.
+- Snacks and sweets: crisps, chocolate, biscuits, sweets, gum and mints, nuts, protein bars.
+- Pantry: canned food, coffee and tea, cereal, pasta and rice, sauces, seasonings, spreads, oil and flour.
+- Dairy and chilled: milk, yoghurt, cheese and cold meats.
+- Frozen food.
+- Ice cream.
+- Household and cleaning: cleaning products, tissues, cups and plates, tealights.
+- Personal care: toiletries, razors, sanitary products, condoms.
+- Electronics and accessories: phone chargers, batteries, light bulbs, fuses.
+- Pet food.
+- Stationery and art supplies (see `stationery`).
+
+Stock changes daily, so we can't promise that a particular item is in right now. Drop in (we're open 24/7), or order for delivery on Wolt (https://wolt.com/en/cyp/nicosia/venue/the-plug-nicosia) or Foody (https://foody.com.cy/delivery/leykosia/the-plug-mini-market-egkomi-2000682441), where you can see what's in stock.
 
 ### scope-smoothie-bar
 **Visibility:** public · **Status:** confirmed
@@ -570,4 +598,9 @@ The smoothie bar next to us is run separately by its own team. For their menu or
 ### scope-internal
 **Visibility:** internal · **Status:** confirmed
 
-The bot doesn't handle the mini-market (other than stationery) or the smoothie bar. Answer only from the scope entries above and don't escalate these questions to the owner.
+Mini market: answer basic category questions ("do you sell alcohol?", "do you have ice cream?", "phone chargers?") from `scope-mini-market`: yes, we usually have it, in the shop and on Wolt and Foody. Never guarantee that a specific item, brand or flavour is in stock, and never give mini-market prices (they aren't in the knowledge base): say stock changes and point to Wolt, Foody or the shop. Answer questions about alcohol plainly, with no promotion. The smoothie bar is answered only from `scope-smoothie-bar`. Don't escalate mini-market or smoothie-bar questions to the owner.
+
+### scope-tobacco-internal
+**Visibility:** internal · **Status:** confirmed
+
+Never list, promote or price tobacco, cigarettes, vapes or smoking accessories (lighters, rolling papers, ashtrays), and never name brands. Don't bring them up yourself, not even in a list of what we sell. If a customer asks about them directly, say only that they're available in the shop, with no brands, prices or other details, and cite `scope-mini-market`.
