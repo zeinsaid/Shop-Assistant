@@ -34,3 +34,5 @@ ThePlug_Data/
 # Onboarding interviews and KB drafts (business information)
 onboarding/sessions/
 onboarding/drafts/
+CLAUDE.local.md
+.claude/
